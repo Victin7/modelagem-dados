@@ -19,10 +19,10 @@
 
 | Integrante | RGM |
 |------------|-----|
-| Raphael Luiz Lima de Araujo | `[PREENCHER]` |
-| Ricardo Santos Marcelino | `[PREENCHER]` |
-| Thiago Rodrigues Ribeiro | `[PREENCHER]` |
-| Victor Sousa dos Anjos | `[PREENCHER]` |
+| Raphael Luiz Lima de Araujo | `[PREENCHER: ainda não informou]` |
+| Ricardo Santos Marcelino | 47023708 |
+| Thiago Rodrigues Ribeiro | 47188049 |
+| Victor Sousa dos Anjos | 47333235 |
 
 - **Curso / Disciplina:** Análise e Desenvolvimento de Sistemas — Modelagem de Banco de Dados (UNICID) — Prof. Cid Andrade
 - **Versão do documento:** v2.0 — 07/10/2026
@@ -62,8 +62,8 @@
 |-----------|----------|
 | Endereço completo | Rua Apucarana, 480 — Tatuapé |
 | CNPJ | 58.759.116/0001-99 |
-| Link no Google Maps | `[PREENCHER]` |
-| Rede social / site | `[PREENCHER]` |
+| Link no Google Maps | [maps.app.goo.gl/TnAsUSbBUWyaUT7E9](https://maps.app.goo.gl/TnAsUSbBUWyaUT7E9) |
+| Rede social | Instagram: [@palaziodelchef](https://www.instagram.com/palaziodelchef/) |
 | Contato | Telefone (11) 2359-7134 · E-mail palaziodelchef@gmail.com |
 | Responsável pela organização | Ivo Diogo Alcantara Parente, proprietário e sócio-administrador (informado na visita) |
 | Datas das visitas | 04/09/2026 |
@@ -74,7 +74,7 @@
 
 **Resumo da visita de 04/09/2026** (informações repassadas pelo grupo, a partir do que foi visto e perguntado no local):
 
-- O cliente chega e escolhe o lugar entre cerca de 30 mesas e 25 bistrôs, ou reserva por telefone. A reserva é atendida pela atendente que fica no caixa. Quem não reservou entra e vê se há lugar.
+- O cliente chega e escolhe o lugar entre cerca de 30 mesas e 25 bistrôs, ou reserva por telefone. A atendente que fica no caixa registra a reserva no sistema e a marca pelo número da mesa. Quem não reservou entra e vê se há lugar.
 - O pedido é marcado por mesa, na comanda. O **garçom** lança o pedido no aplicativo **Garçom Web**, que o encaminha ao **bar** ou à **cozinha** e notifica o chefe de cozinha para o preparo.
 - Cada produto recebido é cadastrado com um **código de barras próprio**. Os pratos também existem no sistema, e tudo que sai aparece para eles. Se o produto não tem estoque, o sistema bloqueia a venda.
 - O garçom também encaminha o preparo, cobra o cliente e gera a conta no aplicativo. O pagamento é em dinheiro, cartão ou Pix. É cobrada **taxa de serviço de 10%**.
@@ -106,7 +106,7 @@ Os processos foram organizados em três grupos: **Vendas** (ciclo do atendimento
 | P3 | 🏃 Encaminhamento para cozinha e bar | Depois do lançamento, o pedido é encaminhado ao bar ou à cozinha, com notificação ao chefe de cozinha para o preparo. | Item pendente → fila do setor | Garçom / sistema | ITEM_PEDIDO, PRODUTO, SETOR | original / confirmado na visita |
 | P4 | 🍳 Preparo | O setor prepara o item e o marca como em preparo e depois como pronto. O atendente entrega e marca como entregue. | Item na fila → item entregue | Cozinha / Bar / Atendente | ITEM_PEDIDO | original |
 | P5 | 💳 Fechamento da conta e pagamento | O garçom gera a conta no aplicativo e cobra o cliente. A conta soma os itens e a **taxa de serviço de 10%**. O pagamento é em dinheiro, cartão ou Pix, podendo ser dividido. Com a conta quitada, o pedido é fechado e a mesa é liberada. A nota fiscal vem pela maquininha de cartão. | Pedido entregue → pedido fechado, mesa livre | Garçom | PEDIDO, PAGAMENTO, MESA | original / confirmado na visita |
-| P6 | 📅 Reservas | O cliente reserva mesa por telefone. No dia, a reserva vira o atendimento da mesa. Quem não reservou entra e vê se há lugar. A reserva é atendida pela atendente que fica no caixa. `[VALIDAR: como a reserva é anotada hoje]` | Pedido de reserva → mesa reservada | Atendente do caixa |  RESERVA, MESA | confirmado na visita |
+| P6 | 📅 Reservas | O cliente reserva mesa por telefone. No dia, a reserva vira o atendimento da mesa. Quem não reservou entra e vê se há lugar. A atendente que fica no caixa registra a reserva no sistema do estabelecimento e a marca pelo número da mesa. | Pedido de reserva → mesa reservada | Atendente do caixa |  RESERVA, MESA | confirmado na visita |
 | P7 | 📋 Cadastro de cardápio e preços | Cada produto recebido é cadastrado com código de barras próprio, e os pratos também existem no sistema. O cardápio tem categorias (lanches, pratos, porções, bebidas etc.). Cada reajuste de preço fica no histórico, com responsável e data. `[VALIDAR: quem cadastra e reajusta]` | Decisão de preço → cardápio atualizado | Gerência `[VALIDAR]` | PRODUTO, CATEGORIA, HISTORICO_PRODUTO, SETOR | confirmado na visita / proposta |
 
 ### 2.2 Processos de Compras
@@ -252,7 +252,7 @@ flowchart TD
 | RN13 | Cadastros | Atendentes, produtos, mesas e fornecedores **não são excluídos**, apenas inativados, preservando o histórico. | proposta |
 | RN14 | Pedido | **Produto indisponível não pode ser pedido:** produto inativo, ou sem estoque suficiente, é bloqueado no lançamento do item. | proposta |
 | RN15 | Pagamento | **Formas de pagamento:** dinheiro, cartão (crédito e débito) e Pix, além das demais indicadas no cardápio. A conta pode ser **dividida** em vários pagamentos, e a soma deve igualar o total do pedido. `[VALIDAR: quais outras formas o cardápio indica]` | confirmado na visita |
-| RN16 | Pagamento | **Taxa de serviço de 10%** sobre o valor dos itens, cobrada pelo estabelecimento e incluída na conta. `[VALIDAR: o cliente pode recusar?]` | confirmado na visita |
+| RN16 | Pagamento | **Taxa de serviço de 10%** sobre o valor dos itens, cobrada pelo estabelecimento e incluída na conta. O cliente pode pedir para **retirar** a taxa, se quiser. | confirmado na visita |
 | RN17 | Pedido | **Perda após o preparo:** item pronto ou entregue não é cancelado. A perda é registrada pela gerência como ajuste de estoque, com motivo. `[VALIDAR]` | proposta |
 | RN18 | Restrição legal | **Bebida alcoólica** só pode ser vendida a maiores de 18 anos. O garçom pede **documento com foto**. É política de atendimento, sem dados de cliente no sistema. | confirmado na visita |
 | RN19 | Estoque | **Validade:** os garçons conferem a validade uma vez por mês e retiram os itens a até 10 dias do vencimento, anotando em planilha. No modelo, o item perecível registra a validade no recebimento, e o produto retirado sai do estoque por ajuste, com motivo. | confirmado na visita / proposta (registro) |
@@ -421,7 +421,7 @@ O cliente reserva por telefone (RESERVA, ligada a uma MESA) ou entra e vê se h�
 | ID_ATENDENTE | integer | Sim (FK) | Atendente que registrou o pedido. | Obrigatório e ativo (RN01, RN04). |
 | DH_ABERTURA | timestamp | Sim | Data e hora de abertura. | Automática. |
 | DH_FECHAMENTO | timestamp | Não | Data e hora de fechamento. | Obrigatória quando o status for Fechado (RN10). |
-| IN_TAXA_SERVICO | boolean | Sim | Se a taxa de serviço de 10% foi cobrada neste pedido. | Padrão: verdadeiro (RN16). `[VALIDAR: o cliente pode recusar?]` |
+| IN_TAXA_SERVICO | boolean | Sim | Se a taxa de serviço de 10% foi cobrada neste pedido. | Padrão: verdadeiro. Falso quando o cliente pede para retirar a taxa (RN16). |
 | TP_STATUS | char(1) (A, F, C) | Sim | Aberto, Fechado ou Cancelado. | Fecha só se estiver pago (RN10). |
 | DS_OBSERVACAO | varchar(200) | Não | Observação geral. | — |
 
