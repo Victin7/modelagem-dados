@@ -32,14 +32,14 @@
 ## 1. 📖 Caracterização da Organização
 
 - **Nome e natureza:** **Palazio del Chef** — estabelecimento do segmento de alimentação, com características de **restaurante e bar**, com fins lucrativos.
-- **Contexto e porte:** restaurante e bar no Tatuapé (São Paulo), com cardápio diurno (almoço), cardápio de bar e entrega por telefone (delivery). O salão tem cerca de **30 mesas e 25 bistrôs** (estimativa do grupo) e o movimento é de **150 a 300 pedidos** em dias de semana e de **400 a 550 pedidos** aos sábados `[VALIDAR: a unidade informada foi "por semana"; confirmar se é por dia]`. A operação é dividida entre **salão** (garçons), **cozinha**, **bar**, **gerência** e **limpeza**, com funcionários CLT em escala 6x1. `[VALIDAR: o grupo classificou o porte como baixo, mas o volume informado sugere porte pequeno a médio]`
+- **Contexto e porte:** restaurante e bar no Tatuapé (São Paulo), com um único cardápio (o mesmo no almoço e à noite, com pratos e bar) e entrega por telefone (delivery). O salão tem cerca de **30 mesas e 25 bistrôs** (estimativa do grupo) e o movimento é de **150 a 300 pedidos** por dia em dias de semana e de **400 a 550 pedidos** aos sábados (estimativa do grupo). A operação é dividida entre **salão** (garçons), **cozinha**, **bar**, **gerência** e **limpeza**, com funcionários CLT em escala 6x1. O grupo classifica o porte como **baixo a médio**.
 
 | Dado de porte | Valor |
 |---------------|-------|
 | Número de mesas | Cerca de 30 mesas e 25 bistrôs (estimativa) |
 | Setores com funcionários | Salão (garçons), cozinha, bar, gerência e limpeza `[PREENCHER: quantidade em cada setor]` |
-| Horário de funcionamento | `[PREENCHER: o grupo vai informar]` |
-| Pedidos | 150 a 300 em dias de semana; 400 a 550 aos sábados `[VALIDAR a unidade]` |
+| Horário de funcionamento | Segunda a quarta: 06:00 às 23:00 · Quinta a sábado: 06:00 às 00:00 · Domingo: 11:00 às 18:00 (conforme o Google Maps; print em [`evidencias/`](./evidencias/horario_google_maps.jpg)) |
+| Pedidos (estimativa por dia) | 150 a 300 em dias de semana; 400 a 550 aos sábados |
 | Itens no cardápio | Mais de 260 preços, em cerca de 45 grupos (lanches, pratos, porções, sobremesas, sucos, caipirinhas, drinks, cervejas, chopp, doses etc.). Ver [`evidencias/`](./evidencias/) |
 | Como os pedidos são registrados hoje | Comanda, marcada por mesa. Os garçons também lançam o pedido no aplicativo **Garçom Web** |
 | Regime de trabalho | CLT, escala 6x1 |
@@ -65,25 +65,26 @@
 | Link no Google Maps | `[PREENCHER]` |
 | Rede social / site | `[PREENCHER]` |
 | Contato | Telefone (11) 2359-7134 · E-mail palaziodelchef@gmail.com |
-| Responsável pela organização | Ivo Diogo Alcantara Parente, proprietário e sócio-administrador (conforme o registro do CNPJ) |
+| Responsável pela organização | Ivo Diogo Alcantara Parente, proprietário e sócio-administrador (informado na visita) |
 | Datas das visitas | 04/09/2026 |
 | Entrevista e observação | Resumo abaixo, com as informações da visita de 04/09/2026. Roteiro usado: [`evidencias/roteiro_entrevista.md`](./evidencias/roteiro_entrevista.md) |
-| Cardápio | Cardápio diurno do estabelecimento, em [`evidencias/`](./evidencias/) |
-| Fotos da pesquisa de campo | `[PREENCHER: foto do estabelecimento, que o grupo vai enviar]` — guardar em [`evidencias/`](./evidencias/) |
+| Cardápio | Cardápio do estabelecimento (o mesmo no almoço e à noite), em [`evidencias/`](./evidencias/cardapio_palazio_diurno.pdf) |
+| Fotos da pesquisa de campo | Fachada com a placa "Palazio del Chef — Bar & Restaurante — Tatuapé" e a placa da Rua Apucarana (foto acima). A foto do salão não foi publicada, para não expor clientes. |
+| Nome no Google Maps | "Palazio Del Chefe" (a placa da fachada diz "Palazio del Chef") |
 
 **Resumo da visita de 04/09/2026** (informações repassadas pelo grupo, a partir do que foi visto e perguntado no local):
 
-- O cliente chega e escolhe o lugar entre cerca de 30 mesas e 25 bistrôs, ou reserva por telefone. Quem não reservou entra e vê se há lugar.
+- O cliente chega e escolhe o lugar entre cerca de 30 mesas e 25 bistrôs, ou reserva por telefone. A reserva é atendida pela atendente que fica no caixa. Quem não reservou entra e vê se há lugar.
 - O pedido é marcado por mesa, na comanda. O **garçom** lança o pedido no aplicativo **Garçom Web**, que o encaminha ao **bar** ou à **cozinha** e notifica o chefe de cozinha para o preparo.
 - Cada produto recebido é cadastrado com um **código de barras próprio**. Os pratos também existem no sistema, e tudo que sai aparece para eles. Se o produto não tem estoque, o sistema bloqueia a venda.
 - O garçom também encaminha o preparo, cobra o cliente e gera a conta no aplicativo. O pagamento é em dinheiro, cartão ou Pix. É cobrada **taxa de serviço de 10%**.
-- Um item pode ser cancelado no sistema do aplicativo, e o cancelamento também bloqueia o item na cozinha.
+- Um item pode ser cancelado no sistema do aplicativo, antes de ficar pronto, e o cancelamento também bloqueia o item na cozinha.
 - Para bebida alcoólica, pedem **documento com foto**, por causa da proibição para menores de 18 anos.
 - As **compras** de produtos e insumos são feitas pelo proprietário. Quem **recebe** a mercadoria é o gerente. Os fornecedores não foram informados.
 - Os garçons conferem a **validade** uma vez por mês, retiram os itens a até 10 dias do vencimento e anotam tudo em planilha.
-- Não controlam estoque por ingrediente `[VALIDAR: confirmar o alcance do controle de estoque]`. Controlam pratos e bebidas.
+- Controlam o estoque de ingredientes, de pratos prontos e também de bebidas.
 - A **nota fiscal** só vem pela maquininha de cartão, sem cupom no sistema.
-- Os registros são guardados de mês em mês `[VALIDAR: prazo de guarda]`.
+- Os registros são guardados por semestre (meses 1 a 6 e meses 7 a 12). O fechamento do caixa é feito pelo gerente.
 - Os funcionários são CLT, em escala **6x1**. Os funcionários não têm credenciais administrativas.
 
 ### 🎯 Objetivo do Projeto (original)
@@ -105,7 +106,7 @@ Os processos foram organizados em três grupos: **Vendas** (ciclo do atendimento
 | P3 | 🏃 Encaminhamento para cozinha e bar | Depois do lançamento, o pedido é encaminhado ao bar ou à cozinha, com notificação ao chefe de cozinha para o preparo. | Item pendente → fila do setor | Garçom / sistema | ITEM_PEDIDO, PRODUTO, SETOR | original / confirmado na visita |
 | P4 | 🍳 Preparo | O setor prepara o item e o marca como em preparo e depois como pronto. O atendente entrega e marca como entregue. | Item na fila → item entregue | Cozinha / Bar / Atendente | ITEM_PEDIDO | original |
 | P5 | 💳 Fechamento da conta e pagamento | O garçom gera a conta no aplicativo e cobra o cliente. A conta soma os itens e a **taxa de serviço de 10%**. O pagamento é em dinheiro, cartão ou Pix, podendo ser dividido. Com a conta quitada, o pedido é fechado e a mesa é liberada. A nota fiscal vem pela maquininha de cartão. | Pedido entregue → pedido fechado, mesa livre | Garçom | PEDIDO, PAGAMENTO, MESA | original / confirmado na visita |
-| P6 | 📅 Reservas | O cliente reserva mesa por telefone. No dia, a reserva vira o atendimento da mesa. Quem não reservou entra e vê se há lugar. `[VALIDAR: como a reserva é anotada hoje e quem atende o telefone]` | Pedido de reserva → mesa reservada | Garçom / gerência `[VALIDAR]` | RESERVA, MESA | confirmado na visita |
+| P6 | 📅 Reservas | O cliente reserva mesa por telefone. No dia, a reserva vira o atendimento da mesa. Quem não reservou entra e vê se há lugar. A reserva é atendida pela atendente que fica no caixa. `[VALIDAR: como a reserva é anotada hoje]` | Pedido de reserva → mesa reservada | Atendente do caixa |  RESERVA, MESA | confirmado na visita |
 | P7 | 📋 Cadastro de cardápio e preços | Cada produto recebido é cadastrado com código de barras próprio, e os pratos também existem no sistema. O cardápio tem categorias (lanches, pratos, porções, bebidas etc.). Cada reajuste de preço fica no histórico, com responsável e data. `[VALIDAR: quem cadastra e reajusta]` | Decisão de preço → cardápio atualizado | Gerência `[VALIDAR]` | PRODUTO, CATEGORIA, HISTORICO_PRODUTO, SETOR | confirmado na visita / proposta |
 
 ### 2.2 Processos de Compras
@@ -120,9 +121,9 @@ Os processos foram organizados em três grupos: **Vendas** (ciclo do atendimento
 
 | # | Processo | Descrição | Entrada → Saída | Responsável | Entidades | Origem |
 |---|----------|-----------|-----------------|-------------|-----------|--------|
-| P11 | 📊 Controle de estoque e validade | Hoje, os garçons conferem a validade uma vez por mês, retiram os itens a até 10 dias do vencimento e anotam em planilha. Neste modelo, toda venda, compra, estorno e ajuste (perda, vencimento) gera uma movimentação, e o saldo é a soma delas. Abaixo do mínimo, há alerta de reposição. | Evento de estoque → saldo atualizado e alerta | Garçons (validade) / gerência `[VALIDAR]` | PRODUTO, MOVIMENTACAO_ESTOQUE | confirmado na visita (validade) / proposta (movimentação) |
+| P11 | 📊 Controle de estoque e validade | Hoje, controlam o estoque de ingredientes, pratos prontos e bebidas, e os garçons conferem a validade uma vez por mês, retiram os itens a até 10 dias do vencimento e anotam em planilha. Neste modelo, toda venda, compra, estorno e ajuste (perda, vencimento) gera uma movimentação, e o saldo é a soma delas. Abaixo do mínimo, há alerta de reposição. | Evento de estoque → saldo atualizado e alerta | Garçons (validade) / gerência `[VALIDAR]` | PRODUTO, MOVIMENTACAO_ESTOQUE | confirmado na visita (validade) / proposta (movimentação) |
 | P12 | 🧑‍🍳 Cadastro de atendentes e escalas | Os funcionários são CLT, em escala 6x1 (seis dias de trabalho e um de folga), e hoje não têm credenciais individuais de gestão. Neste modelo, cada funcionário recebe cadastro com credencial, setor e perfil de acesso. Funcionário desligado é inativado, não excluído. A escala de folgas é rotina de RH e não está modelada nesta versão. | Contratação → atendente ativo com acesso | Gerência `[VALIDAR]` | ATENDENTE, SETOR | original / confirmado na visita (6x1) |
-| P13 | 💰 Caixa e fechamento diário | Ao fim do dia, a gerência confere o total vendido por forma de pagamento (dinheiro, crédito, débito, Pix) com o valor em caixa. É uma consulta sobre os pagamentos do dia, sem entidade própria. | Pagamentos do dia → conferência do caixa | Gerência / Caixa `[VALIDAR]` | PAGAMENTO, PEDIDO | proposta |
+| P13 | 💰 Caixa e fechamento diário | Ao fim do dia, a gerência confere o total vendido por forma de pagamento (dinheiro, crédito, débito, Pix) com o valor em caixa. É uma consulta sobre os pagamentos do dia, sem entidade própria. | Pagamentos do dia → conferência do caixa | Gerente | PAGAMENTO, PEDIDO | confirmado na visita (quem fecha) / proposta |
 
 ### 2.4 Como os processos se integram
 
@@ -244,7 +245,7 @@ flowchart TD
 | RN06 | Pedido | Cada item é encaminhado ao **setor de preparo do produto** (cozinha ou bar). | proposta |
 | RN07 | Pedido | O **preço unitário é gravado no item** no momento do pedido. Reajustes não alteram pedidos anteriores. | proposta |
 | RN08 | Pedido | Um item só pode ser adicionado se houver **estoque suficiente** do produto. Sem estoque, o sistema bloqueia o lançamento. | confirmado na visita |
-| RN09 | Pedido | Um item pode ser **cancelado no sistema** enquanto não estiver pronto. O cancelamento bloqueia o item também no setor de preparo. `[VALIDAR: o limite de etapa em que o cancelamento é aceito]` | confirmado na visita (existe cancelamento) / proposta (limite) |
+| RN09 | Pedido | Um item pode ser **cancelado no sistema antes de ficar pronto**. O cancelamento bloqueia o item também no setor de preparo. | confirmado na visita |
 | RN10 | Pedido | O pedido só pode ser **fechado** se estiver integralmente pago e sem itens pendentes ou em preparo. | proposta |
 | RN11 | Pedido | O **total do pedido é calculado** (não é digitado): soma de quantidade × preço unitário dos itens não cancelados. | proposta |
 | RN12 | Atendente | **Login único** por atendente. Cada atendente pertence a **um setor** e tem **um perfil** de acesso. | proposta |
@@ -260,11 +261,12 @@ flowchart TD
 | RN22 | Compras | **Compra só de fornecedor cadastrado e ativo.** As compras são feitas pelo proprietário. `[VALIDAR: existem fornecedores fixos?]` | proposta / confirmado na visita (quem compra) |
 | RN23 | Compras | O **recebimento** de uma compra gera a entrada de estoque de cada item. Quem recebe é o gerente. Compra recebida não pode ser alterada. | proposta / confirmado na visita (quem recebe) |
 | RN24 | Cadastro | O **preço do produto só é alterado pela gerência**. Cada alteração grava o preço anterior, o novo, o responsável e a data. | proposta |
-| RN25 | Caixa | O **fechamento diário** compara o total por forma de pagamento com o valor conferido em caixa. `[VALIDAR]` | proposta |
+| RN25 | Caixa | O **fechamento diário** é feito pelo gerente e compara o total por forma de pagamento com o valor conferido em caixa. | confirmado na visita (quem fecha) / proposta (conferência por forma) |
 | RN26 | Pedido | **Meia porção** custa **70%** do valor da porção inteira (regra do cardápio). | confirmado (cardápio) |
 | RN27 | Produto | **Variações** de tamanho ou acompanhamento (1 ou 2 pessoas, com ou sem fritas) são produtos distintos, cada um com preço e código próprios. | proposta (a partir do cardápio) |
 | RN28 | Reserva | Uma **reserva** é feita para uma mesa ativa, em uma data e hora, e guarda apenas o nome e o telefone do cliente. | proposta `[VALIDAR]` |
 | RN29 | Produto | Todo produto pertence a **uma categoria** do cardápio (lanches, pratos, porções, bebidas etc.). Bebidas alcoólicas são marcadas, para a regra RN18. | proposta (a partir do cardápio) |
+| RN30 | Estoque | **Insumos** (ingredientes) e produtos prontos têm estoque controlado, como as bebidas. O insumo não aparece no cardápio e não é pedido pelo cliente. Sem ficha técnica, a baixa de insumo é registrada como ajuste de consumo. `[VALIDAR: como o consumo de ingredientes é baixado hoje]` | confirmado na visita (controlam ingredientes) / proposta (baixa) |
 
 ### 4.2 Restrições organizacionais
 
@@ -375,7 +377,7 @@ O cliente reserva por telefone (RESERVA, ligada a uma MESA) ou entra e vê se h�
 Índices: PK ID_MESA; índice único em NR_MESA.
 
 ### PRODUTO
-`PRODUTO = @ID_PRODUTO + ID_SETOR + ID_CATEGORIA + NM_PRODUTO + NR_CODIGO_BARRAS + VL_PRECO + IN_ALCOOLICO + QT_ESTOQUE_ATUAL + QT_ESTOQUE_MINIMO + IN_ATIVO`
+`PRODUTO = @ID_PRODUTO + ID_SETOR + ID_CATEGORIA + NM_PRODUTO + NR_CODIGO_BARRAS + VL_PRECO + IN_VENDAVEL + IN_ALCOOLICO + QT_ESTOQUE_ATUAL + QT_ESTOQUE_MINIMO + IN_ATIVO`
 
 | Atributo | Tipo | Obrig. | Descrição | Regra de negócio associada |
 |----------|------|--------|-----------|----------------------------|
@@ -385,6 +387,7 @@ O cliente reserva por telefone (RESERVA, ligada a uma MESA) ou entra e vê se h�
 | NM_PRODUTO | varchar(80) | Sim | Nome no cardápio, com a variação de tamanho quando houver. Ex.: "Risoto de cogumelos", "Bife de contrafilé (2 pessoas)". | Variações são produtos distintos (RN27). |
 | NR_CODIGO_BARRAS | varchar(14) | Sim | Código de barras. | Único (RN03). `[VALIDAR]` |
 | VL_PRECO | decimal(8,2) | Sim | Preço de venda atual. | Maior que zero. Reajuste não altera pedidos antigos (RN07). Só a gerência altera (RN24). |
+| IN_VENDAVEL | boolean | Sim | Verdadeiro para item do cardápio. Falso para insumo (ingrediente), que só tem estoque. | Só item vendável entra em pedido (RN14, RN30). |
 | IN_ALCOOLICO | boolean | Sim | Indica bebida alcoólica. | Venda só para maiores de 18 anos, com conferência de documento (RN18). |
 | QT_ESTOQUE_ATUAL | integer | Sim | Quantidade disponível. | Não pode ser negativa (RN08). É a soma das movimentações (RN21). `[VALIDAR]` |
 | QT_ESTOQUE_MINIMO | integer | Sim | Quantidade que dispara o alerta de reposição. | Alerta de reposição (RN20). |
@@ -571,7 +574,7 @@ Papéis: **Atendimento**, **Preparo** (cozinha e bar), **Gerência** e **Auditor
 | FORNECEDOR, COMPRA, ITEM_COMPRA | Gerência, Auditoria | Gerência | Gerência (compra recebida não se altera) | Nenhum papel — só inativação ou cancelamento |
 | MOVIMENTACAO_ESTOQUE | Gerência, Auditoria | Automático (venda, compra, estorno); Gerência (ajuste) | Nenhum papel | Nenhum papel |
 
-**LGPD.** Os dados pessoais do modelo são os do funcionário (ATENDENTE: nome, login e data de admissão) e os do cliente que reserva mesa (RESERVA: nome e telefone). Não são guardados CPF nem endereço, por minimização de dados (art. 6º, III). A reserva é apagada ou anonimizada depois de atendida ou cancelada, no prazo definido pelo estabelecimento `[VALIDAR]`. A senha é guardada em hash. O acesso é restrito aos papéis da tabela, e toda consulta fica no log (seção 5.5), o que sustenta a responsabilização (art. 6º, X). O modelo não tem dados sensíveis (art. 5º, II) e não cadastra clientes, exceto o nome e o telefone da reserva. FORNECEDOR guarda dados de pessoa jurídica, fora do escopo da lei. A retenção dos dados de pedidos e compras segue o prazo fiscal `[VALIDAR com o contador do estabelecimento]`. Funcionário desligado é inativado e, ao fim do prazo de retenção, o nome pode ser anonimizado, nunca apagado fisicamente, para preservar a integridade do histórico.
+**LGPD.** Os dados pessoais do modelo são os do funcionário (ATENDENTE: nome, login e data de admissão) e os do cliente que reserva mesa (RESERVA: nome e telefone). Não são guardados CPF nem endereço, por minimização de dados (art. 6º, III). A reserva é apagada ou anonimizada depois de atendida ou cancelada, no prazo definido pelo estabelecimento. A senha é guardada em hash. O acesso é restrito aos papéis da tabela, e toda consulta fica no log (seção 5.5), o que sustenta a responsabilização (art. 6º, X). O modelo não tem dados sensíveis (art. 5º, II) e não cadastra clientes, exceto o nome e o telefone da reserva. FORNECEDOR guarda dados de pessoa jurídica, fora do escopo da lei. Os registros do estabelecimento são guardados por semestre (meses 1 a 6 e 7 a 12). `[VALIDAR com o contador o prazo fiscal de guarda]`. Funcionário desligado é inativado e, ao fim do prazo de retenção, o nome pode ser anonimizado, nunca apagado fisicamente, para preservar a integridade do histórico.
 
 ---
 
@@ -664,6 +667,7 @@ erDiagram
         string NM_PRODUTO
         string NR_CODIGO_BARRAS
         decimal VL_PRECO
+        boolean IN_VENDAVEL
         boolean IN_ALCOOLICO
         int QT_ESTOQUE_ATUAL
         int QT_ESTOQUE_MINIMO
@@ -798,7 +802,7 @@ erDiagram
 | Item | Status |
 |------|--------|
 | Contextualização e identificação do problema | 🔄 Texto pronto; faltam os dados de campo |
-| Evidências (foto, endereço, contato, entrevista) | 🔄 Endereço, contato e data preenchidos; faltam foto e resumo da entrevista |
+| Evidências (foto, endereço, contato, horário, entrevista) | ✅ Foto da fachada, endereço, CNPJ, contato, horário, cardápio e resumo da visita. Falta a rede social, se houver |
 | Processos de negócio | ✅ 13 processos descritos, a maioria confirmada na visita |
 | Requisitos e regras de negócio | ✅ (revisar as propostas) |
 | Dicionário de dados | ✅ No modelo da disciplina (conferir com a versão do grupo) |
@@ -822,7 +826,8 @@ modelagem-dados/
 ├── evidencias/
 │   ├── LEIA-ME.md
 │   ├── roteiro_entrevista.md
-│   └── cardapio_palazio_diurno.pdf
+│   ├── cardapio_palazio_diurno.pdf
+│   └── horario_google_maps.jpg
 │
 ├── Diagrama_Palazio_del_Chef/
 │   ├── diagrama_palazio_del_chef.png
