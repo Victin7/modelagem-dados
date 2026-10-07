@@ -753,12 +753,30 @@ erDiagram
 |------|----------|
 | **Ferramenta e etapa** | **(1) ChatGPT (OpenAI):** ferramenta de apoio na organização da documentação, na estruturação do README, na revisão do texto, na melhoria da clareza e na padronização, usando as informações e as orientações do professor que o grupo já tinha. **(2) Claude (Anthropic):** reorganização do README no formato do esqueleto da Entrega 1, proposta de requisitos, regras, atributos, relacionamentos, justificativas e do DER, incorporação dos dados da visita e ajustes conforme o parecer do professor. |
 | **Motivação** | Organizar e padronizar a documentação segundo o esqueleto da disciplina, informar o uso de IA como o professor pediu e corrigir os pontos apontados no parecer do professor. `[PREENCHER: confirmar com o grupo]` |
-| **Prompt(s) utilizados** | **ChatGPT:** o prompt enviado pelo grupo está na íntegra em [`evidencias/prompt_chatgpt.md`](./evidencias/prompt_chatgpt.md) (conversa: [chatgpt.com/share/6ac6b6d5-d03c-83e9-8cb3-1928b9067b78](https://chatgpt.com/share/6ac6b6d5-d03c-83e9-8cb3-1928b9067b78)). Ele pedia para organizar e completar a Entrega 1 "sem inventar informações", preservar as alterações pedidas pelo professor (Funcionário → Atendente, função de cada atendente, Valor → Preço, Item_pedido, Atendente (1,N), Histórico_Produto) e informar o uso de IA. Um segundo prompt, mais curto, repete as orientações do professor (inclusive remover Item_pedido) e está registrado no mesmo arquivo; a resposta do ChatGPT ainda será anexada pelo grupo. **Claude:** "esse é o do meu grupo, organize e faça um nosso" (com o README anterior do grupo anexado); "professor falou que precisa disso tudo, verifica o que já tem, adiciona o que falta, para organizar" (com o parecer do professor anexado); e a entrega, em várias mensagens, dos dados da visita (respostas às 24 perguntas do roteiro), do cardápio, das fotos e do horário. |
+| **Prompt(s) utilizados** | **ChatGPT:** o prompt enviado pelo grupo está na íntegra em [`evidencias/prompt_chatgpt.md`](./evidencias/prompt_chatgpt.md) (conversa: [chatgpt.com/share/6ac6b6d5-d03c-83e9-8cb3-1928b9067b78](https://chatgpt.com/share/6ac6b6d5-d03c-83e9-8cb3-1928b9067b78)). Ele pedia para organizar e completar a Entrega 1 "sem inventar informações", preservar as alterações pedidas pelo professor (Funcionário → Atendente, função de cada atendente, Valor → Preço, Item_pedido, Atendente (1,N), Histórico_Produto) e informar o uso de IA. Um segundo prompt, mais curto, repete as orientações do professor (inclusive remover Item_pedido) e está registrado no mesmo arquivo; a resposta do ChatGPT ainda será anexada pelo grupo. **Claude:** os usos estão listados na tabela "Usos do Claude" logo abaixo desta. |
 | **Resposta recebida** | ChatGPT: `[PREENCHER: resumo da resposta, que o grupo consulta no link]`. Claude: README reorganizado em 9 seções, mantendo o conteúdo original e marcando o que foi proposto. Depois, 13 processos descritos, requisitos funcionais e não funcionais, regras de negócio, dicionário no modelo da disciplina e DER sem chaves estrangeiras, com a inclusão dos dados da visita (reserva, categoria, taxa de serviço, bebida alcoólica, tipo de mesa, insumos e função do atendente). |
 | **Fontes consultadas e verificadas** | `[PREENCHER]` A IA não teve acesso ao estabelecimento. Tudo o que foi marcado como `(proposta)` ou `[VALIDAR]` precisa ser conferido na pesquisa de campo e com o DER já feito. Foram usados como referência o esqueleto da Entrega 1 e o exemplo de dicionário (02-03g) da disciplina. |
 | **Trechos rejeitados ou corrigidos** | `[PREENCHER]` Ex.: entidades propostas que o grupo removeu, processos que o Palazio não tem (reservas? escalas?), atributos ajustados, regras corrigidas (taxa de serviço, código de barras para pratos). |
 | **Justificativa da escolha final** | `[PREENCHER]` |
 | **Reflexão crítica** | `[PREENCHER]` Pontos de atenção: a IA propôs atributos e processos sem ver o estabelecimento nem o dicionário e o DER do grupo; pode ter assumido processos que o Palazio del Chef não tem (reservas, compras, caixa separado); regras como código de barras para pratos, taxa de serviço e validade precisam de confirmação em campo; os processos e regras de compras e de restrições (sanitária, fiscal) foram propostos com base no que é comum em restaurantes, não no que foi observado. |
+
+### Usos do Claude (Anthropic)
+
+| # | Uso | O que o grupo pediu / forneceu | O que o Claude entregou |
+|---|-----|-------------------------------|-------------------------|
+| 1 | Material da disciplina | Envio do material da aula (esqueleto da Entrega 1 e modelo de dicionário 02-03g). | Leitura do esqueleto e do modelo, usados como referência de formato. |
+| 2 | Simulação de entrega | Pedido de uma simulação de Entrega 1 com uma lanchonete fictícia, apenas como exemplo do formato. | Exemplo de estrutura (não usado como conteúdo do Palazio). |
+| 3 | Reorganização do README | README do grupo anexado, com o pedido "organize e faça um nosso". | README reorganizado nas seções do esqueleto. |
+| 4 | Revisão da Entrega 1 | Perguntas sobre o que faltou e uma estimativa de nota (0 a 2,5). | Lista de pendências e estimativa, usadas só como orientação. |
+| 5 | Organização do repositório | Pedido para arrumar o GitHub (`modelagem-dados`) pasta por pasta. | Estrutura de pastas, `LEIA-ME`, roteiro de entrevista e commits. |
+| 6 | Correção pelo parecer | Parecer do professor anexado (critérios 1 a 12). | Conferência do que já existia e inclusão do que faltava. |
+| 7 | Dados da visita | Endereço, contato, data, porte, respostas às 24 perguntas, cardápio, fotos, horário, reserva, Instagram, taxa de serviço, link do Maps e RGMs. | Incorporação no README (caracterização, 13 processos, requisitos e regras). **Obs.:** o grupo pediu uma entrevista fictícia com o gerente e o Claude recusou, pois seria invenção; foram usados apenas os dados reais da visita. |
+| 8 | Requisitos, regras e dicionário | Pedido de requisitos, regras e dicionário no modelo 02-03g. | RF, RNF, RN e dicionário com 12 entidades, cardinalidades, fluxo, log e LGPD. |
+| 9 | DER | Pedido de um DER no BRModelo; depois, as orientações do professor (Atendente, função, Preço, Histórico_Produto, Atendente (1,N), remover Item_pedido). | DER em imagem na notação do BRModelo (Chen), gerado por script (`Diagrama_Palazio_del_Chef/gerar_der.py`); o arquivo nativo `.brM` não pôde ser gerado e deve ser refeito pelo grupo. |
+| 10 | Justificativa técnica | Pedido de justificar as escolhas. | Texto da seção 8, com a limitação apontada pela remoção do Item_pedido. |
+| 11 | Entrega 2 (rascunho) | Pedido de modelo lógico e SQL. | Rascunho, ainda no modelo antigo, a atualizar. |
+
+**Verificação pelo grupo:** `[PREENCHER]` o que o grupo conferiu, corrigiu ou descartou em cada uso acima.
 
 ---
 
@@ -781,7 +799,7 @@ erDiagram
 | Processos de negócio | ✅ 13 processos descritos, a maioria confirmada na visita |
 | Requisitos e regras de negócio | ✅ (revisar as propostas) |
 | Dicionário de dados | ✅ No modelo da disciplina (conferir com a versão do grupo) |
-| DER | ✅ 14 entidades, sem FKs (refazer no BRModelo) |
+| DER | ✅ 12 entidades e 16 relacionamentos, sem FKs e sem Item_pedido (refazer no BRModelo) |
 | Justificativa técnica | ✅ |
 | Uso de IA | 🔄 Campos do grupo pendentes |
 | Fluxograma em imagem | 🔄 Em desenvolvimento |
