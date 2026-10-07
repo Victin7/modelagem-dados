@@ -32,7 +32,7 @@
 ## 1. 📖 Caracterização da Organização
 
 - **Nome e natureza:** **Palazio del Chef** — estabelecimento do segmento de alimentação, com características de **restaurante e bar**, com fins lucrativos.
-- **Contexto e porte:** Médio porte, com fluxo considerável de clientes. A operação é dividida entre **salão** (atendimento), **cozinha** e **bar**. `[PREENCHER]`
+- **Contexto e porte:** **Baixo porte** (classificação do grupo; os números abaixo sustentam essa classificação). A operação é dividida entre **salão** (atendimento), **cozinha** e **bar**. `[PREENCHER]`
 
 | Dado de porte | Valor |
 |---------------|-------|
@@ -58,13 +58,14 @@
 
 | Evidência | Registro |
 |-----------|----------|
-| Endereço completo | `[PREENCHER]` |
+| Endereço completo | Rua Apucarana, 480 — Tatuapé |
 | CNPJ (se o proprietário autorizar divulgar) | `[PREENCHER]` |
 | Link no Google Maps | `[PREENCHER]` |
 | Rede social / site | `[PREENCHER]` |
-| Responsável pela organização e forma de contato | `[PREENCHER: nome, telefone ou e-mail]` |
-| Datas das visitas | `[PREENCHER]` |
-| Entrevista com o responsável | `[PREENCHER: data, quem participou, o que foi perguntado e respondido (resumo)]` |
+| Contato | Telefone (11) 2359-7134 · E-mail palaziodelchef@gmail.com |
+| Responsável pela organização | `[PREENCHER: nome e cargo do gerente ou proprietário]` |
+| Datas das visitas | 04/09/2026 |
+| Entrevista com o responsável | `[PREENCHER: resumo do que o responsável disse na visita de 04/09/2026]` — roteiro de perguntas em [`evidencias/roteiro_entrevista.md`](./evidencias/roteiro_entrevista.md) |
 | Fotos e prints da pesquisa de campo | `[PREENCHER]` — guardar em [`evidencias/`](./evidencias/) |
 
 ### 🎯 Objetivo do Projeto (original)
@@ -713,7 +714,7 @@ erDiagram
 | Item | Status |
 |------|--------|
 | Contextualização e identificação do problema | 🔄 Texto pronto; faltam os dados de campo |
-| Evidências (foto, endereço, contato, entrevista) | ⏳ Pendente (`[PREENCHER]`) |
+| Evidências (foto, endereço, contato, entrevista) | 🔄 Endereço, contato e data preenchidos; faltam foto e resumo da entrevista |
 | Processos de negócio | ✅ 13 processos descritos (validar em campo) |
 | Requisitos e regras de negócio | ✅ (revisar as propostas) |
 | Dicionário de dados | ✅ No modelo da disciplina (conferir com a versão do grupo) |
@@ -735,7 +736,8 @@ modelagem-dados/
 ├── imagem_palazio.jpeg
 │
 ├── evidencias/
-│   └── LEIA-ME.md
+│   ├── LEIA-ME.md
+│   └── roteiro_entrevista.md
 │
 ├── Diagrama_Palazio_del_Chef/
 │   ├── diagrama_palazio_del_chef.png
