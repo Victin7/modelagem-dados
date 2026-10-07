@@ -12,7 +12,7 @@ E = {  # nome: (x, y, lado dos atributos, [atributos]; o primeiro é o identific
  "RESERVA":(0,-2,"left",["ID_RESERVA","NM_CLIENTE","NR_TELEFONE","DH_RESERVA","QT_PESSOAS","TP_STATUS"]),
  "CATEGORIA":(7.5,3.4,"left",["ID_CATEGORIA","NM_CATEGORIA","IN_ATIVA"]),
  "PEDIDO":(2,0,"up",["ID_PEDIDO","DH_ABERTURA","DH_FECHAMENTO","IN_TAXA_SERVICO","TP_STATUS","DS_OBSERVACAO"]),
- "ATENDENTE":(4,0,"up",["ID_ATENDENTE","NM_ATENDENTE","NM_LOGIN","DS_SENHA_HASH","TP_PERFIL","DT_ADMISSAO","IN_ATIVO"]),
+ "ATENDENTE":(4,0,"up",["ID_ATENDENTE","NM_ATENDENTE","NM_LOGIN","DS_SENHA_HASH","TP_FUNCAO","TP_PERFIL","DT_ADMISSAO","IN_ATIVO"]),
  "SETOR":(7.5,0,"right",["ID_SETOR","NM_SETOR","IN_PREPARO"]),
  "PAGAMENTO":(0,2,"left",["ID_PAGAMENTO","TP_FORMA","VL_PAGO","DH_PAGAMENTO"]),
  "HISTORICO_PRODUTO":(4.7,2,"left",["ID_HISTORICO","VL_PRECO_ANTERIOR","VL_PRECO_NOVO","DH_ALTERACAO"]),
@@ -26,7 +26,7 @@ E = {  # nome: (x, y, lado dos atributos, [atributos]; o primeiro é o identific
 R = [  # (A, rótulo, B, card. em A, card. em B, deslocamento do losango 0..1)
  ("SETOR","agrupa","ATENDENTE","(0,N)","(1,1)"),
  ("SETOR","prepara","PRODUTO","(0,N)","(1,1)"),
- ("ATENDENTE","registra","PEDIDO","(0,N)","(1,1)"),
+ ("ATENDENTE","registra","PEDIDO","(1,N)","(1,1)"),
  ("MESA","recebe","PEDIDO","(0,N)","(1,1)"),
  ("PEDIDO","contém","ITEM_PEDIDO","(1,N)","(1,1)"),
  ("PRODUTO","é pedido em","ITEM_PEDIDO","(0,N)","(1,1)"),

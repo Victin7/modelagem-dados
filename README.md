@@ -295,7 +295,7 @@ Este modelo representa um restaurante e bar em que o cliente, com ou sem **reser
 |----------|------------------|---------------|
 | SETOR | ATENDENTE | 1:N — um setor tem vários funcionários; cada funcionário atua em um setor |
 | SETOR | PRODUTO | 1:N — um setor (cozinha ou bar) prepara vários produtos; cada produto tem um setor de preparo |
-| ATENDENTE | PEDIDO | 1:N — um atendente registra vários pedidos; cada pedido tem exatamente um atendente |
+| ATENDENTE | PEDIDO | 1:N — um atendente registra um ou vários pedidos (1,N); cada pedido tem exatamente um atendente (1,1), conforme orientação do professor |
 | MESA | RESERVA | 1:N — uma mesa pode ser reservada várias vezes; cada reserva é de uma mesa |
 | CATEGORIA | PRODUTO | 1:N — uma categoria do cardápio agrupa vários produtos; cada produto tem uma categoria |
 | MESA | PEDIDO | 1:N — uma mesa recebe vários pedidos ao longo do tempo; cada pedido está em uma única mesa |
@@ -343,9 +343,9 @@ O cliente reserva por telefone (RESERVA, ligada a uma MESA) ou entra e vê se h�
 Índices: PK ID_SETOR; índice único em NM_SETOR.
 
 ### ATENDENTE
-`ATENDENTE = @ID_ATENDENTE + ID_SETOR + NM_ATENDENTE + NM_LOGIN + DS_SENHA_HASH + TP_PERFIL + DT_ADMISSAO + IN_ATIVO`
+`ATENDENTE = @ID_ATENDENTE + ID_SETOR + NM_ATENDENTE + NM_LOGIN + DS_SENHA_HASH + TP_FUNCAO + TP_PERFIL + DT_ADMISSAO + IN_ATIVO`
 
-*Leitura:* `TP_PERFIL` exige escolher um perfil entre Atendimento (A), Preparo (P), Gerência (G) e Sócio (S). Todos os campos são obrigatórios. A equipe de limpeza só é cadastrada se precisar de acesso `[VALIDAR]`.
+*Leitura:* `TP_FUNCAO` exige escolher a função do funcionário: Garçom, Caixa, Cozinha, Bar, Gerente, Sócio ou Limpeza. `TP_PERFIL` exige escolher um perfil entre Atendimento (A), Preparo (P), Gerência (G) e Sócio (S). Todos os campos são obrigatórios. A equipe de limpeza só é cadastrada se precisar de acesso `[VALIDAR]`.
 
 | Atributo | Tipo | Obrig. | Descrição | Regra de negócio associada |
 |----------|------|--------|-----------|----------------------------|
@@ -354,6 +354,7 @@ O cliente reserva por telefone (RESERVA, ligada a uma MESA) ou entra e vê se h�
 | NM_ATENDENTE | varchar(120) | Sim | Nome completo. Ex.: "Mariana Costa" (fictício). | — |
 | NM_LOGIN | varchar(30) | Sim | Credencial de acesso. Ex.: "mariana.costa". | Único (RN12). |
 | DS_SENHA_HASH | varchar(255) | Sim | Senha armazenada em hash. | Nunca em texto puro (RNF03). |
+| TP_FUNCAO | varchar(10) (GARCOM, CAIXA, COZINHA, BAR, GERENTE, SOCIO, LIMPEZA) | Sim | Função do funcionário no estabelecimento, conforme orientação do professor de especificar a função de cada atendente. `[VALIDAR: se a lista de funções está completa]` | Define o trabalho, o setor e o perfil de acesso padrão. |
 | TP_PERFIL | char(1) (A, P, G, S) | Sim | Perfil de acesso: Atendimento (garçom), Preparo (cozinha ou bar), Gerência ou Sócio (proprietário). | Define as permissões (RNF02). |
 | DT_ADMISSAO | date | Sim | Data de admissão. | Não pode ser futura. |
 | IN_ATIVO | boolean | Sim | Se o funcionário está ativo. | Inativo não registra pedidos e mantém o histórico (RN04, RN13). |
@@ -623,7 +624,7 @@ Versão de apoio em Mermaid:
 erDiagram
     SETOR ||--o{ ATENDENTE : "agrupa"
     SETOR ||--o{ PRODUTO : "prepara"
-    ATENDENTE ||--o{ PEDIDO : "registra"
+    ATENDENTE ||--|{ PEDIDO : "registra"
     MESA ||--o{ PEDIDO : "recebe"
     PEDIDO ||--|{ ITEM_PEDIDO : "contém"
     PRODUTO ||--o{ ITEM_PEDIDO : "é pedido em"
@@ -650,6 +651,7 @@ erDiagram
         string NM_ATENDENTE
         string NM_LOGIN
         string DS_SENHA_HASH
+        string TP_FUNCAO
         char TP_PERFIL
         date DT_ADMISSAO
         boolean IN_ATIVO
@@ -750,7 +752,7 @@ erDiagram
 
 ## 8. 🧾 Justificativa Técnica
 
-- **Entidade ATENDENTE com credencial:** resolve diretamente o problema identificado. Como a equipe não era registrada, não havia como saber quem registrou cada pedido. Com `ID_ATENDENTE` e login individual, cada pedido passa a ter um responsável (RN01), o que dá rastreabilidade e responsabilização. O modelo guarda **senha em hash** e apenas os dados pessoais necessários, por minimização de dados (LGPD). A alternativa, um campo de texto com o nome do garçom no pedido, permitiria grafias diferentes e não daria controle de acesso.
+- **Entidade ATENDENTE com credencial e função:** a função de cada funcionário (garçom, caixa, cozinha, bar, gerente, sócio, limpeza) é um atributo explícito, conforme orientou o professor. O perfil de acesso é separado da função, pois várias funções podem ter o mesmo acesso. A cardinalidade (1,N) do atendente no relacionamento "registra" também segue a orientação do professor. A solução resolve diretamente o problema identificado. Como a equipe não era registrada, não havia como saber quem registrou cada pedido. Com `ID_ATENDENTE` e login individual, cada pedido passa a ter um responsável (RN01), o que dá rastreabilidade e responsabilização. O modelo guarda **senha em hash** e apenas os dados pessoais necessários, por minimização de dados (LGPD). A alternativa, um campo de texto com o nome do garçom no pedido, permitiria grafias diferentes e não daria controle de acesso.
 - **SETOR como entidade:** serve a dois fins do mesmo conceito: lotação do funcionário (quem vê o quê, RNF01) e destino do preparo do produto (cozinha ou bar). Como atributo de texto, o nome do setor se repetiria e permitiria grafias diferentes ("Bar", "bar", "BAR"). Como entidade, centraliza o dado e permite novos setores sem alterar a estrutura.
 - **MESA como entidade e vínculo obrigatório:** reflete a regra original de que todo pedido pertence a uma mesa (RN02) e permite o controle de ocupação (RN05). A cardinalidade (0,N) para a mesa e (1,1) para o pedido diz que uma mesa pode ficar sem pedido, mas todo pedido tem exatamente uma mesa.
 - **ITEM_PEDIDO como entidade associativa, com identificador próprio:** o N:N entre pedido e produto tem dados próprios (quantidade, preço, status de preparo, observação). Foi usada chave própria (`ID_ITEM`) porque o mesmo produto pode ser pedido mais de uma vez no mesmo pedido, em momentos diferentes, e cada lançamento tem status e horário próprios. Com chave composta (pedido + produto) isso não seria possível.
@@ -772,14 +774,14 @@ erDiagram
 
 ## 9. 🤖 Uso de Inteligência Artificial
 
-> `[PREENCHER]` Os campos abaixo precisam ser confirmados pelo grupo. A disciplina exige o registro **de cada uso relevante**, com o que foi verificado e o que foi corrigido.
+> **As informações do estabelecimento vêm da visita do grupo. O que a IA propôs está marcado como `(proposta)` e deve ser revisado pelo grupo.** `[PREENCHER]` Os campos pendentes abaixo precisam ser confirmados pelo grupo. A disciplina exige o registro **de cada uso relevante**, com o que foi verificado e o que foi corrigido.
 
 | Item | Registro |
 |------|----------|
-| **Ferramenta e etapa** | (1) ChatGPT (OpenAI) — organização, estrutura e revisão do README anterior do grupo. (2) Claude (Anthropic) — reorganização do README no formato do esqueleto da Entrega 1, proposta de requisitos, regras, atributos, relacionamentos, justificativas e do DER, e ajuste do material conforme o parecer do professor sobre a primeira versão. |
-| **Motivação** | `[PREENCHER]` Ex.: padronizar a documentação segundo o esqueleto da disciplina e corrigir os pontos apontados pelo professor. |
-| **Prompt(s) utilizados** | Ao Claude: "esse é o do meu grupo, organize e faça um nosso" (com o README anterior do grupo anexado); "professor falou que precisa disso tudo, verifica o que já tem, adiciona o que falta, para organizar" (com o parecer do professor anexado). `[PREENCHER: prompts usados no ChatGPT]` |
-| **Resposta recebida** | README reorganizado em 9 seções, mantendo o conteúdo original e marcando o que foi proposto. Na segunda rodada: 13 processos descritos, 25 requisitos funcionais, 12 não funcionais, 29 regras de negócio, dicionário no modelo da disciplina e DER com 14 entidades, sem chaves estrangeiras. Na terceira rodada, o grupo informou os dados da visita e a IA os incorporou ao modelo (reserva, categoria, taxa de serviço, bebida alcoólica, tipo de mesa). |
+| **Ferramenta e etapa** | **(1) ChatGPT (OpenAI):** ferramenta de apoio na organização da documentação, na estruturação do README, na revisão do texto, na melhoria da clareza e na padronização, usando as informações e as orientações do professor que o grupo já tinha. **(2) Claude (Anthropic):** reorganização do README no formato do esqueleto da Entrega 1, proposta de requisitos, regras, atributos, relacionamentos, justificativas e do DER, incorporação dos dados da visita e ajustes conforme o parecer do professor. |
+| **Motivação** | Organizar e padronizar a documentação segundo o esqueleto da disciplina, informar o uso de IA como o professor pediu e corrigir os pontos apontados no parecer do professor. `[PREENCHER: confirmar com o grupo]` |
+| **Prompt(s) utilizados** | **ChatGPT:** o prompt enviado pelo grupo está na íntegra em [`evidencias/prompt_chatgpt.md`](./evidencias/prompt_chatgpt.md) (conversa: [chatgpt.com/share/6ac6b6d5-d03c-83e9-8cb3-1928b9067b78](https://chatgpt.com/share/6ac6b6d5-d03c-83e9-8cb3-1928b9067b78)). Ele pedia para organizar e completar a Entrega 1 "sem inventar informações", preservar as alterações pedidas pelo professor (Funcionário → Atendente, função de cada atendente, Valor → Preço, Item_pedido, Atendente (1,N), Histórico_Produto) e informar o uso de IA. **Claude:** "esse é o do meu grupo, organize e faça um nosso" (com o README anterior do grupo anexado); "professor falou que precisa disso tudo, verifica o que já tem, adiciona o que falta, para organizar" (com o parecer do professor anexado); e a entrega, em várias mensagens, dos dados da visita (respostas às 24 perguntas do roteiro), do cardápio, das fotos e do horário. |
+| **Resposta recebida** | ChatGPT: `[PREENCHER: resumo da resposta, que o grupo consulta no link]`. Claude: README reorganizado em 9 seções, mantendo o conteúdo original e marcando o que foi proposto. Depois, 13 processos descritos, requisitos funcionais e não funcionais, regras de negócio, dicionário no modelo da disciplina e DER sem chaves estrangeiras, com a inclusão dos dados da visita (reserva, categoria, taxa de serviço, bebida alcoólica, tipo de mesa, insumos e função do atendente). |
 | **Fontes consultadas e verificadas** | `[PREENCHER]` A IA não teve acesso ao estabelecimento. Tudo o que foi marcado como `(proposta)` ou `[VALIDAR]` precisa ser conferido na pesquisa de campo e com o DER já feito. Foram usados como referência o esqueleto da Entrega 1 e o exemplo de dicionário (02-03g) da disciplina. |
 | **Trechos rejeitados ou corrigidos** | `[PREENCHER]` Ex.: entidades propostas que o grupo removeu, processos que o Palazio não tem (reservas? escalas?), atributos ajustados, regras corrigidas (taxa de serviço, código de barras para pratos). |
 | **Justificativa da escolha final** | `[PREENCHER]` |
@@ -826,6 +828,7 @@ modelagem-dados/
 ├── evidencias/
 │   ├── LEIA-ME.md
 │   ├── roteiro_entrevista.md
+│   ├── prompt_chatgpt.md
 │   ├── cardapio_palazio_diurno.pdf
 │   └── horario_google_maps.jpg
 │

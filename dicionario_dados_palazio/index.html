@@ -30,6 +30,11 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 <strong>Privacidade:</strong> todos os exemplos de valores são <strong>fictícios</strong>.
 <code>[VALIDAR]</code> Os atributos são uma proposta. <strong>Confira com o dicionário e o DER que o grupo já fez</strong> e ajuste o que divergir.</p>
 </blockquote>
+<blockquote>
+<p>Segue o modelo do arquivo 02-03g da disciplina. A versão completa em HTML está em <a href="./dicionario_dados_palazio/index.html"><code>dicionario_dados_palazio/index.html</code></a>.
+<strong>Privacidade:</strong> todos os exemplos de valores são <strong>fictícios</strong>.
+<code>[VALIDAR]</code> Os atributos são uma proposta. <strong>Confira com o dicionário e o DER que o grupo já fez</strong> e ajuste o que divergir.</p>
+</blockquote>
 <h2>5.1 Modelo conceitual e cardinalidades</h2>
 <p>Este modelo representa um restaurante e bar em que o cliente, com ou sem <strong>reserva</strong>, é atendido em uma <strong>mesa</strong> (ou bistrô). Um <strong>atendente</strong> (o garçom) registra o <strong>pedido</strong>, composto de <strong>itens</strong>. Cada item é de um <strong>produto</strong>, que pertence a uma <strong>categoria</strong> do cardápio e é preparado no <strong>setor</strong> (cozinha ou bar), e a conta é quitada por um ou mais <strong>pagamentos</strong>. O estoque dos produtos é reposto por <strong>compras</strong> a <strong>fornecedores</strong> e controlado por <strong>movimentações</strong>.</p>
 <table>
@@ -54,7 +59,7 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 <tr>
 <td>ATENDENTE</td>
 <td>PEDIDO</td>
-<td>1:N — um atendente registra vários pedidos; cada pedido tem exatamente um atendente</td>
+<td>1:N — um atendente registra um ou vários pedidos (1,N); cada pedido tem exatamente um atendente (1,1), conforme orientação do professor</td>
 </tr>
 <tr>
 <td>MESA</td>
@@ -194,8 +199,8 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 </table>
 <p>Índices: PK ID_SETOR; índice único em NM_SETOR.</p>
 <h3>ATENDENTE</h3>
-<p><code>ATENDENTE = @ID_ATENDENTE + ID_SETOR + NM_ATENDENTE + NM_LOGIN + DS_SENHA_HASH + TP_PERFIL + DT_ADMISSAO + IN_ATIVO</code></p>
-<p><em>Leitura:</em> <code>TP_PERFIL</code> exige escolher um perfil entre Atendimento (A), Preparo (P), Gerência (G) e Sócio (S). Todos os campos são obrigatórios. A equipe de limpeza só é cadastrada se precisar de acesso <code>[VALIDAR]</code>.</p>
+<p><code>ATENDENTE = @ID_ATENDENTE + ID_SETOR + NM_ATENDENTE + NM_LOGIN + DS_SENHA_HASH + TP_FUNCAO + TP_PERFIL + DT_ADMISSAO + IN_ATIVO</code></p>
+<p><em>Leitura:</em> <code>TP_FUNCAO</code> exige escolher a função do funcionário: Garçom, Caixa, Cozinha, Bar, Gerente, Sócio ou Limpeza. <code>TP_PERFIL</code> exige escolher um perfil entre Atendimento (A), Preparo (P), Gerência (G) e Sócio (S). Todos os campos são obrigatórios. A equipe de limpeza só é cadastrada se precisar de acesso <code>[VALIDAR]</code>.</p>
 <table>
 <thead>
 <tr>
@@ -241,6 +246,13 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 <td>Sim</td>
 <td>Senha armazenada em hash.</td>
 <td>Nunca em texto puro (RNF03).</td>
+</tr>
+<tr>
+<td>TP_FUNCAO</td>
+<td>varchar(10) (GARCOM, CAIXA, COZINHA, BAR, GERENTE, SOCIO, LIMPEZA)</td>
+<td>Sim</td>
+<td>Função do funcionário no estabelecimento, conforme orientação do professor de especificar a função de cada atendente. <code>[VALIDAR: se a lista de funções está completa]</code></td>
+<td>Define o trabalho, o setor e o perfil de acesso padrão.</td>
 </tr>
 <tr>
 <td>TP_PERFIL</td>
