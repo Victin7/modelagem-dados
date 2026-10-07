@@ -3,7 +3,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Status-Entrega%201-yellow?style=for-the-badge" alt="Status">
-  <img src="https://img.shields.io/badge/Banco_de_Dados-Relacional-blue?style=for-the-badge&logo=mysql" alt="Banco de Dados">
+  <img src="https://img.shields.io/badge/Banco_de_Dados-Relacional-blue?style=for-the-badge&logo=postgresql" alt="Banco de Dados">
 </p>
 
 > **Como ler os marcadores deste arquivo** *(apague este bloco antes de entregar)*
@@ -159,7 +159,7 @@ flowchart TD
 > **Notação:** `=` é composto de · `+` e · `( )` opcional · `[ | ]` escolha obrigatória · `@` identificador (chave primária).
 > **Tipos:** `Integer`, `Varchar`, `Date`, `Decimal` e `Timestamp`/`Boolean`, como no README original. **SGBD de referência:** PostgreSQL.
 > **Privacidade:** todos os exemplos de valores são **fictícios**.
-> O mapeamento foi estruturado com base nos parâmetros do portal *Datapsico* e no modelo da disciplina (arquivo 02-03g). O dicionário completo está em [./dicionario_dados_palazio/](./dicionario_dados_palazio/).
+> O mapeamento foi estruturado com base nos parâmetros do portal *Datapsico* e no modelo da disciplina (arquivo 02-03g). O dicionário completo está em [./dicionario_dados_palazio/index.html](./dicionario_dados_palazio/index.html).
 > `[VALIDAR]` Os atributos abaixo são uma proposta. **Confira com o dicionário e o DER que o grupo já fez** e ajuste o que divergir.
 
 ### SETOR
@@ -172,7 +172,7 @@ flowchart TD
 | IN_PREPARO | boolean | Sim | Indica se o setor prepara produtos. | Verdadeiro para Cozinha e Bar. Só esses setores podem ser setor de preparo de um produto (RN06). |
 
 ### ATENDENTE
-`ATENDENTE = @ID_ATENDENTE + ID_SETOR + NM_ATENDENTE + NM_LOGIN + DS_SENHA_HASH + [TP_ATENDIMENTO | TP_PREPARO | TP_GERENCIA] + DT_ADMISSAO + IN_ATIVO`
+`ATENDENTE = @ID_ATENDENTE + ID_SETOR + NM_ATENDENTE + NM_LOGIN + DS_SENHA_HASH + TP_PERFIL + DT_ADMISSAO + IN_ATIVO`
 
 | Atributo | Tipo | Obrig. | Descrição | Regra de negócio associada |
 |----------|------|--------|-----------|----------------------------|
@@ -186,7 +186,7 @@ flowchart TD
 | IN_ATIVO | boolean | Sim | Se o funcionário está ativo. | Inativo não registra pedidos e mantém o histórico (RN04, RN13). |
 
 ### MESA
-`MESA = @ID_MESA + NR_MESA + QT_LUGARES + [TP_LIVRE | TP_OCUPADA] + IN_ATIVA`
+`MESA = @ID_MESA + NR_MESA + QT_LUGARES + TP_STATUS + IN_ATIVA`
 
 | Atributo | Tipo | Obrig. | Descrição | Regra de negócio associada |
 |----------|------|--------|-----------|----------------------------|
@@ -223,7 +223,7 @@ flowchart TD
 | DH_ALTERACAO | timestamp | Sim | Data e hora da alteração. | Automática. |
 
 ### PEDIDO
-`PEDIDO = @ID_PEDIDO + ID_MESA + ID_ATENDENTE + DH_ABERTURA + (DH_FECHAMENTO) + [TP_ABERTO | TP_FECHADO | TP_CANCELADO] + (DS_OBSERVACAO)`
+`PEDIDO = @ID_PEDIDO + ID_MESA + ID_ATENDENTE + DH_ABERTURA + (DH_FECHAMENTO) + TP_STATUS + (DS_OBSERVACAO)`
 
 | Atributo | Tipo | Obrig. | Descrição | Regra de negócio associada |
 |----------|------|--------|-----------|----------------------------|
@@ -238,7 +238,7 @@ flowchart TD
 > O **total do pedido não é atributo**: é derivado (RN11).
 
 ### ITEM_PEDIDO *(entidade associativa PEDIDO × PRODUTO)*
-`ITEM_PEDIDO = @ID_ITEM + ID_PEDIDO + ID_PRODUTO + QT_ITEM + VL_PRECO_UNITARIO + [TP_PENDENTE | TP_EM_PREPARO | TP_PRONTO | TP_ENTREGUE | TP_CANCELADO] + DH_REGISTRO + (DS_OBSERVACAO)`
+`ITEM_PEDIDO = @ID_ITEM + ID_PEDIDO + ID_PRODUTO + QT_ITEM + VL_PRECO_UNITARIO + TP_STATUS + DH_REGISTRO + (DS_OBSERVACAO)`
 
 | Atributo | Tipo | Obrig. | Descrição | Regra de negócio associada |
 |----------|------|--------|-----------|----------------------------|
@@ -252,7 +252,7 @@ flowchart TD
 | DS_OBSERVACAO | varchar(100) | Não | Observação do cliente. Ex.: "sem gelo". | — |
 
 ### PAGAMENTO *(proposta — o processo "Pagamento" não tinha entidade)*
-`PAGAMENTO = @ID_PAGAMENTO + ID_PEDIDO + [TP_DINHEIRO | TP_CREDITO | TP_DEBITO | TP_PIX] + VL_PAGO + DH_PAGAMENTO`
+`PAGAMENTO = @ID_PAGAMENTO + ID_PEDIDO + TP_FORMA + VL_PAGO + DH_PAGAMENTO`
 
 | Atributo | Tipo | Obrig. | Descrição | Regra de negócio associada |
 |----------|------|--------|-----------|----------------------------|
@@ -305,7 +305,7 @@ flowchart TD
 O DER oficial do grupo é o da imagem abaixo. O diagrama em Mermaid é uma versão de apoio, gerada a partir do dicionário proposto. `[VALIDAR]` **Confirme se bate com o DER do BRModelo** e atualize a imagem se o grupo aceitar as entidades marcadas como proposta.
 
 <p align="center">
-  <img src="./Diagrama_Palazio_del_Chef/diagrama_palazio_del_chef.jpg" alt="Diagrama Entidade-Relacionamento do Palazio del Chef" width="900">
+  <img src="./Diagrama_Palazio_del_Chef/diagrama_palazio_del_chef.png" alt="Diagrama Entidade-Relacionamento do Palazio del Chef" width="900">
 </p>
 
 > [Ver Diagrama](./Diagrama_Palazio_del_Chef/)
@@ -448,14 +448,18 @@ Palazio-del-Chef/
 ├── README.md
 ├── imagem_palazio.jpeg
 │
+├── evidencias/
+│   └── LEIA-ME.md
+│
 ├── Diagrama_Palazio_del_Chef/
 │   └── diagrama_palazio_del_chef.jpg
 │
 ├── Fluxograma_Palazio_del_Chef/
-│   └── fluxograma_palazio_del_chef.png
+│   └── LEIA-ME.md             ← colocar aqui a imagem do fluxograma
 │
 ├── dicionario_dados_palazio/
-│   └── (dicionário de dados em HTML)
+│   ├── index.html
+│   └── diagrama_palazio_del_chef.png
 │
 └── sql/                           ← Entrega 2
     ├── create_tables.sql
