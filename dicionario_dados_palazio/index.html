@@ -1,30 +1,957 @@
 <!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dicionário de Dados Conceitual — Palazio del Chef (v1.0)</title>
+<title>Dicionário de Dados Conceitual — Palazio del Chef (v2.0)</title>
 <style>:root{--bg:#fff;--fg:#1d1d1f;--mut:#666;--bd:#d9d9de;--hd:#f1f1f5;--ac:#7a1f2b}
 @media(prefers-color-scheme:dark){:root{--bg:#16161a;--fg:#ececf0;--mut:#a0a0aa;--bd:#33333b;--hd:#23232a;--ac:#e08a96}}
-body{font:15px/1.5 system-ui,sans-serif;background:var(--bg);color:var(--fg);max-width:1100px;margin:0 auto;padding:24px 16px}
-h1{color:var(--ac)}h3{margin-top:32px;border-bottom:2px solid var(--ac);padding-bottom:4px}
-table{border-collapse:collapse;width:100%;margin:8px 0;font-size:14px;display:block;overflow-x:auto}
+body{font:15px/1.55 system-ui,sans-serif;background:var(--bg);color:var(--fg);max-width:1100px;margin:0 auto;padding:24px 16px}
+h1{color:var(--ac)}h2{margin-top:36px;border-bottom:2px solid var(--ac);padding-bottom:4px}h3{margin-top:28px;color:var(--ac)}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:14px;display:block;overflow-x:auto}
 th,td{border:1px solid var(--bd);padding:6px 9px;text-align:left;vertical-align:top}th{background:var(--hd)}
-code{background:var(--hd);padding:1px 5px;border-radius:4px;font-size:13px}.f code{display:block;padding:8px;overflow-x:auto}
-.n{color:var(--mut)}img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}</style></head><body>
+code{background:var(--hd);padding:1px 5px;border-radius:4px;font-size:13px}blockquote{border-left:4px solid var(--ac);margin:12px 0;padding:2px 14px;color:var(--mut)}
+img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{color:var(--mut)}</style></head><body>
 <h1>Dicionário de Dados Conceitual — Palazio del Chef</h1>
-<p class="n">Versão 1.0 · Entrega 1 · Modelagem de Banco de Dados (UNICID) · SGBD de referência: PostgreSQL · Todos os exemplos são fictícios.</p>
-<h2>Convenções</h2>
-<p>Prefixos: <code>NM_</code> nome · <code>DT_</code> data · <code>DH_</code> data e hora · <code>ID_</code> identificador · <code>QT_</code> quantidade · <code>VL_</code> valor monetário · <code>NR_</code> número · <code>TP_</code> tipo/categoria · <code>IN_</code> indicador booleano · <code>DS_</code> descrição/texto livre.</p>
-<p>Notação: <code>=</code> composto de · <code>+</code> e · <code>( )</code> opcional · <code>[ | ]</code> escolha obrigatória · <code>@</code> identificador (chave primária).</p>
-<h2>Entidades</h2>
-<section><h3>SETOR</h3><p class="f"><code>SETOR = @ID_SETOR + NM_SETOR + IN_PREPARO</code></p><table><thead><tr><th>Atributo</th><th>Tipo</th><th>Obrig.</th><th>Descrição</th><th>Regra de negócio associada</th></tr></thead><tbody><tr><td>ID_SETOR</td><td>integer</td><td>Sim (PK)</td><td>Identificador do setor.</td><td>—</td></tr><tr><td>NM_SETOR</td><td>varchar(30)</td><td>Sim</td><td>Nome do setor. Ex.: Salão, Cozinha, Bar.</td><td>Único.</td></tr><tr><td>IN_PREPARO</td><td>boolean</td><td>Sim</td><td>Indica se o setor prepara produtos.</td><td>Verdadeiro para Cozinha e Bar. Só esses setores podem ser setor de preparo de um produto (RN06).</td></tr></tbody></table></section>
-<section><h3>ATENDENTE</h3><p class="f"><code>ATENDENTE = @ID_ATENDENTE + ID_SETOR + NM_ATENDENTE + NM_LOGIN + DS_SENHA_HASH + [TP_ATENDIMENTO | TP_PREPARO | TP_GERENCIA] + DT_ADMISSAO + IN_ATIVO</code></p><table><thead><tr><th>Atributo</th><th>Tipo</th><th>Obrig.</th><th>Descrição</th><th>Regra de negócio associada</th></tr></thead><tbody><tr><td>ID_ATENDENTE</td><td>integer</td><td>Sim (PK)</td><td>Identifica individualmente cada atendente que registra pedidos.</td><td>Base da rastreabilidade (RN01).</td></tr><tr><td>ID_SETOR</td><td>integer</td><td>Sim (FK)</td><td>Setor em que o funcionário atua.</td><td>Define quais informações ele visualiza (RNF01).</td></tr><tr><td>NM_ATENDENTE</td><td>varchar(120)</td><td>Sim</td><td>Nome completo. Ex.: "Mariana Costa" (fictício).</td><td>—</td></tr><tr><td>NM_LOGIN</td><td>varchar(30)</td><td>Sim</td><td>Credencial de acesso. Ex.: "mariana.costa".</td><td>Único (RN12).</td></tr><tr><td>DS_SENHA_HASH</td><td>varchar(255)</td><td>Sim</td><td>Senha armazenada em hash.</td><td>Nunca em texto puro (RNF03).</td></tr><tr><td>TP_PERFIL</td><td>char(1) (A, P, G)</td><td>Sim</td><td>Perfil de acesso: Atendimento, Preparo (cozinha/bar) ou Gerência.</td><td>Define as permissões (RNF02).</td></tr><tr><td>DT_ADMISSAO</td><td>date</td><td>Sim</td><td>Data de admissão.</td><td>Não pode ser futura.</td></tr><tr><td>IN_ATIVO</td><td>boolean</td><td>Sim</td><td>Se o funcionário está ativo.</td><td>Inativo não registra pedidos e mantém o histórico (RN04, RN13).</td></tr></tbody></table></section>
-<section><h3>MESA</h3><p class="f"><code>MESA = @ID_MESA + NR_MESA + QT_LUGARES + [TP_LIVRE | TP_OCUPADA] + IN_ATIVA</code></p><table><thead><tr><th>Atributo</th><th>Tipo</th><th>Obrig.</th><th>Descrição</th><th>Regra de negócio associada</th></tr></thead><tbody><tr><td>ID_MESA</td><td>integer</td><td>Sim (PK)</td><td>Identificador interno da mesa.</td><td>—</td></tr><tr><td>NR_MESA</td><td>smallint</td><td>Sim</td><td>Número da mesa, usado pelo atendente. Ex.: 12.</td><td>Único (RN02).</td></tr><tr><td>QT_LUGARES</td><td>smallint</td><td>Sim</td><td>Quantidade de lugares.</td><td>Maior que zero.</td></tr><tr><td>TP_STATUS</td><td>char(1) (L, O)</td><td>Sim</td><td>Situação: Livre ou Ocupada.</td><td>Ocupada ao abrir o pedido, livre ao fechar (RN05, RN10).</td></tr><tr><td>IN_ATIVA</td><td>boolean</td><td>Sim</td><td>Se a mesa está em uso.</td><td>Mesa inativa não recebe pedidos (RN13).</td></tr></tbody></table></section>
-<section><h3>PRODUTO</h3><p class="f"><code>PRODUTO = @ID_PRODUTO + ID_SETOR + NM_PRODUTO + NR_CODIGO_BARRAS + VL_PRECO + QT_ESTOQUE_ATUAL + QT_ESTOQUE_MINIMO + IN_ATIVO</code></p><table><thead><tr><th>Atributo</th><th>Tipo</th><th>Obrig.</th><th>Descrição</th><th>Regra de negócio associada</th></tr></thead><tbody><tr><td>ID_PRODUTO</td><td>integer</td><td>Sim (PK)</td><td>Identificador do produto.</td><td>—</td></tr><tr><td>ID_SETOR</td><td>integer</td><td>Sim (FK)</td><td>Setor responsável pelo preparo (Cozinha ou Bar).</td><td>Setor com IN_PREPARO verdadeiro (RN06).</td></tr><tr><td>NM_PRODUTO</td><td>varchar(80)</td><td>Sim</td><td>Nome no cardápio. Ex.: "Risoto de funghi", "Chope 300 ml".</td><td>—</td></tr><tr><td>NR_CODIGO_BARRAS</td><td>varchar(14)</td><td>Sim</td><td>Código de barras.</td><td>Único (RN03). <code>[VALIDAR]</code></td></tr><tr><td>VL_PRECO</td><td>decimal(8,2)</td><td>Sim</td><td>Preço de venda atual.</td><td>Maior que zero. Reajuste não altera pedidos antigos (RN07).</td></tr><tr><td>QT_ESTOQUE_ATUAL</td><td>integer</td><td>Sim</td><td>Quantidade disponível.</td><td>Não pode ser negativa (RN08). <code>[VALIDAR]</code></td></tr><tr><td>QT_ESTOQUE_MINIMO</td><td>integer</td><td>Sim</td><td>Quantidade que dispara o alerta de reposição.</td><td>Alerta de reposição (RF09).</td></tr><tr><td>IN_ATIVO</td><td>boolean</td><td>Sim</td><td>Se o produto está no cardápio.</td><td>Inativo não pode ser pedido (RN13).</td></tr></tbody></table></section>
-<section><h3>HISTORICO_PRODUTO</h3><p class="f"><code>HISTORICO_PRODUTO = @ID_HISTORICO + ID_PRODUTO + ID_ATENDENTE + VL_PRECO_ANTERIOR + VL_PRECO_NOVO + DH_ALTERACAO</code></p><table><thead><tr><th>Atributo</th><th>Tipo</th><th>Obrig.</th><th>Descrição</th><th>Regra de negócio associada</th></tr></thead><tbody><tr><td>ID_HISTORICO</td><td>integer</td><td>Sim (PK)</td><td>Identificador do registro.</td><td>—</td></tr><tr><td>ID_PRODUTO</td><td>integer</td><td>Sim (FK)</td><td>Produto alterado.</td><td>—</td></tr><tr><td>ID_ATENDENTE</td><td>integer</td><td>Sim (FK)</td><td>Quem fez a alteração.</td><td>Perfil de Gerência (RNF04).</td></tr><tr><td>VL_PRECO_ANTERIOR</td><td>decimal(8,2)</td><td>Sim</td><td>Preço antes da alteração.</td><td>—</td></tr><tr><td>VL_PRECO_NOVO</td><td>decimal(8,2)</td><td>Sim</td><td>Preço depois da alteração.</td><td>Maior que zero.</td></tr><tr><td>DH_ALTERACAO</td><td>timestamp</td><td>Sim</td><td>Data e hora da alteração.</td><td>Automática.</td></tr></tbody></table></section>
-<section><h3>PEDIDO</h3><p class="f"><code>PEDIDO = @ID_PEDIDO + ID_MESA + ID_ATENDENTE + DH_ABERTURA + (DH_FECHAMENTO) + [TP_ABERTO | TP_FECHADO | TP_CANCELADO] + (DS_OBSERVACAO)</code></p><table><thead><tr><th>Atributo</th><th>Tipo</th><th>Obrig.</th><th>Descrição</th><th>Regra de negócio associada</th></tr></thead><tbody><tr><td>ID_PEDIDO</td><td>integer</td><td>Sim (PK)</td><td>Identificador do pedido.</td><td>—</td></tr><tr><td>ID_MESA</td><td>integer</td><td>Sim (FK)</td><td>Mesa do pedido.</td><td>Obrigatório: não existe pedido sem mesa (RN02). Uma mesa tem no máximo um pedido aberto (RN05).</td></tr><tr><td>ID_ATENDENTE</td><td>integer</td><td>Sim (FK)</td><td>Atendente que registrou o pedido.</td><td>Obrigatório e ativo (RN01, RN04).</td></tr><tr><td>DH_ABERTURA</td><td>timestamp</td><td>Sim</td><td>Data e hora de abertura.</td><td>Automática.</td></tr><tr><td>DH_FECHAMENTO</td><td>timestamp</td><td>Não</td><td>Data e hora de fechamento.</td><td>Obrigatória quando o status for Fechado (RN10).</td></tr><tr><td>TP_STATUS</td><td>char(1) (A, F, C)</td><td>Sim</td><td>Aberto, Fechado ou Cancelado.</td><td>Fecha só se estiver pago (RN10).</td></tr><tr><td>DS_OBSERVACAO</td><td>varchar(200)</td><td>Não</td><td>Observação geral.</td><td>—</td></tr></tbody></table></section>
-<section><h3>ITEM_PEDIDO</h3><p class="f"><code>ITEM_PEDIDO = @ID_ITEM + ID_PEDIDO + ID_PRODUTO + QT_ITEM + VL_PRECO_UNITARIO + [TP_PENDENTE | TP_EM_PREPARO | TP_PRONTO | TP_ENTREGUE | TP_CANCELADO] + DH_REGISTRO + (DS_OBSERVACAO)</code></p><table><thead><tr><th>Atributo</th><th>Tipo</th><th>Obrig.</th><th>Descrição</th><th>Regra de negócio associada</th></tr></thead><tbody><tr><td>ID_ITEM</td><td>integer</td><td>Sim (PK)</td><td>Identificador do item.</td><td>Permite o mesmo produto em momentos diferentes do pedido.</td></tr><tr><td>ID_PEDIDO</td><td>integer</td><td>Sim (FK)</td><td>Pedido ao qual pertence.</td><td>Só em pedido aberto.</td></tr><tr><td>ID_PRODUTO</td><td>integer</td><td>Sim (FK)</td><td>Produto pedido.</td><td>Produto ativo e com estoque (RN08, RN13).</td></tr><tr><td>QT_ITEM</td><td>smallint</td><td>Sim</td><td>Quantidade pedida.</td><td>Maior que zero.</td></tr><tr><td>VL_PRECO_UNITARIO</td><td>decimal(8,2)</td><td>Sim</td><td>Preço unitário no momento do pedido.</td><td>Cópia do preço vigente (RN07).</td></tr><tr><td>TP_STATUS</td><td>char(1) (P, E, R, N, C)</td><td>Sim</td><td>Pendente, Em preparo, Pronto, Entregue ou Cancelado.</td><td>Cancela só se pendente (RN09). O setor do produto determina quem atualiza (RN06).</td></tr><tr><td>DH_REGISTRO</td><td>timestamp</td><td>Sim</td><td>Quando o item foi lançado.</td><td>Automática.</td></tr><tr><td>DS_OBSERVACAO</td><td>varchar(100)</td><td>Não</td><td>Observação do cliente. Ex.: "sem gelo".</td><td>—</td></tr></tbody></table></section>
-<section><h3>PAGAMENTO</h3><p class="f"><code>PAGAMENTO = @ID_PAGAMENTO + ID_PEDIDO + [TP_DINHEIRO | TP_CREDITO | TP_DEBITO | TP_PIX] + VL_PAGO + DH_PAGAMENTO</code></p><table><thead><tr><th>Atributo</th><th>Tipo</th><th>Obrig.</th><th>Descrição</th><th>Regra de negócio associada</th></tr></thead><tbody><tr><td>ID_PAGAMENTO</td><td>integer</td><td>Sim (PK)</td><td>Identificador do pagamento.</td><td>—</td></tr><tr><td>ID_PEDIDO</td><td>integer</td><td>Sim (FK)</td><td>Pedido quitado.</td><td>Um pedido pode ter vários pagamentos.</td></tr><tr><td>TP_FORMA</td><td>char(1) (D, C, B, P)</td><td>Sim</td><td>Dinheiro, crédito, débito ou Pix.</td><td>Domínio fechado.</td></tr><tr><td>VL_PAGO</td><td>decimal(8,2)</td><td>Sim</td><td>Valor pago nesta forma.</td><td>A soma deve igualar o total (RN10, RN11).</td></tr><tr><td>DH_PAGAMENTO</td><td>timestamp</td><td>Sim</td><td>Data e hora do pagamento.</td><td>Automática.</td></tr></tbody></table></section>
-
-<h2>Relacionamentos</h2>
-<table><thead><tr><th>Entidade A</th><th>Relacionamento</th><th>Entidade B</th><th>Cardinalidade</th><th>Leitura</th></tr></thead><tbody><tr><td>SETOR</td><td>agrupa</td><td>ATENDENTE</td><td>1:N</td><td>Um setor tem vários funcionários. Cada funcionário atua em um setor.</td></tr><tr><td>SETOR</td><td>prepara</td><td>PRODUTO</td><td>1:N</td><td>Um setor (cozinha ou bar) prepara vários produtos. Cada produto tem um setor de preparo.</td></tr><tr><td>ATENDENTE</td><td>registra</td><td>PEDIDO</td><td>1:N</td><td>Um atendente registra vários pedidos. Cada pedido tem exatamente um atendente.</td></tr><tr><td>MESA</td><td>recebe</td><td>PEDIDO</td><td>1:N</td><td>Uma mesa recebe vários pedidos ao longo do tempo. Cada pedido está em uma única mesa.</td></tr><tr><td>PEDIDO</td><td>contém</td><td>ITEM_PEDIDO</td><td>1:N</td><td>Um pedido tem um ou mais itens.</td></tr><tr><td>PRODUTO</td><td>é pedido em</td><td>ITEM_PEDIDO</td><td>1:N</td><td>Um produto aparece em vários itens.</td></tr><tr><td>PEDIDO × PRODUTO</td><td>(via ITEM_PEDIDO)</td><td>—</td><td>N:N</td><td>Um pedido tem vários produtos e um produto está em vários pedidos.</td></tr><tr><td>PEDIDO</td><td>é quitado por</td><td>PAGAMENTO</td><td>1:N</td><td>Um pedido tem zero (aberto) ou vários pagamentos.</td></tr><tr><td>PRODUTO</td><td>tem</td><td>HISTORICO_PRODUTO</td><td>1:N</td><td>Um produto tem várias alterações de preço registradas.</td></tr><tr><td>ATENDENTE</td><td>realiza</td><td>HISTORICO_PRODUTO</td><td>1:N</td><td>Um atendente (gerência) registra várias alterações.</td></tr></tbody></table>
+<p class="n">Versão 2.0 · 07/10/2026 · Entrega 1 · Modelagem de Banco de Dados (UNICID) · Todos os exemplos são fictícios.</p>
+<blockquote>
+<p>Segue o modelo do arquivo 02-03g da disciplina. A versão completa em HTML está em <a href="./dicionario_dados_palazio/index.html"><code>dicionario_dados_palazio/index.html</code></a>.
+<strong>Privacidade:</strong> todos os exemplos de valores são <strong>fictícios</strong>.
+<code>[VALIDAR]</code> Os atributos são uma proposta. <strong>Confira com o dicionário e o DER que o grupo já fez</strong> e ajuste o que divergir.</p>
+</blockquote>
+<h2>5.1 Modelo conceitual e cardinalidades</h2>
+<p>Este modelo representa um restaurante e bar em que o cliente é atendido em uma <strong>mesa</strong>. Um <strong>atendente</strong> registra o <strong>pedido</strong>, composto de <strong>itens</strong>. Cada item é de um <strong>produto</strong>, preparado no <strong>setor</strong> (cozinha ou bar), e a conta é quitada por um ou mais <strong>pagamentos</strong>. O estoque dos produtos é reposto por <strong>compras</strong> a <strong>fornecedores</strong> e controlado por <strong>movimentações</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Entidade</th>
+<th>Relaciona-se com</th>
+<th>Cardinalidade</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SETOR</td>
+<td>ATENDENTE</td>
+<td>1:N — um setor tem vários funcionários; cada funcionário atua em um setor</td>
+</tr>
+<tr>
+<td>SETOR</td>
+<td>PRODUTO</td>
+<td>1:N — um setor (cozinha ou bar) prepara vários produtos; cada produto tem um setor de preparo</td>
+</tr>
+<tr>
+<td>ATENDENTE</td>
+<td>PEDIDO</td>
+<td>1:N — um atendente registra vários pedidos; cada pedido tem exatamente um atendente</td>
+</tr>
+<tr>
+<td>MESA</td>
+<td>PEDIDO</td>
+<td>1:N — uma mesa recebe vários pedidos ao longo do tempo; cada pedido está em uma única mesa</td>
+</tr>
+<tr>
+<td>PEDIDO</td>
+<td>ITEM_PEDIDO</td>
+<td>1:N — um pedido tem um ou mais itens; cada item pertence a um pedido</td>
+</tr>
+<tr>
+<td>PRODUTO</td>
+<td>ITEM_PEDIDO</td>
+<td>1:N — um produto aparece em vários itens; cada item é de um produto</td>
+</tr>
+<tr>
+<td>PEDIDO × PRODUTO</td>
+<td>(via ITEM_PEDIDO)</td>
+<td>N:N — um pedido tem vários produtos e um produto está em vários pedidos</td>
+</tr>
+<tr>
+<td>PEDIDO</td>
+<td>PAGAMENTO</td>
+<td>1:N — um pedido tem zero (aberto) ou vários pagamentos; cada pagamento quita um pedido</td>
+</tr>
+<tr>
+<td>PRODUTO</td>
+<td>HISTORICO_PRODUTO</td>
+<td>1:N — um produto tem várias alterações de preço registradas</td>
+</tr>
+<tr>
+<td>ATENDENTE</td>
+<td>HISTORICO_PRODUTO</td>
+<td>1:N — um atendente (gerência) registra várias alterações de preço</td>
+</tr>
+<tr>
+<td>FORNECEDOR</td>
+<td>COMPRA</td>
+<td>1:N — um fornecedor atende várias compras; cada compra é de um fornecedor</td>
+</tr>
+<tr>
+<td>ATENDENTE</td>
+<td>COMPRA</td>
+<td>1:N — um atendente (gerência) efetua várias compras; cada compra tem um responsável</td>
+</tr>
+<tr>
+<td>COMPRA</td>
+<td>ITEM_COMPRA</td>
+<td>1:N — uma compra tem um ou mais itens; cada item pertence a uma compra</td>
+</tr>
+<tr>
+<td>PRODUTO</td>
+<td>ITEM_COMPRA</td>
+<td>1:N — um produto é comprado em vários itens de compra</td>
+</tr>
+<tr>
+<td>COMPRA × PRODUTO</td>
+<td>(via ITEM_COMPRA)</td>
+<td>N:N — uma compra tem vários produtos e um produto está em várias compras</td>
+</tr>
+<tr>
+<td>PRODUTO</td>
+<td>MOVIMENTACAO_ESTOQUE</td>
+<td>1:N — um produto tem várias movimentações; cada movimentação é de um produto</td>
+</tr>
+<tr>
+<td>ITEM_PEDIDO</td>
+<td>MOVIMENTACAO_ESTOQUE</td>
+<td>1:N opcional — um item gera a baixa (e, se cancelado, o estorno); uma movimentação pode ou não ter origem em um item</td>
+</tr>
+<tr>
+<td>ITEM_COMPRA</td>
+<td>MOVIMENTACAO_ESTOQUE</td>
+<td>1:1 opcional — um item recebido gera uma entrada; uma movimentação pode ou não ter origem em uma compra</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Definições.</strong> <strong>Setor</strong> é a área de trabalho (salão, cozinha, bar). <strong>Atendente</strong> é o funcionário com credencial individual. <strong>Mesa</strong> é o local do cliente. <strong>Produto</strong> é o item vendido e estocado. <strong>Pedido</strong> é o atendimento de uma mesa. <strong>Item do pedido</strong> é um produto pedido, com quantidade, preço e status. <strong>Pagamento</strong> é a quitação, total ou parcial, do pedido. <strong>Fornecedor</strong> é a empresa que vende mercadoria. <strong>Compra</strong> é o pedido de mercadoria a um fornecedor. <strong>Item da compra</strong> é um produto comprado, com quantidade, custo e validade. <strong>Movimentação de estoque</strong> é cada entrada, saída, estorno ou ajuste do saldo de um produto. <strong>Histórico do produto</strong> é o registro de cada alteração de preço.</p>
+<h2>5.2 Fluxo de dados</h2>
+<p>Cliente chega → o atendente (autenticado em ATENDENTE) abre um PEDIDO em uma MESA → cada pedido gera registros em ITEM_PEDIDO, ligando o PEDIDO a um PRODUTO, que carrega o SETOR de preparo → cada item lançado gera uma baixa em MOVIMENTACAO_ESTOQUE e atualiza o saldo do PRODUTO → cozinha e bar atualizam o status do item → o cliente paga e cada forma usada vira um registro em PAGAMENTO → com a soma dos pagamentos igual ao total, o PEDIDO é fechado e a MESA liberada. Quando o saldo do PRODUTO chega ao mínimo, a gerência registra uma COMPRA a um FORNECEDOR, com ITEM_COMPRA → no recebimento, cada item gera uma entrada em MOVIMENTACAO_ESTOQUE. Os reajustes de preço feitos pela gerência geram registros em HISTORICO_PRODUTO. Toda leitura ou escrita relevante é registrada no log do SGBD (seção 5.5), o que sustenta a auditoria e a conformidade com a LGPD (seção 5.6).</p>
+<h2>5.3 Convenções do dicionário</h2>
+<ul>
+<li><strong>SGBD de referência:</strong> PostgreSQL 16.</li>
+<li><strong>Codificação de caracteres:</strong> UTF-8, para guardar acentuação do português sem perda em nomes e observações.</li>
+<li><strong>Prefixos:</strong> <code>NM_</code> nome · <code>DT_</code> data · <code>DH_</code> data e hora · <code>ID_</code> identificador (não sofre operação matemática) · <code>QT_</code> quantidade · <code>VL_</code> valor monetário · <code>NR_</code> número · <code>TP_</code> tipo (categorização) · <code>IN_</code> indicador booleano · <code>DS_</code> descrição ou texto livre.</li>
+<li><strong>Notação formal:</strong> <code>=</code> é composto de · <code>+</code> e (elementos obrigatórios) · <code>( )</code> opcional · <code>[ | ]</code> escolha obrigatória entre alternativas · <code>@</code> identificador (chave primária).</li>
+<li><strong>Chave estrangeira (FK):</strong> aparece nos dicionários como atributo da entidade do lado N, com a indicação (FK). O <strong>DER</strong> não a desenha: no modelo conceitual a ligação é o relacionamento.</li>
+<li><strong>Versão deste dicionário:</strong> v2.0, 07/10/2026. Qualquer alteração de estrutura gera nova revisão registrada aqui.</li>
+</ul>
+<h2>5.4 Dicionário de dados por entidade</h2>
+<h3>SETOR</h3>
+<p><code>SETOR = @ID_SETOR + NM_SETOR + IN_PREPARO</code></p>
+<table>
+<thead>
+<tr>
+<th>Atributo</th>
+<th>Tipo</th>
+<th>Obrig.</th>
+<th>Descrição</th>
+<th>Regra de negócio associada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ID_SETOR</td>
+<td>integer</td>
+<td>Sim (PK)</td>
+<td>Identificador do setor.</td>
+<td>—</td>
+</tr>
+<tr>
+<td>NM_SETOR</td>
+<td>varchar(30)</td>
+<td>Sim</td>
+<td>Nome do setor. Ex.: Salão, Cozinha, Bar.</td>
+<td>Único.</td>
+</tr>
+<tr>
+<td>IN_PREPARO</td>
+<td>boolean</td>
+<td>Sim</td>
+<td>Indica se o setor prepara produtos.</td>
+<td>Verdadeiro para Cozinha e Bar. Só esses setores podem ser setor de preparo de um produto (RN06).</td>
+</tr>
+</tbody>
+</table>
+<p>Índices: PK ID_SETOR; índice único em NM_SETOR.</p>
+<h3>ATENDENTE</h3>
+<p><code>ATENDENTE = @ID_ATENDENTE + ID_SETOR + NM_ATENDENTE + NM_LOGIN + DS_SENHA_HASH + TP_PERFIL + DT_ADMISSAO + IN_ATIVO</code></p>
+<p><em>Leitura:</em> <code>TP_PERFIL</code> exige escolher um perfil entre Atendimento (A), Preparo (P) e Gerência (G). Todos os campos são obrigatórios.</p>
+<table>
+<thead>
+<tr>
+<th>Atributo</th>
+<th>Tipo</th>
+<th>Obrig.</th>
+<th>Descrição</th>
+<th>Regra de negócio associada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ID_ATENDENTE</td>
+<td>integer</td>
+<td>Sim (PK)</td>
+<td>Identifica individualmente cada atendente que registra pedidos.</td>
+<td>Base da rastreabilidade (RN01).</td>
+</tr>
+<tr>
+<td>ID_SETOR</td>
+<td>integer</td>
+<td>Sim (FK)</td>
+<td>Setor em que o funcionário atua.</td>
+<td>Define quais informações ele visualiza (RNF01).</td>
+</tr>
+<tr>
+<td>NM_ATENDENTE</td>
+<td>varchar(120)</td>
+<td>Sim</td>
+<td>Nome completo. Ex.: "Mariana Costa" (fictício).</td>
+<td>—</td>
+</tr>
+<tr>
+<td>NM_LOGIN</td>
+<td>varchar(30)</td>
+<td>Sim</td>
+<td>Credencial de acesso. Ex.: "mariana.costa".</td>
+<td>Único (RN12).</td>
+</tr>
+<tr>
+<td>DS_SENHA_HASH</td>
+<td>varchar(255)</td>
+<td>Sim</td>
+<td>Senha armazenada em hash.</td>
+<td>Nunca em texto puro (RNF03).</td>
+</tr>
+<tr>
+<td>TP_PERFIL</td>
+<td>char(1) (A, P, G)</td>
+<td>Sim</td>
+<td>Perfil de acesso: Atendimento, Preparo (cozinha ou bar) ou Gerência.</td>
+<td>Define as permissões (RNF02).</td>
+</tr>
+<tr>
+<td>DT_ADMISSAO</td>
+<td>date</td>
+<td>Sim</td>
+<td>Data de admissão.</td>
+<td>Não pode ser futura.</td>
+</tr>
+<tr>
+<td>IN_ATIVO</td>
+<td>boolean</td>
+<td>Sim</td>
+<td>Se o funcionário está ativo.</td>
+<td>Inativo não registra pedidos e mantém o histórico (RN04, RN13).</td>
+</tr>
+</tbody>
+</table>
+<p>Índices: PK ID_ATENDENTE; índice único em NM_LOGIN (autenticação); índice em ID_SETOR.</p>
+<h3>MESA</h3>
+<p><code>MESA = @ID_MESA + NR_MESA + QT_LUGARES + TP_STATUS + IN_ATIVA</code></p>
+<p><em>Leitura:</em> <code>TP_STATUS</code> é Livre (L) ou Ocupada (O).</p>
+<table>
+<thead>
+<tr>
+<th>Atributo</th>
+<th>Tipo</th>
+<th>Obrig.</th>
+<th>Descrição</th>
+<th>Regra de negócio associada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ID_MESA</td>
+<td>integer</td>
+<td>Sim (PK)</td>
+<td>Identificador interno da mesa.</td>
+<td>—</td>
+</tr>
+<tr>
+<td>NR_MESA</td>
+<td>smallint</td>
+<td>Sim</td>
+<td>Número da mesa, usado pelo atendente. Ex.: 12.</td>
+<td>Único (RN02).</td>
+</tr>
+<tr>
+<td>QT_LUGARES</td>
+<td>smallint</td>
+<td>Sim</td>
+<td>Quantidade de lugares.</td>
+<td>Maior que zero.</td>
+</tr>
+<tr>
+<td>TP_STATUS</td>
+<td>char(1) (L, O)</td>
+<td>Sim</td>
+<td>Situação: Livre ou Ocupada.</td>
+<td>Ocupada ao abrir o pedido, livre ao fechar (RN05, RN10).</td>
+</tr>
+<tr>
+<td>IN_ATIVA</td>
+<td>boolean</td>
+<td>Sim</td>
+<td>Se a mesa está em uso.</td>
+<td>Mesa inativa não recebe pedidos (RN13).</td>
+</tr>
+</tbody>
+</table>
+<p>Índices: PK ID_MESA; índice único em NR_MESA.</p>
+<h3>PRODUTO</h3>
+<p><code>PRODUTO = @ID_PRODUTO + ID_SETOR + NM_PRODUTO + NR_CODIGO_BARRAS + VL_PRECO + QT_ESTOQUE_ATUAL + QT_ESTOQUE_MINIMO + IN_ATIVO</code></p>
+<table>
+<thead>
+<tr>
+<th>Atributo</th>
+<th>Tipo</th>
+<th>Obrig.</th>
+<th>Descrição</th>
+<th>Regra de negócio associada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ID_PRODUTO</td>
+<td>integer</td>
+<td>Sim (PK)</td>
+<td>Identificador do produto.</td>
+<td>—</td>
+</tr>
+<tr>
+<td>ID_SETOR</td>
+<td>integer</td>
+<td>Sim (FK)</td>
+<td>Setor responsável pelo preparo (Cozinha ou Bar).</td>
+<td>Setor com IN_PREPARO verdadeiro (RN06).</td>
+</tr>
+<tr>
+<td>NM_PRODUTO</td>
+<td>varchar(80)</td>
+<td>Sim</td>
+<td>Nome no cardápio. Ex.: "Risoto de funghi", "Chope 300 ml".</td>
+<td>—</td>
+</tr>
+<tr>
+<td>NR_CODIGO_BARRAS</td>
+<td>varchar(14)</td>
+<td>Sim</td>
+<td>Código de barras.</td>
+<td>Único (RN03). <code>[VALIDAR]</code></td>
+</tr>
+<tr>
+<td>VL_PRECO</td>
+<td>decimal(8,2)</td>
+<td>Sim</td>
+<td>Preço de venda atual.</td>
+<td>Maior que zero. Reajuste não altera pedidos antigos (RN07). Só a gerência altera (RN24).</td>
+</tr>
+<tr>
+<td>QT_ESTOQUE_ATUAL</td>
+<td>integer</td>
+<td>Sim</td>
+<td>Quantidade disponível.</td>
+<td>Não pode ser negativa (RN08). É a soma das movimentações (RN21). <code>[VALIDAR]</code></td>
+</tr>
+<tr>
+<td>QT_ESTOQUE_MINIMO</td>
+<td>integer</td>
+<td>Sim</td>
+<td>Quantidade que dispara o alerta de reposição.</td>
+<td>Alerta de reposição (RN20).</td>
+</tr>
+<tr>
+<td>IN_ATIVO</td>
+<td>boolean</td>
+<td>Sim</td>
+<td>Se o produto está no cardápio.</td>
+<td>Inativo não pode ser pedido (RN13, RN14).</td>
+</tr>
+</tbody>
+</table>
+<p>Índices: PK ID_PRODUTO; índice único em NR_CODIGO_BARRAS; índice em ID_SETOR; índice em NM_PRODUTO (busca no lançamento do pedido).</p>
+<h3>HISTORICO_PRODUTO <em>(proposta de definição — o README original só citava o nome)</em></h3>
+<p><code>HISTORICO_PRODUTO = @ID_HISTORICO + ID_PRODUTO + ID_ATENDENTE + VL_PRECO_ANTERIOR + VL_PRECO_NOVO + DH_ALTERACAO</code></p>
+<table>
+<thead>
+<tr>
+<th>Atributo</th>
+<th>Tipo</th>
+<th>Obrig.</th>
+<th>Descrição</th>
+<th>Regra de negócio associada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ID_HISTORICO</td>
+<td>integer</td>
+<td>Sim (PK)</td>
+<td>Identificador do registro.</td>
+<td>—</td>
+</tr>
+<tr>
+<td>ID_PRODUTO</td>
+<td>integer</td>
+<td>Sim (FK)</td>
+<td>Produto alterado.</td>
+<td>—</td>
+</tr>
+<tr>
+<td>ID_ATENDENTE</td>
+<td>integer</td>
+<td>Sim (FK)</td>
+<td>Quem fez a alteração.</td>
+<td>Perfil de Gerência (RN24).</td>
+</tr>
+<tr>
+<td>VL_PRECO_ANTERIOR</td>
+<td>decimal(8,2)</td>
+<td>Sim</td>
+<td>Preço antes da alteração.</td>
+<td>—</td>
+</tr>
+<tr>
+<td>VL_PRECO_NOVO</td>
+<td>decimal(8,2)</td>
+<td>Sim</td>
+<td>Preço depois da alteração.</td>
+<td>Maior que zero.</td>
+</tr>
+<tr>
+<td>DH_ALTERACAO</td>
+<td>timestamp</td>
+<td>Sim</td>
+<td>Data e hora da alteração.</td>
+<td>Automática.</td>
+</tr>
+</tbody>
+</table>
+<p>Índices: PK ID_HISTORICO; índice em (ID_PRODUTO, DH_ALTERACAO).</p>
+<h3>PEDIDO</h3>
+<p><code>PEDIDO = @ID_PEDIDO + ID_MESA + ID_ATENDENTE + DH_ABERTURA + (DH_FECHAMENTO) + TP_STATUS + (DS_OBSERVACAO)</code></p>
+<p><em>Leitura:</em> <code>DH_FECHAMENTO</code> e <code>DS_OBSERVACAO</code> são opcionais. <code>TP_STATUS</code> é Aberto (A), Fechado (F) ou Cancelado (C).</p>
+<table>
+<thead>
+<tr>
+<th>Atributo</th>
+<th>Tipo</th>
+<th>Obrig.</th>
+<th>Descrição</th>
+<th>Regra de negócio associada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ID_PEDIDO</td>
+<td>integer</td>
+<td>Sim (PK)</td>
+<td>Identificador do pedido.</td>
+<td>—</td>
+</tr>
+<tr>
+<td>ID_MESA</td>
+<td>integer</td>
+<td>Sim (FK)</td>
+<td>Mesa do pedido.</td>
+<td>Obrigatório: não existe pedido sem mesa (RN02). Uma mesa tem no máximo um pedido aberto (RN05).</td>
+</tr>
+<tr>
+<td>ID_ATENDENTE</td>
+<td>integer</td>
+<td>Sim (FK)</td>
+<td>Atendente que registrou o pedido.</td>
+<td>Obrigatório e ativo (RN01, RN04).</td>
+</tr>
+<tr>
+<td>DH_ABERTURA</td>
+<td>timestamp</td>
+<td>Sim</td>
+<td>Data e hora de abertura.</td>
+<td>Automática.</td>
+</tr>
+<tr>
+<td>DH_FECHAMENTO</td>
+<td>timestamp</td>
+<td>Não</td>
+<td>Data e hora de fechamento.</td>
+<td>Obrigatória quando o status for Fechado (RN10).</td>
+</tr>
+<tr>
+<td>TP_STATUS</td>
+<td>char(1) (A, F, C)</td>
+<td>Sim</td>
+<td>Aberto, Fechado ou Cancelado.</td>
+<td>Fecha só se estiver pago (RN10).</td>
+</tr>
+<tr>
+<td>DS_OBSERVACAO</td>
+<td>varchar(200)</td>
+<td>Não</td>
+<td>Observação geral.</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>O <strong>total do pedido não é atributo</strong>: é derivado (RN11).</p>
+<p>Índices: PK ID_PEDIDO; índice em ID_MESA; índice em ID_ATENDENTE; índice em DH_ABERTURA (relatórios por período); índice único parcial em ID_MESA para pedidos abertos (RN05).</p>
+<h3>ITEM_PEDIDO <em>(entidade associativa PEDIDO × PRODUTO)</em></h3>
+<p><code>ITEM_PEDIDO = @ID_ITEM + ID_PEDIDO + ID_PRODUTO + QT_ITEM + VL_PRECO_UNITARIO + TP_STATUS + DH_REGISTRO + (DH_PRONTO) + (DS_OBSERVACAO)</code></p>
+<p><em>Leitura:</em> <code>TP_STATUS</code> é Pendente (P), Em preparo (E), Pronto (R), Entregue (N) ou Cancelado (C).</p>
+<table>
+<thead>
+<tr>
+<th>Atributo</th>
+<th>Tipo</th>
+<th>Obrig.</th>
+<th>Descrição</th>
+<th>Regra de negócio associada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ID_ITEM</td>
+<td>integer</td>
+<td>Sim (PK)</td>
+<td>Identificador do item.</td>
+<td>Permite o mesmo produto em momentos diferentes do pedido.</td>
+</tr>
+<tr>
+<td>ID_PEDIDO</td>
+<td>integer</td>
+<td>Sim (FK)</td>
+<td>Pedido ao qual pertence.</td>
+<td>Só em pedido aberto.</td>
+</tr>
+<tr>
+<td>ID_PRODUTO</td>
+<td>integer</td>
+<td>Sim (FK)</td>
+<td>Produto pedido.</td>
+<td>Produto ativo e com estoque (RN08, RN13, RN14).</td>
+</tr>
+<tr>
+<td>QT_ITEM</td>
+<td>smallint</td>
+<td>Sim</td>
+<td>Quantidade pedida.</td>
+<td>Maior que zero.</td>
+</tr>
+<tr>
+<td>VL_PRECO_UNITARIO</td>
+<td>decimal(8,2)</td>
+<td>Sim</td>
+<td>Preço unitário no momento do pedido.</td>
+<td>Cópia do preço vigente (RN07).</td>
+</tr>
+<tr>
+<td>TP_STATUS</td>
+<td>char(1) (P, E, R, N, C)</td>
+<td>Sim</td>
+<td>Pendente, Em preparo, Pronto, Entregue ou Cancelado.</td>
+<td>Cancela só se pendente (RN09, RN17). O setor do produto determina quem atualiza (RN06).</td>
+</tr>
+<tr>
+<td>DH_REGISTRO</td>
+<td>timestamp</td>
+<td>Sim</td>
+<td>Quando o item foi lançado.</td>
+<td>Automática.</td>
+</tr>
+<tr>
+<td>DH_PRONTO</td>
+<td>timestamp</td>
+<td>Não</td>
+<td>Quando o item ficou pronto.</td>
+<td>Preenchida quando o status passa a Pronto. Permite medir o tempo de preparo.</td>
+</tr>
+<tr>
+<td>DS_OBSERVACAO</td>
+<td>varchar(100)</td>
+<td>Não</td>
+<td>Observação do cliente. Ex.: "sem gelo".</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>Índices: PK ID_ITEM; índice em ID_PEDIDO; índice em ID_PRODUTO; índice em (TP_STATUS) para a fila do setor.</p>
+<h3>PAGAMENTO <em>(proposta — o processo "Pagamento" não tinha entidade)</em></h3>
+<p><code>PAGAMENTO = @ID_PAGAMENTO + ID_PEDIDO + TP_FORMA + VL_PAGO + DH_PAGAMENTO</code></p>
+<p><em>Leitura:</em> <code>TP_FORMA</code> é Dinheiro (D), Crédito (C), Débito (B) ou Pix (P).</p>
+<table>
+<thead>
+<tr>
+<th>Atributo</th>
+<th>Tipo</th>
+<th>Obrig.</th>
+<th>Descrição</th>
+<th>Regra de negócio associada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ID_PAGAMENTO</td>
+<td>integer</td>
+<td>Sim (PK)</td>
+<td>Identificador do pagamento.</td>
+<td>—</td>
+</tr>
+<tr>
+<td>ID_PEDIDO</td>
+<td>integer</td>
+<td>Sim (FK)</td>
+<td>Pedido quitado.</td>
+<td>Um pedido pode ter vários pagamentos (RN15).</td>
+</tr>
+<tr>
+<td>TP_FORMA</td>
+<td>char(1) (D, C, B, P)</td>
+<td>Sim</td>
+<td>Dinheiro, crédito, débito ou Pix.</td>
+<td>Domínio fechado (RN15).</td>
+</tr>
+<tr>
+<td>VL_PAGO</td>
+<td>decimal(8,2)</td>
+<td>Sim</td>
+<td>Valor pago nesta forma.</td>
+<td>Maior que zero. A soma deve igualar o total (RN10, RN11).</td>
+</tr>
+<tr>
+<td>DH_PAGAMENTO</td>
+<td>timestamp</td>
+<td>Sim</td>
+<td>Data e hora do pagamento.</td>
+<td>Automática.</td>
+</tr>
+</tbody>
+</table>
+<p>Índices: PK ID_PAGAMENTO; índice em ID_PEDIDO; índice em DH_PAGAMENTO (fechamento diário do caixa, RN25).</p>
+<h3>FORNECEDOR <em>(proposta)</em></h3>
+<p><code>FORNECEDOR = @ID_FORNECEDOR + NM_FORNECEDOR + NR_CNPJ + (NR_TELEFONE) + IN_ATIVO</code></p>
+<table>
+<thead>
+<tr>
+<th>Atributo</th>
+<th>Tipo</th>
+<th>Obrig.</th>
+<th>Descrição</th>
+<th>Regra de negócio associada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ID_FORNECEDOR</td>
+<td>integer</td>
+<td>Sim (PK)</td>
+<td>Identificador do fornecedor.</td>
+<td>—</td>
+</tr>
+<tr>
+<td>NM_FORNECEDOR</td>
+<td>varchar(120)</td>
+<td>Sim</td>
+<td>Razão social ou nome fantasia. Ex.: "Distribuidora Aurora" (fictício).</td>
+<td>—</td>
+</tr>
+<tr>
+<td>NR_CNPJ</td>
+<td>varchar(14)</td>
+<td>Sim</td>
+<td>CNPJ, só dígitos. Ex.: "00000000000191" (fictício).</td>
+<td>Único. É pessoa jurídica, fora do escopo da LGPD.</td>
+</tr>
+<tr>
+<td>NR_TELEFONE</td>
+<td>varchar(15)</td>
+<td>Não</td>
+<td>Telefone comercial de contato.</td>
+<td>—</td>
+</tr>
+<tr>
+<td>IN_ATIVO</td>
+<td>boolean</td>
+<td>Sim</td>
+<td>Se o fornecedor está ativo.</td>
+<td>Só se compra de fornecedor ativo (RN22). Não se exclui (RN13).</td>
+</tr>
+</tbody>
+</table>
+<p>Índices: PK ID_FORNECEDOR; índice único em NR_CNPJ.</p>
+<h3>COMPRA <em>(proposta)</em></h3>
+<p><code>COMPRA = @ID_COMPRA + ID_FORNECEDOR + ID_ATENDENTE + DH_COMPRA + TP_STATUS + (NR_NOTA_FISCAL) + (DH_RECEBIMENTO)</code></p>
+<p><em>Leitura:</em> <code>TP_STATUS</code> é Pedida (P), Recebida (R) ou Cancelada (C). <code>NR_NOTA_FISCAL</code> e <code>DH_RECEBIMENTO</code> são preenchidos no recebimento.</p>
+<table>
+<thead>
+<tr>
+<th>Atributo</th>
+<th>Tipo</th>
+<th>Obrig.</th>
+<th>Descrição</th>
+<th>Regra de negócio associada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ID_COMPRA</td>
+<td>integer</td>
+<td>Sim (PK)</td>
+<td>Identificador da compra.</td>
+<td>—</td>
+</tr>
+<tr>
+<td>ID_FORNECEDOR</td>
+<td>integer</td>
+<td>Sim (FK)</td>
+<td>Fornecedor da compra.</td>
+<td>Cadastrado e ativo (RN22).</td>
+</tr>
+<tr>
+<td>ID_ATENDENTE</td>
+<td>integer</td>
+<td>Sim (FK)</td>
+<td>Quem registrou a compra.</td>
+<td>Perfil de Gerência (RNF04).</td>
+</tr>
+<tr>
+<td>DH_COMPRA</td>
+<td>timestamp</td>
+<td>Sim</td>
+<td>Data e hora do registro.</td>
+<td>Automática.</td>
+</tr>
+<tr>
+<td>TP_STATUS</td>
+<td>char(1) (P, R, C)</td>
+<td>Sim</td>
+<td>Pedida, Recebida ou Cancelada.</td>
+<td>Compra recebida não é alterada (RN23).</td>
+</tr>
+<tr>
+<td>NR_NOTA_FISCAL</td>
+<td>varchar(20)</td>
+<td>Não</td>
+<td>Número da nota fiscal do fornecedor.</td>
+<td>Obrigatório quando recebida.</td>
+</tr>
+<tr>
+<td>DH_RECEBIMENTO</td>
+<td>timestamp</td>
+<td>Não</td>
+<td>Data e hora do recebimento.</td>
+<td>Preenchida quando a compra passa a Recebida.</td>
+</tr>
+</tbody>
+</table>
+<p>Índices: PK ID_COMPRA; índice em ID_FORNECEDOR; índice em DH_COMPRA.</p>
+<h3>ITEM_COMPRA <em>(entidade associativa COMPRA × PRODUTO — proposta)</em></h3>
+<p><code>ITEM_COMPRA = @ID_ITEM_COMPRA + ID_COMPRA + ID_PRODUTO + QT_COMPRADA + VL_CUSTO_UNITARIO + (DT_VALIDADE)</code></p>
+<table>
+<thead>
+<tr>
+<th>Atributo</th>
+<th>Tipo</th>
+<th>Obrig.</th>
+<th>Descrição</th>
+<th>Regra de negócio associada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ID_ITEM_COMPRA</td>
+<td>integer</td>
+<td>Sim (PK)</td>
+<td>Identificador do item da compra.</td>
+<td>—</td>
+</tr>
+<tr>
+<td>ID_COMPRA</td>
+<td>integer</td>
+<td>Sim (FK)</td>
+<td>Compra a que pertence.</td>
+<td>—</td>
+</tr>
+<tr>
+<td>ID_PRODUTO</td>
+<td>integer</td>
+<td>Sim (FK)</td>
+<td>Produto comprado.</td>
+<td>—</td>
+</tr>
+<tr>
+<td>QT_COMPRADA</td>
+<td>integer</td>
+<td>Sim</td>
+<td>Quantidade comprada.</td>
+<td>Maior que zero.</td>
+</tr>
+<tr>
+<td>VL_CUSTO_UNITARIO</td>
+<td>decimal(8,2)</td>
+<td>Sim</td>
+<td>Custo de cada unidade nesta compra.</td>
+<td>Maior que zero.</td>
+</tr>
+<tr>
+<td>DT_VALIDADE</td>
+<td>date</td>
+<td>Não</td>
+<td>Validade do lote recebido.</td>
+<td>Obrigatória para perecíveis (RN19).</td>
+</tr>
+</tbody>
+</table>
+<p>Índices: PK ID_ITEM_COMPRA; índice em ID_COMPRA; índice em ID_PRODUTO.</p>
+<h3>MOVIMENTACAO_ESTOQUE <em>(proposta)</em></h3>
+<p><code>MOVIMENTACAO_ESTOQUE = @ID_MOVIMENTACAO + ID_PRODUTO + (ID_ITEM) + (ID_ITEM_COMPRA) + TP_MOVIMENTO + QT_MOVIMENTO + DH_MOVIMENTO + (DS_MOTIVO)</code></p>
+<p><em>Leitura:</em> <code>TP_MOVIMENTO</code> é Venda (V), Compra (C), Estorno (E) ou Ajuste (A). <code>ID_ITEM</code> e <code>ID_ITEM_COMPRA</code> são opcionais: preenchidos quando a movimentação vem de uma venda ou de uma compra.</p>
+<table>
+<thead>
+<tr>
+<th>Atributo</th>
+<th>Tipo</th>
+<th>Obrig.</th>
+<th>Descrição</th>
+<th>Regra de negócio associada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ID_MOVIMENTACAO</td>
+<td>integer</td>
+<td>Sim (PK)</td>
+<td>Identificador da movimentação.</td>
+<td>—</td>
+</tr>
+<tr>
+<td>ID_PRODUTO</td>
+<td>integer</td>
+<td>Sim (FK)</td>
+<td>Produto movimentado.</td>
+<td>—</td>
+</tr>
+<tr>
+<td>ID_ITEM</td>
+<td>integer</td>
+<td>Não (FK)</td>
+<td>Item de pedido de origem (venda ou estorno).</td>
+<td>—</td>
+</tr>
+<tr>
+<td>ID_ITEM_COMPRA</td>
+<td>integer</td>
+<td>Não (FK)</td>
+<td>Item de compra de origem (entrada).</td>
+<td>—</td>
+</tr>
+<tr>
+<td>TP_MOVIMENTO</td>
+<td>char(1) (V, C, E, A)</td>
+<td>Sim</td>
+<td>Venda, Compra, Estorno ou Ajuste.</td>
+<td>Domínio fechado.</td>
+</tr>
+<tr>
+<td>QT_MOVIMENTO</td>
+<td>integer</td>
+<td>Sim</td>
+<td>Quantidade com sinal: negativa para saída, positiva para entrada.</td>
+<td>Diferente de zero. A soma por produto é o saldo (RN21).</td>
+</tr>
+<tr>
+<td>DH_MOVIMENTO</td>
+<td>timestamp</td>
+<td>Sim</td>
+<td>Data e hora.</td>
+<td>Automática.</td>
+</tr>
+<tr>
+<td>DS_MOTIVO</td>
+<td>varchar(100)</td>
+<td>Não</td>
+<td>Motivo, obrigatório no ajuste. Ex.: "garrafa quebrada".</td>
+<td>Ajuste exige motivo (RN17, RN19).</td>
+</tr>
+</tbody>
+</table>
+<p>Índices: PK ID_MOVIMENTACAO; índice em (ID_PRODUTO, DH_MOVIMENTO).</p>
+<h2>5.5 Log de acesso (metadado operacional)</h2>
+<p>Todas as tabelas ficam sob o mesmo mecanismo de auditoria do SGBD. No PostgreSQL, a configuração <code>log_statement = 'mod'</code> registra todo <code>INSERT</code>, <code>UPDATE</code> e <code>DELETE</code> no arquivo de log do servidor, com usuário e horário. A extensão <code>pgaudit</code> pode ser usada para registrar também as leituras (<code>SELECT</code>) das tabelas sensíveis. A retenção e a rotação do log seguem política própria, independente da retenção dos dados de negócio. <code>[VALIDAR com o grupo qual mecanismo será adotado na Entrega 2]</code></p>
+<h2>5.6 Acesso por operação e conformidade com a LGPD (metadado administrativo)</h2>
+<p>Papéis: <strong>Atendimento</strong>, <strong>Preparo</strong> (cozinha e bar), <strong>Gerência</strong> e <strong>Auditoria</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Tabela</th>
+<th>LER</th>
+<th>INSERIR</th>
+<th>ATUALIZAR</th>
+<th>APAGAR</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ATENDENTE</td>
+<td>Gerência, Auditoria</td>
+<td>Gerência</td>
+<td>Gerência</td>
+<td>Nenhum papel — só inativação</td>
+</tr>
+<tr>
+<td>SETOR, MESA</td>
+<td>Todos</td>
+<td>Gerência</td>
+<td>Gerência (mesa: também Atendimento, no status)</td>
+<td>Nenhum papel — só inativação</td>
+</tr>
+<tr>
+<td>PRODUTO</td>
+<td>Todos</td>
+<td>Gerência</td>
+<td>Gerência</td>
+<td>Nenhum papel — só inativação</td>
+</tr>
+<tr>
+<td>HISTORICO_PRODUTO</td>
+<td>Gerência, Auditoria</td>
+<td>Automático (gatilho)</td>
+<td>Nenhum papel</td>
+<td>Nenhum papel</td>
+</tr>
+<tr>
+<td>PEDIDO</td>
+<td>Atendimento, Gerência, Auditoria</td>
+<td>Atendimento</td>
+<td>Atendimento, Gerência</td>
+<td>Nenhum papel — só cancelamento</td>
+</tr>
+<tr>
+<td>ITEM_PEDIDO</td>
+<td>Atendimento, Preparo (do próprio setor), Gerência, Auditoria</td>
+<td>Atendimento</td>
+<td>Atendimento; Preparo (status do próprio setor)</td>
+<td>Nenhum papel — só cancelamento</td>
+</tr>
+<tr>
+<td>PAGAMENTO</td>
+<td>Atendimento, Gerência, Auditoria</td>
+<td>Atendimento</td>
+<td>Nenhum papel — estorna-se e lança-se de novo</td>
+<td>Nenhum papel</td>
+</tr>
+<tr>
+<td>FORNECEDOR, COMPRA, ITEM_COMPRA</td>
+<td>Gerência, Auditoria</td>
+<td>Gerência</td>
+<td>Gerência (compra recebida não se altera)</td>
+<td>Nenhum papel — só inativação ou cancelamento</td>
+</tr>
+<tr>
+<td>MOVIMENTACAO_ESTOQUE</td>
+<td>Gerência, Auditoria</td>
+<td>Automático (venda, compra, estorno); Gerência (ajuste)</td>
+<td>Nenhum papel</td>
+<td>Nenhum papel</td>
+</tr>
+</tbody>
+</table>
+<p><strong>LGPD.</strong> O único dado pessoal do modelo é o do funcionário (ATENDENTE): nome, login e data de admissão. Não são guardados CPF, endereço nem telefone, por minimização de dados (art. 6º, III). A senha é guardada em hash. O acesso é restrito à Gerência e à Auditoria, e toda consulta fica no log (seção 5.5), o que sustenta a responsabilização (art. 6º, X). O modelo não tem dados sensíveis (art. 5º, II) nem dados de clientes. FORNECEDOR guarda dados de pessoa jurídica, fora do escopo da lei. A retenção dos dados de pedidos e compras segue o prazo fiscal <code>[VALIDAR com o contador do estabelecimento]</code>. Funcionário desligado é inativado e, ao fim do prazo de retenção, o nome pode ser anonimizado, nunca apagado fisicamente, para preservar a integridade do histórico.</p>
+<hr />
 <h2>Diagrama Entidade-Relacionamento</h2>
 <img src="diagrama_palazio_del_chef.png" alt="DER do Palazio del Chef">
 </body></html>
