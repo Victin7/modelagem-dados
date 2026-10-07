@@ -19,7 +19,7 @@
 
 | Integrante | RGM |
 |------------|-----|
-| Raphael Luiz Lima de Araujo | `[PREENCHER: ainda não informou]` |
+| Raphael Luiz Lima de Araujo | 46995773 |
 | Ricardo Santos Marcelino | 47023708 |
 | Thiago Rodrigues Ribeiro | 47188049 |
 | Victor Sousa dos Anjos | 47333235 |
