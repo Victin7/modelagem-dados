@@ -20,6 +20,11 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 <strong>Privacidade:</strong> todos os exemplos de valores são <strong>fictícios</strong>.
 <code>[VALIDAR]</code> Os atributos são uma proposta. <strong>Confira com o dicionário e o DER que o grupo já fez</strong> e ajuste o que divergir.</p>
 </blockquote>
+<blockquote>
+<p>Segue o modelo do arquivo 02-03g da disciplina. A versão completa em HTML está em <a href="./dicionario_dados_palazio/index.html"><code>dicionario_dados_palazio/index.html</code></a>.
+<strong>Privacidade:</strong> todos os exemplos de valores são <strong>fictícios</strong>.
+<code>[VALIDAR]</code> Os atributos são uma proposta. <strong>Confira com o dicionário e o DER que o grupo já fez</strong> e ajuste o que divergir.</p>
+</blockquote>
 <h2>5.1 Modelo conceitual e cardinalidades</h2>
 <p>Este modelo representa um restaurante e bar em que o cliente, com ou sem <strong>reserva</strong>, é atendido em uma <strong>mesa</strong> (ou bistrô). Um <strong>atendente</strong> (o garçom) registra o <strong>pedido</strong>, composto de <strong>itens</strong>. Cada item é de um <strong>produto</strong>, que pertence a uma <strong>categoria</strong> do cardápio e é preparado no <strong>setor</strong> (cozinha ou bar), e a conta é quitada por um ou mais <strong>pagamentos</strong>. O estoque dos produtos é reposto por <strong>compras</strong> a <strong>fornecedores</strong> e controlado por <strong>movimentações</strong>.</p>
 <table>
@@ -316,7 +321,7 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 </table>
 <p>Índices: PK ID_MESA; índice único em NR_MESA.</p>
 <h3>PRODUTO</h3>
-<p><code>PRODUTO = @ID_PRODUTO + ID_SETOR + ID_CATEGORIA + NM_PRODUTO + NR_CODIGO_BARRAS + VL_PRECO + IN_ALCOOLICO + QT_ESTOQUE_ATUAL + QT_ESTOQUE_MINIMO + IN_ATIVO</code></p>
+<p><code>PRODUTO = @ID_PRODUTO + ID_SETOR + ID_CATEGORIA + NM_PRODUTO + NR_CODIGO_BARRAS + VL_PRECO + IN_VENDAVEL + IN_ALCOOLICO + QT_ESTOQUE_ATUAL + QT_ESTOQUE_MINIMO + IN_ATIVO</code></p>
 <table>
 <thead>
 <tr>
@@ -369,6 +374,13 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 <td>Sim</td>
 <td>Preço de venda atual.</td>
 <td>Maior que zero. Reajuste não altera pedidos antigos (RN07). Só a gerência altera (RN24).</td>
+</tr>
+<tr>
+<td>IN_VENDAVEL</td>
+<td>boolean</td>
+<td>Sim</td>
+<td>Verdadeiro para item do cardápio. Falso para insumo (ingrediente), que só tem estoque.</td>
+<td>Só item vendável entra em pedido (RN14, RN30).</td>
 </tr>
 <tr>
 <td>IN_ALCOOLICO</td>
@@ -1103,7 +1115,7 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 </tr>
 </tbody>
 </table>
-<p><strong>LGPD.</strong> Os dados pessoais do modelo são os do funcionário (ATENDENTE: nome, login e data de admissão) e os do cliente que reserva mesa (RESERVA: nome e telefone). Não são guardados CPF nem endereço, por minimização de dados (art. 6º, III). A reserva é apagada ou anonimizada depois de atendida ou cancelada, no prazo definido pelo estabelecimento <code>[VALIDAR]</code>. A senha é guardada em hash. O acesso é restrito aos papéis da tabela, e toda consulta fica no log (seção 5.5), o que sustenta a responsabilização (art. 6º, X). O modelo não tem dados sensíveis (art. 5º, II) e não cadastra clientes, exceto o nome e o telefone da reserva. FORNECEDOR guarda dados de pessoa jurídica, fora do escopo da lei. A retenção dos dados de pedidos e compras segue o prazo fiscal <code>[VALIDAR com o contador do estabelecimento]</code>. Funcionário desligado é inativado e, ao fim do prazo de retenção, o nome pode ser anonimizado, nunca apagado fisicamente, para preservar a integridade do histórico.</p>
+<p><strong>LGPD.</strong> Os dados pessoais do modelo são os do funcionário (ATENDENTE: nome, login e data de admissão) e os do cliente que reserva mesa (RESERVA: nome e telefone). Não são guardados CPF nem endereço, por minimização de dados (art. 6º, III). A reserva é apagada ou anonimizada depois de atendida ou cancelada, no prazo definido pelo estabelecimento. A senha é guardada em hash. O acesso é restrito aos papéis da tabela, e toda consulta fica no log (seção 5.5), o que sustenta a responsabilização (art. 6º, X). O modelo não tem dados sensíveis (art. 5º, II) e não cadastra clientes, exceto o nome e o telefone da reserva. FORNECEDOR guarda dados de pessoa jurídica, fora do escopo da lei. Os registros do estabelecimento são guardados por semestre (meses 1 a 6 e 7 a 12). <code>[VALIDAR com o contador o prazo fiscal de guarda]</code>. Funcionário desligado é inativado e, ao fim do prazo de retenção, o nome pode ser anonimizado, nunca apagado fisicamente, para preservar a integridade do histórico.</p>
 <hr />
 <h2>Diagrama Entidade-Relacionamento</h2>
 <img src="diagrama_palazio_del_chef.png" alt="DER do Palazio del Chef">
