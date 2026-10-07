@@ -36,7 +36,7 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 <code>[VALIDAR]</code> Os atributos são uma proposta. <strong>Confira com o dicionário e o DER que o grupo já fez</strong> e ajuste o que divergir.</p>
 </blockquote>
 <h2>5.1 Modelo conceitual e cardinalidades</h2>
-<p>Este modelo representa um restaurante e bar em que o cliente, com ou sem <strong>reserva</strong>, é atendido em uma <strong>mesa</strong> (ou bistrô). Um <strong>atendente</strong> (o garçom) registra o <strong>pedido</strong>, composto de <strong>itens</strong>. Cada item é de um <strong>produto</strong>, que pertence a uma <strong>categoria</strong> do cardápio e é preparado no <strong>setor</strong> (cozinha ou bar), e a conta é quitada por um ou mais <strong>pagamentos</strong>. O estoque dos produtos é reposto por <strong>compras</strong> a <strong>fornecedores</strong> e controlado por <strong>movimentações</strong>.</p>
+<p>Este modelo representa um restaurante e bar em que o cliente, com ou sem <strong>reserva</strong>, é atendido em uma <strong>mesa</strong> (ou bistrô). Um <strong>atendente</strong> (o garçom) registra o <strong>pedido</strong>, que <strong>contém</strong> produtos (com quantidade, preço e status de preparo). Cada <strong>produto</strong> que pertence a uma <strong>categoria</strong> do cardápio e é preparado no <strong>setor</strong> (cozinha ou bar), e a conta é quitada por um ou mais <strong>pagamentos</strong>. O estoque dos produtos é reposto por <strong>compras</strong> a <strong>fornecedores</strong> e controlado por <strong>movimentações</strong>.</p>
 <table>
 <thead>
 <tr>
@@ -77,19 +77,9 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 <td>1:N — uma mesa recebe vários pedidos ao longo do tempo; cada pedido está em uma única mesa</td>
 </tr>
 <tr>
-<td>PEDIDO</td>
-<td>ITEM_PEDIDO</td>
-<td>1:N — um pedido tem um ou mais itens; cada item pertence a um pedido</td>
-</tr>
-<tr>
-<td>PRODUTO</td>
-<td>ITEM_PEDIDO</td>
-<td>1:N — um produto aparece em vários itens; cada item é de um produto</td>
-</tr>
-<tr>
 <td>PEDIDO × PRODUTO</td>
-<td>(via ITEM_PEDIDO)</td>
-<td>N:N — um pedido tem vários produtos e um produto está em vários pedidos</td>
+<td><strong>contém</strong> (N:N, com atributos)</td>
+<td>N:N — um pedido contém um ou mais produtos (1,N); um produto pode estar em vários pedidos (0,N). A quantidade, o preço unitário, o status de preparo, o horário e a observação são <strong>atributos do relacionamento</strong> (não há entidade Item_pedido, conforme orientação do professor)</td>
 </tr>
 <tr>
 <td>PEDIDO</td>
@@ -117,19 +107,9 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 <td>1:N — um atendente (gerência) efetua várias compras; cada compra tem um responsável</td>
 </tr>
 <tr>
-<td>COMPRA</td>
-<td>ITEM_COMPRA</td>
-<td>1:N — uma compra tem um ou mais itens; cada item pertence a uma compra</td>
-</tr>
-<tr>
-<td>PRODUTO</td>
-<td>ITEM_COMPRA</td>
-<td>1:N — um produto é comprado em vários itens de compra</td>
-</tr>
-<tr>
 <td>COMPRA × PRODUTO</td>
-<td>(via ITEM_COMPRA)</td>
-<td>N:N — uma compra tem vários produtos e um produto está em várias compras</td>
+<td><strong>possui</strong> (N:N, com atributos)</td>
+<td>N:N — uma compra possui um ou mais produtos (1,N); um produto pode estar em várias compras (0,N). Quantidade, custo unitário e validade são atributos do relacionamento</td>
 </tr>
 <tr>
 <td>PRODUTO</td>
@@ -137,20 +117,20 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 <td>1:N — um produto tem várias movimentações; cada movimentação é de um produto</td>
 </tr>
 <tr>
-<td>ITEM_PEDIDO</td>
+<td>PEDIDO</td>
 <td>MOVIMENTACAO_ESTOQUE</td>
-<td>1:N opcional — um item gera a baixa (e, se cancelado, o estorno); uma movimentação pode ou não ter origem em um item</td>
+<td>1:N opcional — um pedido gera baixas (e, se cancelado, estornos) (0,N); uma movimentação pode ou não ter origem em um pedido (0,1)</td>
 </tr>
 <tr>
-<td>ITEM_COMPRA</td>
+<td>COMPRA</td>
 <td>MOVIMENTACAO_ESTOQUE</td>
-<td>1:1 opcional — um item recebido gera uma entrada; uma movimentação pode ou não ter origem em uma compra</td>
+<td>1:N opcional — uma compra recebida gera entradas (0,N); uma movimentação pode ou não ter origem em uma compra (0,1)</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Definições.</strong> <strong>Setor</strong> é a área de trabalho (salão, cozinha, bar, gerência, limpeza). <strong>Categoria</strong> é o grupo do cardápio (lanches, pratos, porções, sobremesas, bebidas etc.). <strong>Reserva</strong> é a mesa guardada por telefone, para uma data e hora. <strong>Atendente</strong> é o funcionário com credencial individual. <strong>Mesa</strong> é o local do cliente. <strong>Produto</strong> é o item vendido e estocado. <strong>Pedido</strong> é o atendimento de uma mesa. <strong>Item do pedido</strong> é um produto pedido, com quantidade, preço e status. <strong>Pagamento</strong> é a quitação, total ou parcial, do pedido. <strong>Fornecedor</strong> é a empresa que vende mercadoria. <strong>Compra</strong> é o pedido de mercadoria a um fornecedor. <strong>Item da compra</strong> é um produto comprado, com quantidade, custo e validade. <strong>Movimentação de estoque</strong> é cada entrada, saída, estorno ou ajuste do saldo de um produto. <strong>Histórico do produto</strong> é o registro de cada alteração de preço.</p>
+<p><strong>Definições.</strong> <strong>Setor</strong> é a área de trabalho (salão, cozinha, bar, gerência, limpeza). <strong>Categoria</strong> é o grupo do cardápio (lanches, pratos, porções, sobremesas, bebidas etc.). <strong>Reserva</strong> é a mesa guardada por telefone, para uma data e hora. <strong>Atendente</strong> é o funcionário com credencial individual. <strong>Mesa</strong> é o local do cliente. <strong>Produto</strong> é o item vendido e estocado. <strong>Pedido</strong> é o atendimento de uma mesa. <strong>Contém</strong> é o relacionamento entre pedido e produto, com quantidade, preço unitário e status. <strong>Pagamento</strong> é a quitação, total ou parcial, do pedido. <strong>Fornecedor</strong> é a empresa que vende mercadoria. <strong>Compra</strong> é o pedido de mercadoria a um fornecedor. <strong>Possui</strong> é o relacionamento entre compra e produto, com quantidade, custo e validade. <strong>Movimentação de estoque</strong> é cada entrada, saída, estorno ou ajuste do saldo de um produto. <strong>Histórico do produto</strong> é o registro de cada alteração de preço.</p>
 <h2>5.2 Fluxo de dados</h2>
-<p>O cliente reserva por telefone (RESERVA, ligada a uma MESA) ou entra e vê se há lugar → o atendente (autenticado em ATENDENTE) abre um PEDIDO em uma MESA → cada pedido gera registros em ITEM_PEDIDO, ligando o PEDIDO a um PRODUTO, que carrega a CATEGORIA do cardápio e o SETOR de preparo → cada item lançado gera uma baixa em MOVIMENTACAO_ESTOQUE e atualiza o saldo do PRODUTO → cozinha e bar atualizam o status do item → o cliente paga e cada forma usada vira um registro em PAGAMENTO → com a soma dos pagamentos igual ao total, o PEDIDO é fechado e a MESA liberada. Quando o saldo do PRODUTO chega ao mínimo, a gerência registra uma COMPRA a um FORNECEDOR, com ITEM_COMPRA → no recebimento, cada item gera uma entrada em MOVIMENTACAO_ESTOQUE. Os reajustes de preço feitos pela gerência geram registros em HISTORICO_PRODUTO. Toda leitura ou escrita relevante é registrada no log do SGBD (seção 5.5), o que sustenta a auditoria e a conformidade com a LGPD (seção 5.6).</p>
+<p>O cliente reserva por telefone (RESERVA, ligada a uma MESA) ou entra e vê se há lugar → o atendente (autenticado em ATENDENTE) abre um PEDIDO em uma MESA → o PEDIDO contém PRODUTOS (relacionamento com quantidade, preço e status), e cada produto carrega a CATEGORIA do cardápio e o SETOR de preparo → cada produto lançado no pedido gera uma baixa em MOVIMENTACAO_ESTOQUE e atualiza o saldo do PRODUTO → cozinha e bar atualizam o status do item → o cliente paga e cada forma usada vira um registro em PAGAMENTO → com a soma dos pagamentos igual ao total, o PEDIDO é fechado e a MESA liberada. Quando o saldo do PRODUTO chega ao mínimo, a gerência registra uma COMPRA a um FORNECEDOR, com os produtos comprados → no recebimento, cada produto gera uma entrada em MOVIMENTACAO_ESTOQUE. Os reajustes de preço feitos pela gerência geram registros em HISTORICO_PRODUTO. Toda leitura ou escrita relevante é registrada no log do SGBD (seção 5.5), o que sustenta a auditoria e a conformidade com a LGPD (seção 5.6).</p>
 <h2>5.3 Convenções do dicionário</h2>
 <ul>
 <li><strong>SGBD de referência:</strong> PostgreSQL 16.</li>
@@ -562,8 +542,8 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 </table>
 <p>O <strong>total do pedido não é atributo</strong>: é derivado (RN11), assim como o valor da taxa de serviço (10% dos itens, RN16).</p>
 <p>Índices: PK ID_PEDIDO; índice em ID_MESA; índice em ID_ATENDENTE; índice em DH_ABERTURA (relatórios por período); índice único parcial em ID_MESA para pedidos abertos (RN05).</p>
-<h3>ITEM_PEDIDO <em>(entidade associativa PEDIDO × PRODUTO)</em></h3>
-<p><code>ITEM_PEDIDO = @ID_ITEM + ID_PEDIDO + ID_PRODUTO + QT_ITEM + VL_PRECO_UNITARIO + TP_STATUS + DH_REGISTRO + (DH_PRONTO) + (DS_OBSERVACAO)</code></p>
+<h3>Relacionamento CONTÉM <em>(PEDIDO × PRODUTO, N:N com atributos)</em></h3>
+<p><code>CONTÉM = ID_PEDIDO + ID_PRODUTO + QT_ITEM + VL_PRECO_UNITARIO + TP_STATUS + DH_REGISTRO + (DH_PRONTO) + (DS_OBSERVACAO)</code></p>
 <p><em>Leitura:</em> <code>TP_STATUS</code> é Pendente (P), Em preparo (E), Pronto (R), Entregue (N) ou Cancelado (C).</p>
 <table>
 <thead>
@@ -577,24 +557,17 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 </thead>
 <tbody>
 <tr>
-<td>ID_ITEM</td>
-<td>integer</td>
-<td>Sim (PK)</td>
-<td>Identificador do item.</td>
-<td>Permite o mesmo produto em momentos diferentes do pedido.</td>
-</tr>
-<tr>
 <td>ID_PEDIDO</td>
 <td>integer</td>
-<td>Sim (FK)</td>
-<td>Pedido ao qual pertence.</td>
+<td>Sim (ref.)</td>
+<td>Pedido ao qual pertence (lado do relacionamento, não é chave estrangeira no DER).</td>
 <td>Só em pedido aberto.</td>
 </tr>
 <tr>
 <td>ID_PRODUTO</td>
 <td>integer</td>
-<td>Sim (FK)</td>
-<td>Produto pedido.</td>
+<td>Sim (ref.)</td>
+<td>Produto pedido (lado do relacionamento).</td>
 <td>Produto ativo e com estoque (RN08, RN13, RN14).</td>
 </tr>
 <tr>
@@ -641,7 +614,7 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 </tr>
 </tbody>
 </table>
-<p>Índices: PK ID_ITEM; índice em ID_PEDIDO; índice em ID_PRODUTO; índice em (TP_STATUS) para a fila do setor.</p>
+<p>Índices e chave: definidos na modelagem lógica (Entrega 2). <strong>Ponto a validar com o professor:</strong> sem a entidade Item_pedido, o par (pedido, produto) não repete; se o mesmo produto for pedido duas vezes no mesmo pedido, a quantidade é somada e o status de preparo passa a ser por produto, não por lançamento.</p>
 <h3>CATEGORIA <em>(proposta, a partir do cardápio)</em></h3>
 <p><code>CATEGORIA = @ID_CATEGORIA + NM_CATEGORIA + IN_ATIVA</code></p>
 <table>
@@ -914,8 +887,8 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 </tbody>
 </table>
 <p>Índices: PK ID_COMPRA; índice em ID_FORNECEDOR; índice em DH_COMPRA.</p>
-<h3>ITEM_COMPRA <em>(entidade associativa COMPRA × PRODUTO — proposta)</em></h3>
-<p><code>ITEM_COMPRA = @ID_ITEM_COMPRA + ID_COMPRA + ID_PRODUTO + QT_COMPRADA + VL_CUSTO_UNITARIO + (DT_VALIDADE)</code></p>
+<h3>Relacionamento POSSUI <em>(COMPRA × PRODUTO, N:N com atributos — proposta)</em></h3>
+<p><code>POSSUI = ID_COMPRA + ID_PRODUTO + QT_COMPRADA + VL_CUSTO_UNITARIO + (DT_VALIDADE)</code></p>
 <table>
 <thead>
 <tr>
@@ -928,24 +901,17 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 </thead>
 <tbody>
 <tr>
-<td>ID_ITEM_COMPRA</td>
-<td>integer</td>
-<td>Sim (PK)</td>
-<td>Identificador do item da compra.</td>
-<td>—</td>
-</tr>
-<tr>
 <td>ID_COMPRA</td>
 <td>integer</td>
-<td>Sim (FK)</td>
-<td>Compra a que pertence.</td>
+<td>Sim (ref.)</td>
+<td>Compra a que pertence (lado do relacionamento).</td>
 <td>—</td>
 </tr>
 <tr>
 <td>ID_PRODUTO</td>
 <td>integer</td>
-<td>Sim (FK)</td>
-<td>Produto comprado.</td>
+<td>Sim (ref.)</td>
+<td>Produto comprado (lado do relacionamento).</td>
 <td>—</td>
 </tr>
 <tr>
@@ -971,10 +937,10 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 </tr>
 </tbody>
 </table>
-<p>Índices: PK ID_ITEM_COMPRA; índice em ID_COMPRA; índice em ID_PRODUTO.</p>
+<p>Índices e chave: definidos na modelagem lógica (Entrega 2).</p>
 <h3>MOVIMENTACAO_ESTOQUE <em>(proposta)</em></h3>
-<p><code>MOVIMENTACAO_ESTOQUE = @ID_MOVIMENTACAO + ID_PRODUTO + (ID_ITEM) + (ID_ITEM_COMPRA) + TP_MOVIMENTO + QT_MOVIMENTO + DH_MOVIMENTO + (DS_MOTIVO)</code></p>
-<p><em>Leitura:</em> <code>TP_MOVIMENTO</code> é Venda (V), Compra (C), Estorno (E) ou Ajuste (A). <code>ID_ITEM</code> e <code>ID_ITEM_COMPRA</code> são opcionais: preenchidos quando a movimentação vem de uma venda ou de uma compra.</p>
+<p><code>MOVIMENTACAO_ESTOQUE = @ID_MOVIMENTACAO + ID_PRODUTO + (ID_PEDIDO) + (ID_COMPRA) + TP_MOVIMENTO + QT_MOVIMENTO + DH_MOVIMENTO + (DS_MOTIVO)</code></p>
+<p><em>Leitura:</em> <code>TP_MOVIMENTO</code> é Venda (V), Compra (C), Estorno (E) ou Ajuste (A). <code>ID_PEDIDO</code> e <code>ID_COMPRA</code> são opcionais: preenchidos quando a movimentação vem de uma venda ou de uma compra.</p>
 <table>
 <thead>
 <tr>
@@ -1001,17 +967,17 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 <td>—</td>
 </tr>
 <tr>
-<td>ID_ITEM</td>
+<td>ID_PEDIDO</td>
 <td>integer</td>
 <td>Não (FK)</td>
-<td>Item de pedido de origem (venda ou estorno).</td>
+<td>Pedido de origem (venda ou estorno).</td>
 <td>—</td>
 </tr>
 <tr>
-<td>ID_ITEM_COMPRA</td>
+<td>ID_COMPRA</td>
 <td>integer</td>
 <td>Não (FK)</td>
-<td>Item de compra de origem (entrada).</td>
+<td>Compra de origem (entrada).</td>
 <td>—</td>
 </tr>
 <tr>
@@ -1103,7 +1069,7 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 <td>Nenhum papel — só cancelamento</td>
 </tr>
 <tr>
-<td>ITEM_PEDIDO</td>
+<td>CONTÉM (pedido × produto)</td>
 <td>Atendimento, Preparo (do próprio setor), Gerência, Auditoria</td>
 <td>Atendimento</td>
 <td>Atendimento; Preparo (status do próprio setor)</td>
@@ -1117,7 +1083,7 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 <td>Nenhum papel</td>
 </tr>
 <tr>
-<td>FORNECEDOR, COMPRA, ITEM_COMPRA</td>
+<td>FORNECEDOR, COMPRA, POSSUI (compra × produto)</td>
 <td>Gerência, Auditoria</td>
 <td>Gerência</td>
 <td>Gerência (compra recebida não se altera)</td>

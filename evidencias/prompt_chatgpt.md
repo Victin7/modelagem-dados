@@ -243,3 +243,12 @@ Exemplo:
 - Quando sugerir alterações no DER, explique exatamente o que deve ser apagado, renomeado, adicionado ou alterado.
 - O objetivo é deixar a Entrega 1 organizada, coerente com as orientações do professor e pronta para apresentação/avaliação.
 ````
+
+
+---
+
+## Prompt 2 (versão curta enviada pelo grupo)
+
+> **Atenção:** esta seção é um resumo do conteúdo do segundo prompt. O texto na íntegra deve ser colado aqui pelo grupo. A **resposta** do ChatGPT também ainda precisa ser registrada (o link da conversa não é legível por ferramentas externas).
+
+Conteúdo: repete as orientações do professor para o DER — Funcionário → Atendente; especificar a função do atendente; Valor → Preço; **remover Item_pedido**; Atendente (1,N) — registra — Pedido (1,1); adicionar Histórico_Produto. Entidades listadas: Atendente, Pedido, Produto, Mesa, Setor, Histórico_Produto. Regra do prompt: "Não invente informações que não foram definidas pelo grupo ou pelo professor."

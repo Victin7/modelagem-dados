@@ -102,9 +102,9 @@ Os processos foram organizados em três grupos: **Vendas** (ciclo do atendimento
 | # | Processo | Descrição | Entrada → Saída | Responsável | Entidades | Origem |
 |---|----------|-----------|-----------------|-------------|-----------|--------|
 | P1 | 🛎️ Atendimento e abertura de mesa | O cliente chega e é acomodado em uma mesa ou bistrô (com ou sem reserva). O garçom abre o pedido da mesa, que passa a ocupada. | Cliente → pedido aberto na mesa | Garçom | MESA, PEDIDO, ATENDENTE | original / confirmado na visita |
-| P2 | 📝 Registro do pedido | O garçom marca o pedido por mesa na comanda e o lança no aplicativo Garçom Web (produto, quantidade, observação). O preço do cardápio é copiado para o item e o estoque é baixado. Sem estoque, o item é bloqueado. | Pedido do cliente → itens pendentes | Garçom | PEDIDO, ITEM_PEDIDO, PRODUTO | original / confirmado na visita |
-| P3 | 🏃 Encaminhamento para cozinha e bar | Depois do lançamento, o pedido é encaminhado ao bar ou à cozinha, com notificação ao chefe de cozinha para o preparo. | Item pendente → fila do setor | Garçom / sistema | ITEM_PEDIDO, PRODUTO, SETOR | original / confirmado na visita |
-| P4 | 🍳 Preparo | O setor prepara o item e o marca como em preparo e depois como pronto. O atendente entrega e marca como entregue. | Item na fila → item entregue | Cozinha / Bar / Atendente | ITEM_PEDIDO | original |
+| P2 | 📝 Registro do pedido | O garçom marca o pedido por mesa na comanda e o lança no aplicativo Garçom Web (produto, quantidade, observação). O preço do cardápio é copiado para o item e o estoque é baixado. Sem estoque, o item é bloqueado. | Pedido do cliente → itens pendentes | Garçom | PEDIDO, PRODUTO (relacionamento contém) | original / confirmado na visita |
+| P3 | 🏃 Encaminhamento para cozinha e bar | Depois do lançamento, o pedido é encaminhado ao bar ou à cozinha, com notificação ao chefe de cozinha para o preparo. | Item pendente → fila do setor | Garçom / sistema | PEDIDO, PRODUTO (contém), SETOR | original / confirmado na visita |
+| P4 | 🍳 Preparo | O setor prepara o item e o marca como em preparo e depois como pronto. O atendente entrega e marca como entregue. | Item na fila → item entregue | Cozinha / Bar / Atendente | PEDIDO, PRODUTO (contém) | original |
 | P5 | 💳 Fechamento da conta e pagamento | O garçom gera a conta no aplicativo e cobra o cliente. A conta soma os itens e a **taxa de serviço de 10%**. O pagamento é em dinheiro, cartão ou Pix, podendo ser dividido. Com a conta quitada, o pedido é fechado e a mesa é liberada. A nota fiscal vem pela maquininha de cartão. | Pedido entregue → pedido fechado, mesa livre | Garçom | PEDIDO, PAGAMENTO, MESA | original / confirmado na visita |
 | P6 | 📅 Reservas | O cliente reserva mesa por telefone. No dia, a reserva vira o atendimento da mesa. Quem não reservou entra e vê se há lugar. A atendente que fica no caixa registra a reserva no sistema do estabelecimento e a marca pelo número da mesa. | Pedido de reserva → mesa reservada | Atendente do caixa |  RESERVA, MESA | confirmado na visita |
 | P7 | 📋 Cadastro de cardápio e preços | Cada produto recebido é cadastrado com código de barras próprio, e os pratos também existem no sistema. O cardápio tem categorias (lanches, pratos, porções, bebidas etc.). Cada reajuste de preço fica no histórico, com responsável e data. `[VALIDAR: quem cadastra e reajusta]` | Decisão de preço → cardápio atualizado | Gerência `[VALIDAR]` | PRODUTO, CATEGORIA, HISTORICO_PRODUTO, SETOR | confirmado na visita / proposta |
@@ -113,9 +113,9 @@ Os processos foram organizados em três grupos: **Vendas** (ciclo do atendimento
 
 | # | Processo | Descrição | Entrada → Saída | Responsável | Entidades | Origem |
 |---|----------|-----------|-----------------|-------------|-----------|--------|
-| P8 | 🛒 Compra de insumos e bebidas | O proprietário compra produtos e insumos. Neste modelo, a compra passa a ser registrada com fornecedor, itens, quantidades e custo, a partir do alerta de estoque mínimo. | Alerta de estoque → compra registrada | Proprietário | COMPRA, ITEM_COMPRA, PRODUTO | confirmado na visita (quem compra) / proposta (registro) |
+| P8 | 🛒 Compra de insumos e bebidas | O proprietário compra produtos e insumos. Neste modelo, a compra passa a ser registrada com fornecedor, itens, quantidades e custo, a partir do alerta de estoque mínimo. | Alerta de estoque → compra registrada | Proprietário | COMPRA, PRODUTO (relacionamento possui) | confirmado na visita (quem compra) / proposta (registro) |
 | P9 | 🏭 Cadastro de fornecedores | Os fornecedores não foram informados na visita. O modelo propõe cadastrá-los (nome, CNPJ, telefone). Só se compra de fornecedor cadastrado e ativo. `[VALIDAR: existem fornecedores fixos?]` | Dados do fornecedor → fornecedor ativo | Proprietário / gerência `[VALIDAR]` | FORNECEDOR | proposta |
-| P10 | 📦 Recebimento de mercadorias | O gerente recebe a mercadoria. Cada produto recebido é cadastrado com código de barras próprio. Neste modelo, o recebimento registra nota fiscal, quantidade e validade e gera a entrada no estoque. | Mercadoria + nota → entrada de estoque | Gerente | COMPRA, ITEM_COMPRA, MOVIMENTACAO_ESTOQUE | confirmado na visita (quem recebe) / proposta (registro) |
+| P10 | 📦 Recebimento de mercadorias | O gerente recebe a mercadoria. Cada produto recebido é cadastrado com código de barras próprio. Neste modelo, o recebimento registra nota fiscal, quantidade e validade e gera a entrada no estoque. | Mercadoria + nota → entrada de estoque | Gerente | COMPRA, PRODUTO (possui), MOVIMENTACAO_ESTOQUE | confirmado na visita (quem recebe) / proposta (registro) |
 
 ### 2.3 Processos de Apoio
 
@@ -289,7 +289,7 @@ flowchart TD
 
 ### 5.1 Modelo conceitual e cardinalidades
 
-Este modelo representa um restaurante e bar em que o cliente, com ou sem **reserva**, é atendido em uma **mesa** (ou bistrô). Um **atendente** (o garçom) registra o **pedido**, composto de **itens**. Cada item é de um **produto**, que pertence a uma **categoria** do cardápio e é preparado no **setor** (cozinha ou bar), e a conta é quitada por um ou mais **pagamentos**. O estoque dos produtos é reposto por **compras** a **fornecedores** e controlado por **movimentações**.
+Este modelo representa um restaurante e bar em que o cliente, com ou sem **reserva**, é atendido em uma **mesa** (ou bistrô). Um **atendente** (o garçom) registra o **pedido**, que **contém** produtos (com quantidade, preço e status de preparo). Cada **produto** que pertence a uma **categoria** do cardápio e é preparado no **setor** (cozinha ou bar), e a conta é quitada por um ou mais **pagamentos**. O estoque dos produtos é reposto por **compras** a **fornecedores** e controlado por **movimentações**.
 
 | Entidade | Relaciona-se com | Cardinalidade |
 |----------|------------------|---------------|
@@ -299,26 +299,22 @@ Este modelo representa um restaurante e bar em que o cliente, com ou sem **reser
 | MESA | RESERVA | 1:N — uma mesa pode ser reservada várias vezes; cada reserva é de uma mesa |
 | CATEGORIA | PRODUTO | 1:N — uma categoria do cardápio agrupa vários produtos; cada produto tem uma categoria |
 | MESA | PEDIDO | 1:N — uma mesa recebe vários pedidos ao longo do tempo; cada pedido está em uma única mesa |
-| PEDIDO | ITEM_PEDIDO | 1:N — um pedido tem um ou mais itens; cada item pertence a um pedido |
-| PRODUTO | ITEM_PEDIDO | 1:N — um produto aparece em vários itens; cada item é de um produto |
-| PEDIDO × PRODUTO | (via ITEM_PEDIDO) | N:N — um pedido tem vários produtos e um produto está em vários pedidos |
+| PEDIDO × PRODUTO | **contém** (N:N, com atributos) | N:N — um pedido contém um ou mais produtos (1,N); um produto pode estar em vários pedidos (0,N). A quantidade, o preço unitário, o status de preparo, o horário e a observação são **atributos do relacionamento** (não há entidade Item_pedido, conforme orientação do professor) |
 | PEDIDO | PAGAMENTO | 1:N — um pedido tem zero (aberto) ou vários pagamentos; cada pagamento quita um pedido |
 | PRODUTO | HISTORICO_PRODUTO | 1:N — um produto tem várias alterações de preço registradas |
 | ATENDENTE | HISTORICO_PRODUTO | 1:N — um atendente (gerência) registra várias alterações de preço |
 | FORNECEDOR | COMPRA | 1:N — um fornecedor atende várias compras; cada compra é de um fornecedor |
 | ATENDENTE | COMPRA | 1:N — um atendente (gerência) efetua várias compras; cada compra tem um responsável |
-| COMPRA | ITEM_COMPRA | 1:N — uma compra tem um ou mais itens; cada item pertence a uma compra |
-| PRODUTO | ITEM_COMPRA | 1:N — um produto é comprado em vários itens de compra |
-| COMPRA × PRODUTO | (via ITEM_COMPRA) | N:N — uma compra tem vários produtos e um produto está em várias compras |
+| COMPRA × PRODUTO | **possui** (N:N, com atributos) | N:N — uma compra possui um ou mais produtos (1,N); um produto pode estar em várias compras (0,N). Quantidade, custo unitário e validade são atributos do relacionamento |
 | PRODUTO | MOVIMENTACAO_ESTOQUE | 1:N — um produto tem várias movimentações; cada movimentação é de um produto |
-| ITEM_PEDIDO | MOVIMENTACAO_ESTOQUE | 1:N opcional — um item gera a baixa (e, se cancelado, o estorno); uma movimentação pode ou não ter origem em um item |
-| ITEM_COMPRA | MOVIMENTACAO_ESTOQUE | 1:1 opcional — um item recebido gera uma entrada; uma movimentação pode ou não ter origem em uma compra |
+| PEDIDO | MOVIMENTACAO_ESTOQUE | 1:N opcional — um pedido gera baixas (e, se cancelado, estornos) (0,N); uma movimentação pode ou não ter origem em um pedido (0,1) |
+| COMPRA | MOVIMENTACAO_ESTOQUE | 1:N opcional — uma compra recebida gera entradas (0,N); uma movimentação pode ou não ter origem em uma compra (0,1) |
 
-**Definições.** **Setor** é a área de trabalho (salão, cozinha, bar, gerência, limpeza). **Categoria** é o grupo do cardápio (lanches, pratos, porções, sobremesas, bebidas etc.). **Reserva** é a mesa guardada por telefone, para uma data e hora. **Atendente** é o funcionário com credencial individual. **Mesa** é o local do cliente. **Produto** é o item vendido e estocado. **Pedido** é o atendimento de uma mesa. **Item do pedido** é um produto pedido, com quantidade, preço e status. **Pagamento** é a quitação, total ou parcial, do pedido. **Fornecedor** é a empresa que vende mercadoria. **Compra** é o pedido de mercadoria a um fornecedor. **Item da compra** é um produto comprado, com quantidade, custo e validade. **Movimentação de estoque** é cada entrada, saída, estorno ou ajuste do saldo de um produto. **Histórico do produto** é o registro de cada alteração de preço.
+**Definições.** **Setor** é a área de trabalho (salão, cozinha, bar, gerência, limpeza). **Categoria** é o grupo do cardápio (lanches, pratos, porções, sobremesas, bebidas etc.). **Reserva** é a mesa guardada por telefone, para uma data e hora. **Atendente** é o funcionário com credencial individual. **Mesa** é o local do cliente. **Produto** é o item vendido e estocado. **Pedido** é o atendimento de uma mesa. **Contém** é o relacionamento entre pedido e produto, com quantidade, preço unitário e status. **Pagamento** é a quitação, total ou parcial, do pedido. **Fornecedor** é a empresa que vende mercadoria. **Compra** é o pedido de mercadoria a um fornecedor. **Possui** é o relacionamento entre compra e produto, com quantidade, custo e validade. **Movimentação de estoque** é cada entrada, saída, estorno ou ajuste do saldo de um produto. **Histórico do produto** é o registro de cada alteração de preço.
 
 ### 5.2 Fluxo de dados
 
-O cliente reserva por telefone (RESERVA, ligada a uma MESA) ou entra e vê se há lugar → o atendente (autenticado em ATENDENTE) abre um PEDIDO em uma MESA → cada pedido gera registros em ITEM_PEDIDO, ligando o PEDIDO a um PRODUTO, que carrega a CATEGORIA do cardápio e o SETOR de preparo → cada item lançado gera uma baixa em MOVIMENTACAO_ESTOQUE e atualiza o saldo do PRODUTO → cozinha e bar atualizam o status do item → o cliente paga e cada forma usada vira um registro em PAGAMENTO → com a soma dos pagamentos igual ao total, o PEDIDO é fechado e a MESA liberada. Quando o saldo do PRODUTO chega ao mínimo, a gerência registra uma COMPRA a um FORNECEDOR, com ITEM_COMPRA → no recebimento, cada item gera uma entrada em MOVIMENTACAO_ESTOQUE. Os reajustes de preço feitos pela gerência geram registros em HISTORICO_PRODUTO. Toda leitura ou escrita relevante é registrada no log do SGBD (seção 5.5), o que sustenta a auditoria e a conformidade com a LGPD (seção 5.6).
+O cliente reserva por telefone (RESERVA, ligada a uma MESA) ou entra e vê se há lugar → o atendente (autenticado em ATENDENTE) abre um PEDIDO em uma MESA → o PEDIDO contém PRODUTOS (relacionamento com quantidade, preço e status), e cada produto carrega a CATEGORIA do cardápio e o SETOR de preparo → cada produto lançado no pedido gera uma baixa em MOVIMENTACAO_ESTOQUE e atualiza o saldo do PRODUTO → cozinha e bar atualizam o status do item → o cliente paga e cada forma usada vira um registro em PAGAMENTO → com a soma dos pagamentos igual ao total, o PEDIDO é fechado e a MESA liberada. Quando o saldo do PRODUTO chega ao mínimo, a gerência registra uma COMPRA a um FORNECEDOR, com os produtos comprados → no recebimento, cada produto gera uma entrada em MOVIMENTACAO_ESTOQUE. Os reajustes de preço feitos pela gerência geram registros em HISTORICO_PRODUTO. Toda leitura ou escrita relevante é registrada no log do SGBD (seção 5.5), o que sustenta a auditoria e a conformidade com a LGPD (seção 5.6).
 
 ### 5.3 Convenções do dicionário
 
@@ -430,16 +426,15 @@ O **total do pedido não é atributo**: é derivado (RN11), assim como o valor d
 
 Índices: PK ID_PEDIDO; índice em ID_MESA; índice em ID_ATENDENTE; índice em DH_ABERTURA (relatórios por período); índice único parcial em ID_MESA para pedidos abertos (RN05).
 
-### ITEM_PEDIDO *(entidade associativa PEDIDO × PRODUTO)*
-`ITEM_PEDIDO = @ID_ITEM + ID_PEDIDO + ID_PRODUTO + QT_ITEM + VL_PRECO_UNITARIO + TP_STATUS + DH_REGISTRO + (DH_PRONTO) + (DS_OBSERVACAO)`
+### Relacionamento CONTÉM *(PEDIDO × PRODUTO, N:N com atributos)*
+`CONTÉM = ID_PEDIDO + ID_PRODUTO + QT_ITEM + VL_PRECO_UNITARIO + TP_STATUS + DH_REGISTRO + (DH_PRONTO) + (DS_OBSERVACAO)`
 
 *Leitura:* `TP_STATUS` é Pendente (P), Em preparo (E), Pronto (R), Entregue (N) ou Cancelado (C).
 
 | Atributo | Tipo | Obrig. | Descrição | Regra de negócio associada |
 |----------|------|--------|-----------|----------------------------|
-| ID_ITEM | integer | Sim (PK) | Identificador do item. | Permite o mesmo produto em momentos diferentes do pedido. |
-| ID_PEDIDO | integer | Sim (FK) | Pedido ao qual pertence. | Só em pedido aberto. |
-| ID_PRODUTO | integer | Sim (FK) | Produto pedido. | Produto ativo e com estoque (RN08, RN13, RN14). |
+| ID_PEDIDO | integer | Sim (ref.) | Pedido ao qual pertence (lado do relacionamento, não é chave estrangeira no DER). | Só em pedido aberto. |
+| ID_PRODUTO | integer | Sim (ref.) | Produto pedido (lado do relacionamento). | Produto ativo e com estoque (RN08, RN13, RN14). |
 | QT_ITEM | smallint | Sim | Quantidade pedida. | Maior que zero. |
 | VL_PRECO_UNITARIO | decimal(8,2) | Sim | Preço unitário no momento do pedido. | Cópia do preço vigente (RN07). |
 | TP_STATUS | char(1) (P, E, R, N, C) | Sim | Pendente, Em preparo, Pronto, Entregue ou Cancelado. | Cancela só se pendente (RN09, RN17). O setor do produto determina quem atualiza (RN06). |
@@ -447,8 +442,7 @@ O **total do pedido não é atributo**: é derivado (RN11), assim como o valor d
 | DH_PRONTO | timestamp | Não | Quando o item ficou pronto. | Preenchida quando o status passa a Pronto. Permite medir o tempo de preparo. |
 | DS_OBSERVACAO | varchar(100) | Não | Observação do cliente. Ex.: "sem gelo". | — |
 
-Índices: PK ID_ITEM; índice em ID_PEDIDO; índice em ID_PRODUTO; índice em (TP_STATUS) para a fila do setor.
-
+Índices e chave: definidos na modelagem lógica (Entrega 2). **Ponto a validar com o professor:** sem a entidade Item_pedido, o par (pedido, produto) não repete; se o mesmo produto for pedido duas vezes no mesmo pedido, a quantidade é somada e o status de preparo passa a ser por produto, não por lançamento.
 ### CATEGORIA *(proposta, a partir do cardápio)*
 `CATEGORIA = @ID_CATEGORIA + NM_CATEGORIA + IN_ATIVA`
 
@@ -522,31 +516,29 @@ O **total do pedido não é atributo**: é derivado (RN11), assim como o valor d
 
 Índices: PK ID_COMPRA; índice em ID_FORNECEDOR; índice em DH_COMPRA.
 
-### ITEM_COMPRA *(entidade associativa COMPRA × PRODUTO — proposta)*
-`ITEM_COMPRA = @ID_ITEM_COMPRA + ID_COMPRA + ID_PRODUTO + QT_COMPRADA + VL_CUSTO_UNITARIO + (DT_VALIDADE)`
+### Relacionamento POSSUI *(COMPRA × PRODUTO, N:N com atributos — proposta)*
+`POSSUI = ID_COMPRA + ID_PRODUTO + QT_COMPRADA + VL_CUSTO_UNITARIO + (DT_VALIDADE)`
 
 | Atributo | Tipo | Obrig. | Descrição | Regra de negócio associada |
 |----------|------|--------|-----------|----------------------------|
-| ID_ITEM_COMPRA | integer | Sim (PK) | Identificador do item da compra. | — |
-| ID_COMPRA | integer | Sim (FK) | Compra a que pertence. | — |
-| ID_PRODUTO | integer | Sim (FK) | Produto comprado. | — |
+| ID_COMPRA | integer | Sim (ref.) | Compra a que pertence (lado do relacionamento). | — |
+| ID_PRODUTO | integer | Sim (ref.) | Produto comprado (lado do relacionamento). | — |
 | QT_COMPRADA | integer | Sim | Quantidade comprada. | Maior que zero. |
 | VL_CUSTO_UNITARIO | decimal(8,2) | Sim | Custo de cada unidade nesta compra. | Maior que zero. |
 | DT_VALIDADE | date | Não | Validade do lote recebido. | Obrigatória para perecíveis (RN19). |
 
-Índices: PK ID_ITEM_COMPRA; índice em ID_COMPRA; índice em ID_PRODUTO.
-
+Índices e chave: definidos na modelagem lógica (Entrega 2).
 ### MOVIMENTACAO_ESTOQUE *(proposta)*
-`MOVIMENTACAO_ESTOQUE = @ID_MOVIMENTACAO + ID_PRODUTO + (ID_ITEM) + (ID_ITEM_COMPRA) + TP_MOVIMENTO + QT_MOVIMENTO + DH_MOVIMENTO + (DS_MOTIVO)`
+`MOVIMENTACAO_ESTOQUE = @ID_MOVIMENTACAO + ID_PRODUTO + (ID_PEDIDO) + (ID_COMPRA) + TP_MOVIMENTO + QT_MOVIMENTO + DH_MOVIMENTO + (DS_MOTIVO)`
 
-*Leitura:* `TP_MOVIMENTO` é Venda (V), Compra (C), Estorno (E) ou Ajuste (A). `ID_ITEM` e `ID_ITEM_COMPRA` são opcionais: preenchidos quando a movimentação vem de uma venda ou de uma compra.
+*Leitura:* `TP_MOVIMENTO` é Venda (V), Compra (C), Estorno (E) ou Ajuste (A). `ID_PEDIDO` e `ID_COMPRA` são opcionais: preenchidos quando a movimentação vem de uma venda ou de uma compra.
 
 | Atributo | Tipo | Obrig. | Descrição | Regra de negócio associada |
 |----------|------|--------|-----------|----------------------------|
 | ID_MOVIMENTACAO | integer | Sim (PK) | Identificador da movimentação. | — |
 | ID_PRODUTO | integer | Sim (FK) | Produto movimentado. | — |
-| ID_ITEM | integer | Não (FK) | Item de pedido de origem (venda ou estorno). | — |
-| ID_ITEM_COMPRA | integer | Não (FK) | Item de compra de origem (entrada). | — |
+| ID_PEDIDO | integer | Não (FK) | Pedido de origem (venda ou estorno). | — |
+| ID_COMPRA | integer | Não (FK) | Compra de origem (entrada). | — |
 | TP_MOVIMENTO | char(1) (V, C, E, A) | Sim | Venda, Compra, Estorno ou Ajuste. | Domínio fechado. |
 | QT_MOVIMENTO | integer | Sim | Quantidade com sinal: negativa para saída, positiva para entrada. | Diferente de zero. A soma por produto é o saldo (RN21). |
 | DH_MOVIMENTO | timestamp | Sim | Data e hora. | Automática. |
@@ -570,9 +562,9 @@ Papéis: **Atendimento**, **Preparo** (cozinha e bar), **Gerência** e **Auditor
 | PRODUTO | Todos | Gerência | Gerência | Nenhum papel — só inativação |
 | HISTORICO_PRODUTO | Gerência, Auditoria | Automático (gatilho) | Nenhum papel | Nenhum papel |
 | PEDIDO | Atendimento, Gerência, Auditoria | Atendimento | Atendimento, Gerência | Nenhum papel — só cancelamento |
-| ITEM_PEDIDO | Atendimento, Preparo (do próprio setor), Gerência, Auditoria | Atendimento | Atendimento; Preparo (status do próprio setor) | Nenhum papel — só cancelamento |
+| CONTÉM (pedido × produto) | Atendimento, Preparo (do próprio setor), Gerência, Auditoria | Atendimento | Atendimento; Preparo (status do próprio setor) | Nenhum papel — só cancelamento |
 | PAGAMENTO | Atendimento, Gerência, Auditoria | Atendimento | Nenhum papel — estorna-se e lança-se de novo | Nenhum papel |
-| FORNECEDOR, COMPRA, ITEM_COMPRA | Gerência, Auditoria | Gerência | Gerência (compra recebida não se altera) | Nenhum papel — só inativação ou cancelamento |
+| FORNECEDOR, COMPRA, POSSUI (compra × produto) | Gerência, Auditoria | Gerência | Gerência (compra recebida não se altera) | Nenhum papel — só inativação ou cancelamento |
 | MOVIMENTACAO_ESTOQUE | Gerência, Auditoria | Automático (venda, compra, estorno); Gerência (ajuste) | Nenhum papel | Nenhum papel |
 
 **LGPD.** Os dados pessoais do modelo são os do funcionário (ATENDENTE: nome, login e data de admissão) e os do cliente que reserva mesa (RESERVA: nome e telefone). Não são guardados CPF nem endereço, por minimização de dados (art. 6º, III). A reserva é apagada ou anonimizada depois de atendida ou cancelada, no prazo definido pelo estabelecimento. A senha é guardada em hash. O acesso é restrito aos papéis da tabela, e toda consulta fica no log (seção 5.5), o que sustenta a responsabilização (art. 6º, X). O modelo não tem dados sensíveis (art. 5º, II) e não cadastra clientes, exceto o nome e o telefone da reserva. FORNECEDOR guarda dados de pessoa jurídica, fora do escopo da lei. Os registros do estabelecimento são guardados por semestre (meses 1 a 6 e 7 a 12). `[VALIDAR com o contador o prazo fiscal de guarda]`. Funcionário desligado é inativado e, ao fim do prazo de retenção, o nome pode ser anonimizado, nunca apagado fisicamente, para preservar a integridade do histórico.
@@ -588,7 +580,6 @@ Papéis: **Atendimento**, **Preparo** (cozinha e bar), **Gerência** e **Auditor
 | ATENDENTE | Funcionário com credencial individual, que resolve o problema identificado de controle e rastreabilidade. | original |
 | MESA | Identifica o local do cliente e é o vínculo obrigatório do pedido. | original |
 | PEDIDO | Registro central do atendimento. | original |
-| ITEM_PEDIDO | Resolve o N:N entre pedido e produto e guarda quantidade, preço e status de preparo. | original |
 | PRODUTO | Itens vendidos, com código de barras e saldo de estoque. | original |
 | SETOR | Define salão, cozinha e bar, tanto para a lotação do funcionário quanto para o encaminhamento do preparo. | original |
 | HISTORICO_PRODUTO | Histórico de alterações de preço dos produtos. | original (nome) / proposta (definição) |
@@ -598,11 +589,10 @@ Papéis: **Atendimento**, **Preparo** (cozinha e bar), **Gerência** e **Auditor
 | MOVIMENTACAO_ESTOQUE | Dá entidade ao controle de estoque (P11): cada entrada, venda, estorno ou ajuste fica registrado, e o saldo do produto pode ser auditado. | proposta |
 | FORNECEDOR | Empresa de quem se compra. Mapeia o processo P9. | proposta |
 | COMPRA | Registro da reposição de mercadoria (P8 e P10). | proposta |
-| ITEM_COMPRA | Resolve o N:N entre compra e produto e guarda quantidade, custo e validade. | proposta |
 
-- **Atributos e classificações:** detalhados no dicionário (seção 5.4). Identificadores `ID_*`. Opcionais entre parênteses. Domínios fechados em `TP_*`. **Derivados (não armazenados):** total do pedido, taxa de serviço (10% dos itens) e fechamento do caixa. **Redundância deliberada:** `QT_ESTOQUE_ATUAL` em PRODUTO (saldo calculável pelas movimentações, guardado para consulta rápida e protegido pela regra RN21) e `VL_PRECO_UNITARIO` em ITEM_PEDIDO (RN07).
+- **Atributos e classificações:** detalhados no dicionário (seção 5.4). Identificadores `ID_*`. Opcionais entre parênteses. Domínios fechados em `TP_*`. **Derivados (não armazenados):** total do pedido, taxa de serviço (10% dos itens) e fechamento do caixa. **Redundância deliberada:** `QT_ESTOQUE_ATUAL` em PRODUTO (saldo calculável pelas movimentações, guardado para consulta rápida e protegido pela regra RN21) e `VL_PRECO_UNITARIO` no relacionamento contém (RN07).
 
-- **Relacionamentos pertinentes:** os 18 relacionamentos e suas cardinalidades estão na tabela da seção 5.1 e no DER (seção 7). Os associativos são ITEM_PEDIDO (PEDIDO × PRODUTO) e ITEM_COMPRA (COMPRA × PRODUTO).
+- **Relacionamentos pertinentes:** os 16 relacionamentos e suas cardinalidades estão na tabela da seção 5.1 e no DER (seção 7). Os N:N são **contém** (PEDIDO × PRODUTO) e **possui** (COMPRA × PRODUTO), ambos com atributos próprios e sem entidade associativa, conforme a orientação do professor de remover Item_pedido.
 
 - **Restrições e políticas aplicadas ao modelo:** pedido sempre com mesa e atendente (RN01, RN02); uma mesa com um pedido aberto (RN05); acesso por setor e perfil (RNF01, RNF02); preço copiado no item (RN07); inativação em vez de exclusão (RN13); toda alteração de estoque vira movimentação (RN21); compra só de fornecedor ativo (RN22).
 
@@ -626,18 +616,16 @@ erDiagram
     SETOR ||--o{ PRODUTO : "prepara"
     ATENDENTE ||--|{ PEDIDO : "registra"
     MESA ||--o{ PEDIDO : "recebe"
-    PEDIDO ||--|{ ITEM_PEDIDO : "contém"
-    PRODUTO ||--o{ ITEM_PEDIDO : "é pedido em"
+    PEDIDO }|--o{ PRODUTO : "contém (QT_ITEM, VL_PRECO_UNITARIO, TP_STATUS, DH_REGISTRO, DH_PRONTO, DS_OBSERVACAO)"
     PEDIDO ||--o{ PAGAMENTO : "é quitado por"
     PRODUTO ||--o{ HISTORICO_PRODUTO : "tem"
     ATENDENTE ||--o{ HISTORICO_PRODUTO : "realiza"
     FORNECEDOR ||--o{ COMPRA : "fornece"
     ATENDENTE ||--o{ COMPRA : "efetua"
-    COMPRA ||--|{ ITEM_COMPRA : "possui"
-    PRODUTO ||--o{ ITEM_COMPRA : "é comprado em"
+    COMPRA }|--o{ PRODUTO : "possui (QT_COMPRADA, VL_CUSTO_UNITARIO, DT_VALIDADE)"
     PRODUTO ||--o{ MOVIMENTACAO_ESTOQUE : "sofre"
-    ITEM_PEDIDO |o--o{ MOVIMENTACAO_ESTOQUE : "gera"
-    ITEM_COMPRA |o--o| MOVIMENTACAO_ESTOQUE : "gera"
+    PEDIDO |o--o{ MOVIMENTACAO_ESTOQUE : "gera"
+    COMPRA |o--o{ MOVIMENTACAO_ESTOQUE : "gera"
     MESA ||--o{ RESERVA : "recebe reserva"
     CATEGORIA ||--o{ PRODUTO : "classifica"
 
@@ -689,15 +677,6 @@ erDiagram
         char TP_STATUS
         string DS_OBSERVACAO
     }
-    ITEM_PEDIDO {
-        int ID_ITEM PK
-        int QT_ITEM
-        decimal VL_PRECO_UNITARIO
-        char TP_STATUS
-        timestamp DH_REGISTRO
-        timestamp DH_PRONTO
-        string DS_OBSERVACAO
-    }
     CATEGORIA {
         int ID_CATEGORIA PK
         string NM_CATEGORIA
@@ -731,12 +710,6 @@ erDiagram
         char TP_STATUS
         timestamp DH_RECEBIMENTO
     }
-    ITEM_COMPRA {
-        int ID_ITEM_COMPRA PK
-        int QT_COMPRADA
-        decimal VL_CUSTO_UNITARIO
-        date DT_VALIDADE
-    }
     MOVIMENTACAO_ESTOQUE {
         int ID_MOVIMENTACAO PK
         char TP_MOVIMENTO
@@ -755,12 +728,12 @@ erDiagram
 - **Entidade ATENDENTE com credencial e função:** a função de cada funcionário (garçom, caixa, cozinha, bar, gerente, sócio, limpeza) é um atributo explícito, conforme orientou o professor. O perfil de acesso é separado da função, pois várias funções podem ter o mesmo acesso. A cardinalidade (1,N) do atendente no relacionamento "registra" também segue a orientação do professor. A solução resolve diretamente o problema identificado. Como a equipe não era registrada, não havia como saber quem registrou cada pedido. Com `ID_ATENDENTE` e login individual, cada pedido passa a ter um responsável (RN01), o que dá rastreabilidade e responsabilização. O modelo guarda **senha em hash** e apenas os dados pessoais necessários, por minimização de dados (LGPD). A alternativa, um campo de texto com o nome do garçom no pedido, permitiria grafias diferentes e não daria controle de acesso.
 - **SETOR como entidade:** serve a dois fins do mesmo conceito: lotação do funcionário (quem vê o quê, RNF01) e destino do preparo do produto (cozinha ou bar). Como atributo de texto, o nome do setor se repetiria e permitiria grafias diferentes ("Bar", "bar", "BAR"). Como entidade, centraliza o dado e permite novos setores sem alterar a estrutura.
 - **MESA como entidade e vínculo obrigatório:** reflete a regra original de que todo pedido pertence a uma mesa (RN02) e permite o controle de ocupação (RN05). A cardinalidade (0,N) para a mesa e (1,1) para o pedido diz que uma mesa pode ficar sem pedido, mas todo pedido tem exatamente uma mesa.
-- **ITEM_PEDIDO como entidade associativa, com identificador próprio:** o N:N entre pedido e produto tem dados próprios (quantidade, preço, status de preparo, observação). Foi usada chave própria (`ID_ITEM`) porque o mesmo produto pode ser pedido mais de uma vez no mesmo pedido, em momentos diferentes, e cada lançamento tem status e horário próprios. Com chave composta (pedido + produto) isso não seria possível.
+- **Sem a entidade Item_pedido (orientação do professor):** o N:N entre pedido e produto é o relacionamento **contém**, que guarda quantidade, preço unitário, status de preparo, horários e observação. **Limitação a validar com o professor:** sem chave própria, o mesmo produto não aparece duas vezes no mesmo pedido (a quantidade é somada) e o status de preparo é por produto, não por lançamento. Na modelagem lógica (Entrega 2) o relacionamento vira uma tabela; se for necessário, decidir lá entre chave composta (pedido, produto) ou chave própria.
 - **Preço copiado no item e total derivado:** sem copiar o preço, reajustar o cardápio alteraria vendas passadas (RN07). Guardar o total no pedido criaria risco de inconsistência com os itens (RN11).
 - **PRODUTO com código de barras único:** atende à regra original e facilita o registro e o controle de estoque (RN03). A pendência de validar se vale para pratos feitos na casa está registrada na regra.
 - **PAGAMENTO como entidade, e não como atributo do pedido:** o DER anterior tinha só a forma de pagamento como atributo de PEDIDO. Isso impede registrar a conta dividida (por exemplo, metade em Pix e metade no cartão) e o fechamento por forma de pagamento. Como entidade (1:N com o pedido), cada pagamento tem forma, valor e horário próprios.
 - **Estoque com entidade própria (MOVIMENTACAO_ESTOQUE):** só um campo de saldo em PRODUTO não diz de onde veio a quantidade nem permite achar uma divergência. Cada entrada, venda, estorno e ajuste vira um registro, e o saldo é a soma das movimentações (RN21). O saldo fica também em PRODUTO como redundância deliberada, para consulta rápida e alerta de reposição. A regra RN21 mantém os dois coerentes. A opção de modelar também **insumos** (ingredientes de cada prato, com ficha técnica) foi deixada como evolução, pois exige uma tabela de composição por prato `[VALIDAR: a cozinha controla estoque de ingredientes ou só de produtos prontos e bebidas?]`.
-- **FORNECEDOR, COMPRA e ITEM_COMPRA:** o processo de reposição (P8 a P10) é a origem das entradas de estoque. COMPRA separa o cabeçalho (fornecedor, data, nota, responsável) dos itens, no mesmo padrão de PEDIDO e ITEM_PEDIDO. ITEM_COMPRA guarda o custo e a validade de cada lote, o que atende à vigilância sanitária (RN19) e permite calcular o custo e a margem dos produtos.
+- **FORNECEDOR e COMPRA:** o processo de reposição (P8 a P10) é a origem das entradas de estoque. COMPRA guarda fornecedor, data, nota e responsável; o relacionamento **possui** (COMPRA × PRODUTO) guarda quantidade, custo e validade de cada lote, o que atende à vigilância sanitária (RN19) e permite calcular o custo e a margem dos produtos.
 - **Fechamento de caixa sem entidade própria:** o fechamento diário (P13) é um total dos pagamentos do dia por forma. Guardá-lo em tabela duplicaria dado já existente em PAGAMENTO. Fica como consulta.
 - **RESERVA como entidade:** a visita confirmou que o cliente reserva mesa por telefone. A reserva tem data, hora, quantidade de pessoas e contato, e muda de situação (ativa, atendida, cancelada). Guardá-la como atributo da mesa não permitiria várias reservas da mesma mesa em dias diferentes. O cadastro do cliente é mínimo (nome e telefone) por causa da LGPD. A reserva não é ligada ao pedido, porque nem todo pedido tem reserva.
 - **CATEGORIA como entidade:** o cardápio tem mais de 260 preços em cerca de 45 grupos. Repetir o nome do grupo em cada produto permitiria grafias diferentes e dificultaria relatórios por categoria. Como entidade, o grupo é cadastrado uma vez. As variações de tamanho (1 ou 2 pessoas, com ou sem fritas) são produtos distintos, cada um com preço e código próprio, porque são vendidos e estocados separadamente.
@@ -780,7 +753,7 @@ erDiagram
 |------|----------|
 | **Ferramenta e etapa** | **(1) ChatGPT (OpenAI):** ferramenta de apoio na organização da documentação, na estruturação do README, na revisão do texto, na melhoria da clareza e na padronização, usando as informações e as orientações do professor que o grupo já tinha. **(2) Claude (Anthropic):** reorganização do README no formato do esqueleto da Entrega 1, proposta de requisitos, regras, atributos, relacionamentos, justificativas e do DER, incorporação dos dados da visita e ajustes conforme o parecer do professor. |
 | **Motivação** | Organizar e padronizar a documentação segundo o esqueleto da disciplina, informar o uso de IA como o professor pediu e corrigir os pontos apontados no parecer do professor. `[PREENCHER: confirmar com o grupo]` |
-| **Prompt(s) utilizados** | **ChatGPT:** o prompt enviado pelo grupo está na íntegra em [`evidencias/prompt_chatgpt.md`](./evidencias/prompt_chatgpt.md) (conversa: [chatgpt.com/share/6ac6b6d5-d03c-83e9-8cb3-1928b9067b78](https://chatgpt.com/share/6ac6b6d5-d03c-83e9-8cb3-1928b9067b78)). Ele pedia para organizar e completar a Entrega 1 "sem inventar informações", preservar as alterações pedidas pelo professor (Funcionário → Atendente, função de cada atendente, Valor → Preço, Item_pedido, Atendente (1,N), Histórico_Produto) e informar o uso de IA. **Claude:** "esse é o do meu grupo, organize e faça um nosso" (com o README anterior do grupo anexado); "professor falou que precisa disso tudo, verifica o que já tem, adiciona o que falta, para organizar" (com o parecer do professor anexado); e a entrega, em várias mensagens, dos dados da visita (respostas às 24 perguntas do roteiro), do cardápio, das fotos e do horário. |
+| **Prompt(s) utilizados** | **ChatGPT:** o prompt enviado pelo grupo está na íntegra em [`evidencias/prompt_chatgpt.md`](./evidencias/prompt_chatgpt.md) (conversa: [chatgpt.com/share/6ac6b6d5-d03c-83e9-8cb3-1928b9067b78](https://chatgpt.com/share/6ac6b6d5-d03c-83e9-8cb3-1928b9067b78)). Ele pedia para organizar e completar a Entrega 1 "sem inventar informações", preservar as alterações pedidas pelo professor (Funcionário → Atendente, função de cada atendente, Valor → Preço, Item_pedido, Atendente (1,N), Histórico_Produto) e informar o uso de IA. Um segundo prompt, mais curto, repete as orientações do professor (inclusive remover Item_pedido) e está registrado no mesmo arquivo; a resposta do ChatGPT ainda será anexada pelo grupo. **Claude:** "esse é o do meu grupo, organize e faça um nosso" (com o README anterior do grupo anexado); "professor falou que precisa disso tudo, verifica o que já tem, adiciona o que falta, para organizar" (com o parecer do professor anexado); e a entrega, em várias mensagens, dos dados da visita (respostas às 24 perguntas do roteiro), do cardápio, das fotos e do horário. |
 | **Resposta recebida** | ChatGPT: `[PREENCHER: resumo da resposta, que o grupo consulta no link]`. Claude: README reorganizado em 9 seções, mantendo o conteúdo original e marcando o que foi proposto. Depois, 13 processos descritos, requisitos funcionais e não funcionais, regras de negócio, dicionário no modelo da disciplina e DER sem chaves estrangeiras, com a inclusão dos dados da visita (reserva, categoria, taxa de serviço, bebida alcoólica, tipo de mesa, insumos e função do atendente). |
 | **Fontes consultadas e verificadas** | `[PREENCHER]` A IA não teve acesso ao estabelecimento. Tudo o que foi marcado como `(proposta)` ou `[VALIDAR]` precisa ser conferido na pesquisa de campo e com o DER já feito. Foram usados como referência o esqueleto da Entrega 1 e o exemplo de dicionário (02-03g) da disciplina. |
 | **Trechos rejeitados ou corrigidos** | `[PREENCHER]` Ex.: entidades propostas que o grupo removeu, processos que o Palazio não tem (reservas? escalas?), atributos ajustados, regras corrigidas (taxa de serviço, código de barras para pratos). |
