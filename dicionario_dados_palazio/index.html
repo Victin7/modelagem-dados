@@ -15,8 +15,13 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 <strong>Privacidade:</strong> todos os exemplos de valores são <strong>fictícios</strong>.
 <code>[VALIDAR]</code> Os atributos são uma proposta. <strong>Confira com o dicionário e o DER que o grupo já fez</strong> e ajuste o que divergir.</p>
 </blockquote>
+<blockquote>
+<p>Segue o modelo do arquivo 02-03g da disciplina. A versão completa em HTML está em <a href="./dicionario_dados_palazio/index.html"><code>dicionario_dados_palazio/index.html</code></a>.
+<strong>Privacidade:</strong> todos os exemplos de valores são <strong>fictícios</strong>.
+<code>[VALIDAR]</code> Os atributos são uma proposta. <strong>Confira com o dicionário e o DER que o grupo já fez</strong> e ajuste o que divergir.</p>
+</blockquote>
 <h2>5.1 Modelo conceitual e cardinalidades</h2>
-<p>Este modelo representa um restaurante e bar em que o cliente é atendido em uma <strong>mesa</strong>. Um <strong>atendente</strong> registra o <strong>pedido</strong>, composto de <strong>itens</strong>. Cada item é de um <strong>produto</strong>, preparado no <strong>setor</strong> (cozinha ou bar), e a conta é quitada por um ou mais <strong>pagamentos</strong>. O estoque dos produtos é reposto por <strong>compras</strong> a <strong>fornecedores</strong> e controlado por <strong>movimentações</strong>.</p>
+<p>Este modelo representa um restaurante e bar em que o cliente, com ou sem <strong>reserva</strong>, é atendido em uma <strong>mesa</strong> (ou bistrô). Um <strong>atendente</strong> (o garçom) registra o <strong>pedido</strong>, composto de <strong>itens</strong>. Cada item é de um <strong>produto</strong>, que pertence a uma <strong>categoria</strong> do cardápio e é preparado no <strong>setor</strong> (cozinha ou bar), e a conta é quitada por um ou mais <strong>pagamentos</strong>. O estoque dos produtos é reposto por <strong>compras</strong> a <strong>fornecedores</strong> e controlado por <strong>movimentações</strong>.</p>
 <table>
 <thead>
 <tr>
@@ -40,6 +45,16 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 <td>ATENDENTE</td>
 <td>PEDIDO</td>
 <td>1:N — um atendente registra vários pedidos; cada pedido tem exatamente um atendente</td>
+</tr>
+<tr>
+<td>MESA</td>
+<td>RESERVA</td>
+<td>1:N — uma mesa pode ser reservada várias vezes; cada reserva é de uma mesa</td>
+</tr>
+<tr>
+<td>CATEGORIA</td>
+<td>PRODUTO</td>
+<td>1:N — uma categoria do cardápio agrupa vários produtos; cada produto tem uma categoria</td>
 </tr>
 <tr>
 <td>MESA</td>
@@ -118,9 +133,9 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 </tr>
 </tbody>
 </table>
-<p><strong>Definições.</strong> <strong>Setor</strong> é a área de trabalho (salão, cozinha, bar). <strong>Atendente</strong> é o funcionário com credencial individual. <strong>Mesa</strong> é o local do cliente. <strong>Produto</strong> é o item vendido e estocado. <strong>Pedido</strong> é o atendimento de uma mesa. <strong>Item do pedido</strong> é um produto pedido, com quantidade, preço e status. <strong>Pagamento</strong> é a quitação, total ou parcial, do pedido. <strong>Fornecedor</strong> é a empresa que vende mercadoria. <strong>Compra</strong> é o pedido de mercadoria a um fornecedor. <strong>Item da compra</strong> é um produto comprado, com quantidade, custo e validade. <strong>Movimentação de estoque</strong> é cada entrada, saída, estorno ou ajuste do saldo de um produto. <strong>Histórico do produto</strong> é o registro de cada alteração de preço.</p>
+<p><strong>Definições.</strong> <strong>Setor</strong> é a área de trabalho (salão, cozinha, bar, gerência, limpeza). <strong>Categoria</strong> é o grupo do cardápio (lanches, pratos, porções, sobremesas, bebidas etc.). <strong>Reserva</strong> é a mesa guardada por telefone, para uma data e hora. <strong>Atendente</strong> é o funcionário com credencial individual. <strong>Mesa</strong> é o local do cliente. <strong>Produto</strong> é o item vendido e estocado. <strong>Pedido</strong> é o atendimento de uma mesa. <strong>Item do pedido</strong> é um produto pedido, com quantidade, preço e status. <strong>Pagamento</strong> é a quitação, total ou parcial, do pedido. <strong>Fornecedor</strong> é a empresa que vende mercadoria. <strong>Compra</strong> é o pedido de mercadoria a um fornecedor. <strong>Item da compra</strong> é um produto comprado, com quantidade, custo e validade. <strong>Movimentação de estoque</strong> é cada entrada, saída, estorno ou ajuste do saldo de um produto. <strong>Histórico do produto</strong> é o registro de cada alteração de preço.</p>
 <h2>5.2 Fluxo de dados</h2>
-<p>Cliente chega → o atendente (autenticado em ATENDENTE) abre um PEDIDO em uma MESA → cada pedido gera registros em ITEM_PEDIDO, ligando o PEDIDO a um PRODUTO, que carrega o SETOR de preparo → cada item lançado gera uma baixa em MOVIMENTACAO_ESTOQUE e atualiza o saldo do PRODUTO → cozinha e bar atualizam o status do item → o cliente paga e cada forma usada vira um registro em PAGAMENTO → com a soma dos pagamentos igual ao total, o PEDIDO é fechado e a MESA liberada. Quando o saldo do PRODUTO chega ao mínimo, a gerência registra uma COMPRA a um FORNECEDOR, com ITEM_COMPRA → no recebimento, cada item gera uma entrada em MOVIMENTACAO_ESTOQUE. Os reajustes de preço feitos pela gerência geram registros em HISTORICO_PRODUTO. Toda leitura ou escrita relevante é registrada no log do SGBD (seção 5.5), o que sustenta a auditoria e a conformidade com a LGPD (seção 5.6).</p>
+<p>O cliente reserva por telefone (RESERVA, ligada a uma MESA) ou entra e vê se há lugar → o atendente (autenticado em ATENDENTE) abre um PEDIDO em uma MESA → cada pedido gera registros em ITEM_PEDIDO, ligando o PEDIDO a um PRODUTO, que carrega a CATEGORIA do cardápio e o SETOR de preparo → cada item lançado gera uma baixa em MOVIMENTACAO_ESTOQUE e atualiza o saldo do PRODUTO → cozinha e bar atualizam o status do item → o cliente paga e cada forma usada vira um registro em PAGAMENTO → com a soma dos pagamentos igual ao total, o PEDIDO é fechado e a MESA liberada. Quando o saldo do PRODUTO chega ao mínimo, a gerência registra uma COMPRA a um FORNECEDOR, com ITEM_COMPRA → no recebimento, cada item gera uma entrada em MOVIMENTACAO_ESTOQUE. Os reajustes de preço feitos pela gerência geram registros em HISTORICO_PRODUTO. Toda leitura ou escrita relevante é registrada no log do SGBD (seção 5.5), o que sustenta a auditoria e a conformidade com a LGPD (seção 5.6).</p>
 <h2>5.3 Convenções do dicionário</h2>
 <ul>
 <li><strong>SGBD de referência:</strong> PostgreSQL 16.</li>
@@ -155,7 +170,7 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 <td>NM_SETOR</td>
 <td>varchar(30)</td>
 <td>Sim</td>
-<td>Nome do setor. Ex.: Salão, Cozinha, Bar.</td>
+<td>Nome do setor. Ex.: Salão, Cozinha, Bar, Gerência, Limpeza.</td>
 <td>Único.</td>
 </tr>
 <tr>
@@ -163,14 +178,14 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 <td>boolean</td>
 <td>Sim</td>
 <td>Indica se o setor prepara produtos.</td>
-<td>Verdadeiro para Cozinha e Bar. Só esses setores podem ser setor de preparo de um produto (RN06).</td>
+<td>Verdadeiro para Cozinha e Bar; falso para Salão, Gerência e Limpeza. Só esses setores podem ser setor de preparo de um produto (RN06).</td>
 </tr>
 </tbody>
 </table>
 <p>Índices: PK ID_SETOR; índice único em NM_SETOR.</p>
 <h3>ATENDENTE</h3>
 <p><code>ATENDENTE = @ID_ATENDENTE + ID_SETOR + NM_ATENDENTE + NM_LOGIN + DS_SENHA_HASH + TP_PERFIL + DT_ADMISSAO + IN_ATIVO</code></p>
-<p><em>Leitura:</em> <code>TP_PERFIL</code> exige escolher um perfil entre Atendimento (A), Preparo (P) e Gerência (G). Todos os campos são obrigatórios.</p>
+<p><em>Leitura:</em> <code>TP_PERFIL</code> exige escolher um perfil entre Atendimento (A), Preparo (P), Gerência (G) e Sócio (S). Todos os campos são obrigatórios. A equipe de limpeza só é cadastrada se precisar de acesso <code>[VALIDAR]</code>.</p>
 <table>
 <thead>
 <tr>
@@ -219,9 +234,9 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 </tr>
 <tr>
 <td>TP_PERFIL</td>
-<td>char(1) (A, P, G)</td>
+<td>char(1) (A, P, G, S)</td>
 <td>Sim</td>
-<td>Perfil de acesso: Atendimento, Preparo (cozinha ou bar) ou Gerência.</td>
+<td>Perfil de acesso: Atendimento (garçom), Preparo (cozinha ou bar), Gerência ou Sócio (proprietário).</td>
 <td>Define as permissões (RNF02).</td>
 </tr>
 <tr>
@@ -242,8 +257,8 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 </table>
 <p>Índices: PK ID_ATENDENTE; índice único em NM_LOGIN (autenticação); índice em ID_SETOR.</p>
 <h3>MESA</h3>
-<p><code>MESA = @ID_MESA + NR_MESA + QT_LUGARES + TP_STATUS + IN_ATIVA</code></p>
-<p><em>Leitura:</em> <code>TP_STATUS</code> é Livre (L) ou Ocupada (O).</p>
+<p><code>MESA = @ID_MESA + NR_MESA + TP_LOCAL + QT_LUGARES + TP_STATUS + IN_ATIVA</code></p>
+<p><em>Leitura:</em> <code>TP_LOCAL</code> é Mesa (M) ou Bistrô (B). <code>TP_STATUS</code> é Livre (L) ou Ocupada (O).</p>
 <table>
 <thead>
 <tr>
@@ -270,6 +285,13 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 <td>Único (RN02).</td>
 </tr>
 <tr>
+<td>TP_LOCAL</td>
+<td>char(1) (M, B)</td>
+<td>Sim</td>
+<td>Tipo de lugar: mesa ou bistrô. O salão tem cerca de 30 mesas e 25 bistrôs.</td>
+<td>Domínio fechado.</td>
+</tr>
+<tr>
 <td>QT_LUGARES</td>
 <td>smallint</td>
 <td>Sim</td>
@@ -294,7 +316,7 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 </table>
 <p>Índices: PK ID_MESA; índice único em NR_MESA.</p>
 <h3>PRODUTO</h3>
-<p><code>PRODUTO = @ID_PRODUTO + ID_SETOR + NM_PRODUTO + NR_CODIGO_BARRAS + VL_PRECO + QT_ESTOQUE_ATUAL + QT_ESTOQUE_MINIMO + IN_ATIVO</code></p>
+<p><code>PRODUTO = @ID_PRODUTO + ID_SETOR + ID_CATEGORIA + NM_PRODUTO + NR_CODIGO_BARRAS + VL_PRECO + IN_ALCOOLICO + QT_ESTOQUE_ATUAL + QT_ESTOQUE_MINIMO + IN_ATIVO</code></p>
 <table>
 <thead>
 <tr>
@@ -321,11 +343,18 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 <td>Setor com IN_PREPARO verdadeiro (RN06).</td>
 </tr>
 <tr>
+<td>ID_CATEGORIA</td>
+<td>integer</td>
+<td>Sim (FK)</td>
+<td>Categoria do cardápio do produto.</td>
+<td>Todo produto tem uma categoria (RN29).</td>
+</tr>
+<tr>
 <td>NM_PRODUTO</td>
 <td>varchar(80)</td>
 <td>Sim</td>
-<td>Nome no cardápio. Ex.: "Risoto de funghi", "Chope 300 ml".</td>
-<td>—</td>
+<td>Nome no cardápio, com a variação de tamanho quando houver. Ex.: "Risoto de cogumelos", "Bife de contrafilé (2 pessoas)".</td>
+<td>Variações são produtos distintos (RN27).</td>
 </tr>
 <tr>
 <td>NR_CODIGO_BARRAS</td>
@@ -340,6 +369,13 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 <td>Sim</td>
 <td>Preço de venda atual.</td>
 <td>Maior que zero. Reajuste não altera pedidos antigos (RN07). Só a gerência altera (RN24).</td>
+</tr>
+<tr>
+<td>IN_ALCOOLICO</td>
+<td>boolean</td>
+<td>Sim</td>
+<td>Indica bebida alcoólica.</td>
+<td>Venda só para maiores de 18 anos, com conferência de documento (RN18).</td>
 </tr>
 <tr>
 <td>QT_ESTOQUE_ATUAL</td>
@@ -364,7 +400,7 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 </tr>
 </tbody>
 </table>
-<p>Índices: PK ID_PRODUTO; índice único em NR_CODIGO_BARRAS; índice em ID_SETOR; índice em NM_PRODUTO (busca no lançamento do pedido).</p>
+<p>Índices: PK ID_PRODUTO; índice único em NR_CODIGO_BARRAS; índice em ID_SETOR; índice em ID_CATEGORIA; índice em NM_PRODUTO (busca no lançamento do pedido).</p>
 <h3>HISTORICO_PRODUTO <em>(proposta de definição — o README original só citava o nome)</em></h3>
 <p><code>HISTORICO_PRODUTO = @ID_HISTORICO + ID_PRODUTO + ID_ATENDENTE + VL_PRECO_ANTERIOR + VL_PRECO_NOVO + DH_ALTERACAO</code></p>
 <table>
@@ -424,7 +460,7 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 </table>
 <p>Índices: PK ID_HISTORICO; índice em (ID_PRODUTO, DH_ALTERACAO).</p>
 <h3>PEDIDO</h3>
-<p><code>PEDIDO = @ID_PEDIDO + ID_MESA + ID_ATENDENTE + DH_ABERTURA + (DH_FECHAMENTO) + TP_STATUS + (DS_OBSERVACAO)</code></p>
+<p><code>PEDIDO = @ID_PEDIDO + ID_MESA + ID_ATENDENTE + DH_ABERTURA + (DH_FECHAMENTO) + IN_TAXA_SERVICO + TP_STATUS + (DS_OBSERVACAO)</code></p>
 <p><em>Leitura:</em> <code>DH_FECHAMENTO</code> e <code>DS_OBSERVACAO</code> são opcionais. <code>TP_STATUS</code> é Aberto (A), Fechado (F) ou Cancelado (C).</p>
 <table>
 <thead>
@@ -473,6 +509,13 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 <td>Obrigatória quando o status for Fechado (RN10).</td>
 </tr>
 <tr>
+<td>IN_TAXA_SERVICO</td>
+<td>boolean</td>
+<td>Sim</td>
+<td>Se a taxa de serviço de 10% foi cobrada neste pedido.</td>
+<td>Padrão: verdadeiro (RN16). <code>[VALIDAR: o cliente pode recusar?]</code></td>
+</tr>
+<tr>
 <td>TP_STATUS</td>
 <td>char(1) (A, F, C)</td>
 <td>Sim</td>
@@ -488,7 +531,7 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 </tr>
 </tbody>
 </table>
-<p>O <strong>total do pedido não é atributo</strong>: é derivado (RN11).</p>
+<p>O <strong>total do pedido não é atributo</strong>: é derivado (RN11), assim como o valor da taxa de serviço (10% dos itens, RN16).</p>
 <p>Índices: PK ID_PEDIDO; índice em ID_MESA; índice em ID_ATENDENTE; índice em DH_ABERTURA (relatórios por período); índice único parcial em ID_MESA para pedidos abertos (RN05).</p>
 <h3>ITEM_PEDIDO <em>(entidade associativa PEDIDO × PRODUTO)</em></h3>
 <p><code>ITEM_PEDIDO = @ID_ITEM + ID_PEDIDO + ID_PRODUTO + QT_ITEM + VL_PRECO_UNITARIO + TP_STATUS + DH_REGISTRO + (DH_PRONTO) + (DS_OBSERVACAO)</code></p>
@@ -570,6 +613,109 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 </tbody>
 </table>
 <p>Índices: PK ID_ITEM; índice em ID_PEDIDO; índice em ID_PRODUTO; índice em (TP_STATUS) para a fila do setor.</p>
+<h3>CATEGORIA <em>(proposta, a partir do cardápio)</em></h3>
+<p><code>CATEGORIA = @ID_CATEGORIA + NM_CATEGORIA + IN_ATIVA</code></p>
+<table>
+<thead>
+<tr>
+<th>Atributo</th>
+<th>Tipo</th>
+<th>Obrig.</th>
+<th>Descrição</th>
+<th>Regra de negócio associada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ID_CATEGORIA</td>
+<td>integer</td>
+<td>Sim (PK)</td>
+<td>Identificador da categoria.</td>
+<td>—</td>
+</tr>
+<tr>
+<td>NM_CATEGORIA</td>
+<td>varchar(40)</td>
+<td>Sim</td>
+<td>Nome do grupo do cardápio. Ex.: Lanches, Porções, Caipirinhas, Cervejas.</td>
+<td>Único.</td>
+</tr>
+<tr>
+<td>IN_ATIVA</td>
+<td>boolean</td>
+<td>Sim</td>
+<td>Se a categoria está no cardápio.</td>
+<td>Não se exclui (RN13).</td>
+</tr>
+</tbody>
+</table>
+<p>Índices: PK ID_CATEGORIA; índice único em NM_CATEGORIA.</p>
+<h3>RESERVA <em>(confirmada na visita; atributos propostos)</em></h3>
+<p><code>RESERVA = @ID_RESERVA + ID_MESA + NM_CLIENTE + (NR_TELEFONE) + DH_RESERVA + QT_PESSOAS + TP_STATUS</code></p>
+<p><em>Leitura:</em> <code>TP_STATUS</code> é Ativa (A), Atendida (T) ou Cancelada (C). <code>NR_TELEFONE</code> é opcional.</p>
+<table>
+<thead>
+<tr>
+<th>Atributo</th>
+<th>Tipo</th>
+<th>Obrig.</th>
+<th>Descrição</th>
+<th>Regra de negócio associada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ID_RESERVA</td>
+<td>integer</td>
+<td>Sim (PK)</td>
+<td>Identificador da reserva.</td>
+<td>—</td>
+</tr>
+<tr>
+<td>ID_MESA</td>
+<td>integer</td>
+<td>Sim (FK)</td>
+<td>Mesa reservada.</td>
+<td>Mesa ativa (RN28).</td>
+</tr>
+<tr>
+<td>NM_CLIENTE</td>
+<td>varchar(80)</td>
+<td>Sim</td>
+<td>Nome de quem reservou. Ex.: "Carlos Mendes" (fictício).</td>
+<td>Dado pessoal mínimo (LGPD).</td>
+</tr>
+<tr>
+<td>NR_TELEFONE</td>
+<td>varchar(15)</td>
+<td>Não</td>
+<td>Telefone para confirmar.</td>
+<td>Dado pessoal; acesso restrito (seção 5.6).</td>
+</tr>
+<tr>
+<td>DH_RESERVA</td>
+<td>timestamp</td>
+<td>Sim</td>
+<td>Data e hora para as quais a mesa foi reservada.</td>
+<td>Futuro no momento do cadastro.</td>
+</tr>
+<tr>
+<td>QT_PESSOAS</td>
+<td>smallint</td>
+<td>Sim</td>
+<td>Quantidade de pessoas.</td>
+<td>Maior que zero e não maior que os lugares da mesa.</td>
+</tr>
+<tr>
+<td>TP_STATUS</td>
+<td>char(1) (A, T, C)</td>
+<td>Sim</td>
+<td>Ativa, Atendida ou Cancelada.</td>
+<td>Reserva não se exclui (RN13).</td>
+</tr>
+</tbody>
+</table>
+<p>Índices: PK ID_RESERVA; índice em (ID_MESA, DH_RESERVA).</p>
 <h3>PAGAMENTO <em>(proposta — o processo "Pagamento" não tinha entidade)</em></h3>
 <p><code>PAGAMENTO = @ID_PAGAMENTO + ID_PEDIDO + TP_FORMA + VL_PAGO + DH_PAGAMENTO</code></p>
 <p><em>Leitura:</em> <code>TP_FORMA</code> é Dinheiro (D), Crédito (C), Débito (B) ou Pix (P).</p>
@@ -893,11 +1039,18 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 <td>Nenhum papel — só inativação</td>
 </tr>
 <tr>
-<td>SETOR, MESA</td>
+<td>SETOR, MESA, CATEGORIA</td>
 <td>Todos</td>
 <td>Gerência</td>
 <td>Gerência (mesa: também Atendimento, no status)</td>
 <td>Nenhum papel — só inativação</td>
+</tr>
+<tr>
+<td>RESERVA</td>
+<td>Atendimento, Gerência, Auditoria</td>
+<td>Atendimento, Gerência</td>
+<td>Atendimento, Gerência (status)</td>
+<td>Nenhum papel — só cancelamento</td>
 </tr>
 <tr>
 <td>PRODUTO</td>
@@ -950,7 +1103,7 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 </tr>
 </tbody>
 </table>
-<p><strong>LGPD.</strong> O único dado pessoal do modelo é o do funcionário (ATENDENTE): nome, login e data de admissão. Não são guardados CPF, endereço nem telefone, por minimização de dados (art. 6º, III). A senha é guardada em hash. O acesso é restrito à Gerência e à Auditoria, e toda consulta fica no log (seção 5.5), o que sustenta a responsabilização (art. 6º, X). O modelo não tem dados sensíveis (art. 5º, II) nem dados de clientes. FORNECEDOR guarda dados de pessoa jurídica, fora do escopo da lei. A retenção dos dados de pedidos e compras segue o prazo fiscal <code>[VALIDAR com o contador do estabelecimento]</code>. Funcionário desligado é inativado e, ao fim do prazo de retenção, o nome pode ser anonimizado, nunca apagado fisicamente, para preservar a integridade do histórico.</p>
+<p><strong>LGPD.</strong> Os dados pessoais do modelo são os do funcionário (ATENDENTE: nome, login e data de admissão) e os do cliente que reserva mesa (RESERVA: nome e telefone). Não são guardados CPF nem endereço, por minimização de dados (art. 6º, III). A reserva é apagada ou anonimizada depois de atendida ou cancelada, no prazo definido pelo estabelecimento <code>[VALIDAR]</code>. A senha é guardada em hash. O acesso é restrito aos papéis da tabela, e toda consulta fica no log (seção 5.5), o que sustenta a responsabilização (art. 6º, X). O modelo não tem dados sensíveis (art. 5º, II) e não cadastra clientes, exceto o nome e o telefone da reserva. FORNECEDOR guarda dados de pessoa jurídica, fora do escopo da lei. A retenção dos dados de pedidos e compras segue o prazo fiscal <code>[VALIDAR com o contador do estabelecimento]</code>. Funcionário desligado é inativado e, ao fim do prazo de retenção, o nome pode ser anonimizado, nunca apagado fisicamente, para preservar a integridade do histórico.</p>
 <hr />
 <h2>Diagrama Entidade-Relacionamento</h2>
 <img src="diagrama_palazio_del_chef.png" alt="DER do Palazio del Chef">

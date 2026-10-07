@@ -8,16 +8,18 @@ from matplotlib.patches import Rectangle, Polygon, Circle
 
 COR, TXT, DEST = "#7a1f2b", "#1d1d1f", "#f3e8ea"
 E = {  # nome: (x, y, lado dos atributos, [atributos]; o primeiro é o identificador)
- "MESA":(0,0,"up",["ID_MESA","NR_MESA","QT_LUGARES","TP_STATUS","IN_ATIVA"]),
- "PEDIDO":(2,0,"up",["ID_PEDIDO","DH_ABERTURA","DH_FECHAMENTO","TP_STATUS","DS_OBSERVACAO"]),
+ "MESA":(0,0,"left",["ID_MESA","NR_MESA","TP_LOCAL","QT_LUGARES","TP_STATUS","IN_ATIVA"]),
+ "RESERVA":(0,-2,"left",["ID_RESERVA","NM_CLIENTE","NR_TELEFONE","DH_RESERVA","QT_PESSOAS","TP_STATUS"]),
+ "CATEGORIA":(7.5,3.4,"left",["ID_CATEGORIA","NM_CATEGORIA","IN_ATIVA"]),
+ "PEDIDO":(2,0,"up",["ID_PEDIDO","DH_ABERTURA","DH_FECHAMENTO","IN_TAXA_SERVICO","TP_STATUS","DS_OBSERVACAO"]),
  "ATENDENTE":(4,0,"up",["ID_ATENDENTE","NM_ATENDENTE","NM_LOGIN","DS_SENHA_HASH","TP_PERFIL","DT_ADMISSAO","IN_ATIVO"]),
  "SETOR":(7.5,0,"right",["ID_SETOR","NM_SETOR","IN_PREPARO"]),
  "PAGAMENTO":(0,2,"left",["ID_PAGAMENTO","TP_FORMA","VL_PAGO","DH_PAGAMENTO"]),
  "HISTORICO_PRODUTO":(4.7,2,"left",["ID_HISTORICO","VL_PRECO_ANTERIOR","VL_PRECO_NOVO","DH_ALTERACAO"]),
- "PRODUTO":(7.5,2,"ur",["ID_PRODUTO","NM_PRODUTO","NR_CODIGO_BARRAS","VL_PRECO","QT_ESTOQUE_ATUAL","QT_ESTOQUE_MINIMO","IN_ATIVO"]),
+ "PRODUTO":(7.5,2,"ur",["ID_PRODUTO","NM_PRODUTO","NR_CODIGO_BARRAS","VL_PRECO","IN_ALCOOLICO","QT_ESTOQUE_ATUAL","QT_ESTOQUE_MINIMO","IN_ATIVO"]),
  "ITEM_COMPRA":(12.1,2,"right",["ID_ITEM_COMPRA","QT_COMPRADA","VL_CUSTO_UNITARIO","DT_VALIDADE"]),
- "ITEM_PEDIDO":(2,4,"left",["ID_ITEM","QT_ITEM","VL_PRECO_UNITARIO","TP_STATUS","DH_REGISTRO","DH_PRONTO","DS_OBSERVACAO"]),
- "MOVIMENTACAO_ESTOQUE":(7.5,4,"down",["ID_MOVIMENTACAO","TP_MOVIMENTO","QT_MOVIMENTO","DH_MOVIMENTO","DS_MOTIVO"]),
+ "ITEM_PEDIDO":(2,5,"left",["ID_ITEM","QT_ITEM","VL_PRECO_UNITARIO","TP_STATUS","DH_REGISTRO","DH_PRONTO","DS_OBSERVACAO"]),
+ "MOVIMENTACAO_ESTOQUE":(9.9,5,"down",["ID_MOVIMENTACAO","TP_MOVIMENTO","QT_MOVIMENTO","DH_MOVIMENTO","DS_MOTIVO"]),
  "COMPRA":(12.1,-1.5,"up",["ID_COMPRA","DH_COMPRA","NR_NOTA_FISCAL","TP_STATUS","DH_RECEBIMENTO"]),
  "FORNECEDOR":(14.8,-1.5,"right",["ID_FORNECEDOR","NM_FORNECEDOR","NR_CNPJ","NR_TELEFONE","IN_ATIVO"]),
 }
@@ -36,11 +38,13 @@ R = [  # (A, rótulo, B, card. em A, card. em B, deslocamento do losango 0..1)
  ("COMPRA","possui","ITEM_COMPRA","(1,N)","(1,1)"),
  ("PRODUTO","é comprado em","ITEM_COMPRA","(0,N)","(1,1)"),
  ("PRODUTO","sofre","MOVIMENTACAO_ESTOQUE","(0,N)","(1,1)"),
+ ("MESA","recebe reserva","RESERVA","(0,N)","(1,1)"),
+ ("CATEGORIA","classifica","PRODUTO","(0,N)","(1,1)"),
  ("ITEM_PEDIDO","gera","MOVIMENTACAO_ESTOQUE","(0,N)","(0,1)"),
  ("ITEM_COMPRA","gera","MOVIMENTACAO_ESTOQUE","(0,1)","(0,1)"),
 ]
 fig, ax = plt.subplots(figsize=(37, 17), dpi=100)
-ax.set_xlim(-9, 72); ax.set_ylim(21, -12); ax.axis("off"); ax.set_aspect("equal")
+ax.set_xlim(-14, 72); ax.set_ylim(25, -17); ax.axis("off"); ax.set_aspect("equal")
 BW = lambda n: 0.8 + 0.36*len(n)
 BH = 0.8
 def edge_point(cx, cy, w, h, tx, ty):
@@ -99,8 +103,8 @@ for n, (x, y, side, attrs) in E.items():
             ax.text(cx_+sg*0.25, cy_, at, ha="right" if side == "left" else "left", va="center",
                     fontsize=10.5, fontweight="bold" if pk else "normal", color=TXT, zorder=4)
             ax.add_patch(Circle((cx_, cy_), 0.14, fc=TXT if pk else "white", ec=TXT, lw=1.3, zorder=4))
-ax.text(-8.5, -10.2, "DER Conceitual — Palazio del Chef", fontsize=24, fontweight="bold", color=TXT, va="center")
-ax.text(-8.5, -9.0, "Notação do BRModelo (Chen): retângulo = entidade · losango = relacionamento · círculo = atributo · cardinalidade (mín,máx). Sem chaves estrangeiras.", fontsize=12, color=TXT, va="center")
-ax.add_patch(Circle((-8.3, -7.8), 0.14, fc=TXT, ec=TXT)); ax.text(-7.9, -7.8, "identificador", fontsize=11, va="center")
-ax.add_patch(Circle((-8.3, -7.0), 0.14, fc="white", ec=TXT, lw=1.3)); ax.text(-7.9, -7.0, "atributo", fontsize=11, va="center")
+ax.text(-13.5, -14.2, "DER Conceitual — Palazio del Chef", fontsize=24, fontweight="bold", color=TXT, va="center")
+ax.text(-13.5, -13.0, "Notação do BRModelo (Chen): retângulo = entidade · losango = relacionamento · círculo = atributo · cardinalidade (mín,máx). Sem chaves estrangeiras.", fontsize=12, color=TXT, va="center")
+ax.add_patch(Circle((-13.3, -11.8), 0.14, fc=TXT, ec=TXT)); ax.text(-12.9, -11.8, "identificador", fontsize=11, va="center")
+ax.add_patch(Circle((-13.3, -10.9), 0.14, fc="white", ec=TXT, lw=1.3)); ax.text(-12.9, -10.9, "atributo", fontsize=11, va="center")
 fig.savefig("diagrama_palazio_del_chef.png", bbox_inches="tight", facecolor="white")
