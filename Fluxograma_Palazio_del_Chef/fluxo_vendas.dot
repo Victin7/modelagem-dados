@@ -1,0 +1,36 @@
+digraph G {
+ rankdir=TB; bgcolor="white"; nodesep=0.45; ranksep=0.5; pad=0.4;
+ node [fontname="Helvetica", fontsize=13, shape=box, style="rounded,filled", fillcolor="#f3e8ea", color="#7a1f2b", penwidth=1.6, margin="0.18,0.10"];
+ edge [fontname="Helvetica", fontsize=11, color="#1d1d1f", arrowsize=0.8];
+ label="Fluxo 1 — Atendimento, pedido e pagamento (P1 a P6 e P13)\nPalazio del Chef"; labelloc=t; fontsize=20; fontname="Helvetica-Bold";
+ ini [label="Cliente chega", shape=oval, fillcolor="#7a1f2b", fontcolor=white];
+ res [label="Reserva por telefone\n(atendente do caixa registra\ne marca a mesa)"];
+ mesa [label="Cliente escolhe mesa ou bistrô\n(sem reserva: vê se há lugar)"];
+ abre [label="Garçom marca o pedido\npor mesa na comanda"];
+ lanca [label="Garçom lança o pedido\nno Garçom Web"];
+ est [label="Há estoque\ndo produto?", shape=diamond, style="filled", fillcolor="white", margin="0.05,0.05"];
+ bloq [label="Sistema bloqueia a venda", fillcolor="#fde8e8"];
+ setor [label="Setor do produto", shape=diamond, style="filled", fillcolor="white"];
+ coz [label="Cozinha prepara\n(chefe de cozinha é notificado)"];
+ bar [label="Bar prepara"];
+ canc [label="Item cancelado antes de ficar pronto?\nCancelamento bloqueia o item no setor", shape=note, fillcolor="#fff7e0", color="#a07800"];
+ pronto [label="Item pronto"];
+ entr [label="Garçom entrega na mesa"];
+ mais [label="Cliente pede\nmais algo?", shape=diamond, style="filled", fillcolor="white"];
+ alc [label="Bebida alcoólica:\ngarçom pede documento com foto", shape=note, fillcolor="#fff7e0", color="#a07800"];
+ conta [label="Garçom gera a conta no aplicativo\n(itens + taxa de serviço de 10%,\nremovível a pedido do cliente)"];
+ pag [label="Cliente paga: dinheiro, cartão ou Pix\n(pode dividir)\nNota fiscal pela maquininha"];
+ fecha [label="Pedido fechado\nMesa liberada", fillcolor="#e6f2e6", color="#2f6b2f"];
+ caixa [label="Fim do expediente:\ngerente confere por forma de pagamento\ne o dinheiro lançado no aplicativo\n(fechamento do caixa)", fillcolor="#e8eef7", color="#2b4c7e"];
+ ini -> res [label="reserva"]; ini -> mesa [label="sem reserva"]; res -> mesa;
+ mesa -> abre -> lanca -> est;
+ est -> bloq [label="não"]; est -> setor [label="sim"];
+ setor -> coz [label="cozinha"]; setor -> bar [label="bar"];
+ coz -> pronto; bar -> pronto; canc -> pronto [style=dashed, arrowhead=none];
+ pronto -> entr -> mais; mais -> lanca [label="sim"]; mais -> conta [label="não"];
+ alc -> lanca [style=dashed, arrowhead=none];
+ conta -> pag -> fecha -> caixa;
+ {rank=same; bloq; setor}
+ {rank=same; canc; pronto}
+ {rank=same; alc; lanca}
+}

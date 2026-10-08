@@ -1,0 +1,25 @@
+digraph G {
+ rankdir=TB; bgcolor="white"; nodesep=0.45; ranksep=0.5; pad=0.4;
+ node [fontname="Helvetica", fontsize=13, shape=box, style="rounded,filled", fillcolor="#f3e8ea", color="#7a1f2b", penwidth=1.6, margin="0.18,0.10"];
+ edge [fontname="Helvetica", fontsize=11, color="#1d1d1f", arrowsize=0.8];
+ label="Fluxo 2 — Compras, recebimento e estoque (P8 a P11)\nPalazio del Chef"; labelloc=t; fontsize=20; fontname="Helvetica-Bold";
+ v [label="Venda baixa o estoque\n(produto, prato ou bebida)"];
+ ins [label="Insumos (ingredientes):\nbaixa feita manualmente", fillcolor="#fff7e0", color="#a07800"];
+ min [label="Saldo no mínimo\nou abaixo?", shape=diamond, style="filled", fillcolor="white"];
+ al [label="Alerta de reposição (proposta do modelo)"];
+ prop [label="Proprietário compra\nprodutos e insumos\n(fornecedor não informado pelo estabelecimento)"];
+ reg [label="Registro da compra:\nfornecedor, produtos, quantidade e custo (proposta)"];
+ chega [label="Mercadoria chega"];
+ ger [label="Gerente recebe e confere", ];
+ ok [label="Nota, quantidade\ne validade conferem?", shape=diamond, style="filled", fillcolor="white"];
+ rec [label="Recusa ou ajusta a compra", fillcolor="#fde8e8"];
+ cad [label="Produto recebido é cadastrado\ncom código de barras próprio"];
+ ent [label="Entrada no estoque\n(movimentação do tipo compra)"];
+ val [label="Mensalmente: garçons conferem a validade,\nretiram itens a até 10 dias do vencimento\ne anotam em planilha (ajuste de estoque, com motivo)", shape=note, fillcolor="#fff7e0", color="#a07800"];
+ v -> min; ins -> min [style=dashed];
+ min -> v [label="não"]; min -> al [label="sim"];
+ al -> prop -> reg -> chega -> ger -> ok;
+ ok -> rec [label="não"]; ok -> cad [label="sim"]; cad -> ent -> v [constraint=false];
+ val -> ent [style=dashed];
+ {rank=same; ok; rec}
+}

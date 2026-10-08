@@ -50,7 +50,7 @@
   - **Compras sem registro estruturado (informado na visita):** as compras de produtos e insumos são feitas pelo proprietário. O recebimento é conferido pelo gerente. Não há registro de fornecedor nem de custo por compra.
   - **Validade e estoque em planilha (informado na visita):** uma vez por mês os garçons conferem a validade e retiram os itens a até 10 dias de vencer, anotando tudo em planilha. Não há alerta automático de reposição nem histórico de movimentação.
   - **Sistema atual:** o pedido é lançado no aplicativo **Garçom Web**, que o envia ao bar ou à cozinha, com aviso ao chefe de cozinha. O estoque e as compras ficam fora desse fluxo. `[VALIDAR: o que o Garçom Web já controla e o que o novo modelo deve cobrir]`
-  - `[VALIDAR]` **Conferência dos pagamentos e do caixa:** como é feita a conferência diária.
+  - **Conferência dos pagamentos e do caixa (informado pelo grupo):** a maquininha gera a nota fiscal; tudo é separado e conferido antes de encerrar o expediente. O pagamento em dinheiro também é lançado no aplicativo do local.
 - **Justificativa da escolha:** O estabelecimento foi escolhido pela sua estrutura operacional e pelos processos envolvidos no funcionamento (atendimento, produção em setores distintos, compras, estoque e pagamento), o que permite aplicar os conceitos de modelagem de banco de dados. O porte é adequado: tem processos e entidades suficientes, sem ser complexo demais para esta etapa. `[PREENCHER: como o grupo tem acesso ao local — ex.: vínculo com o proprietário]`
 - **Evidências da organização:**
 
@@ -114,7 +114,7 @@ Os processos foram organizados em três grupos: **Vendas** (ciclo do atendimento
 | # | Processo | Descrição | Entrada → Saída | Responsável | Entidades | Origem |
 |---|----------|-----------|-----------------|-------------|-----------|--------|
 | P8 | 🛒 Compra de insumos e bebidas | O proprietário compra produtos e insumos. Neste modelo, a compra passa a ser registrada com fornecedor, itens, quantidades e custo, a partir do alerta de estoque mínimo. | Alerta de estoque → compra registrada | Proprietário | COMPRA, PRODUTO (relacionamento possui) | confirmado na visita (quem compra) / proposta (registro) |
-| P9 | 🏭 Cadastro de fornecedores | Os fornecedores não foram informados na visita. O modelo propõe cadastrá-los (nome, CNPJ, telefone). Só se compra de fornecedor cadastrado e ativo. `[VALIDAR: existem fornecedores fixos?]` | Dados do fornecedor → fornecedor ativo | Proprietário / gerência `[VALIDAR]` | FORNECEDOR | proposta |
+| P9 | 🏭 Cadastro de fornecedores | O estabelecimento **não quis informar** os fornecedores. O modelo propõe cadastrá-los (nome, CNPJ, telefone), sem dados reais do Palazio. Só se compra de fornecedor cadastrado e ativo. | Dados do fornecedor → fornecedor ativo | Proprietário / gerência | FORNECEDOR | proposta (fornecedores reais não informados) |
 | P10 | 📦 Recebimento de mercadorias | O gerente recebe a mercadoria. Cada produto recebido é cadastrado com código de barras próprio. Neste modelo, o recebimento registra nota fiscal, quantidade e validade e gera a entrada no estoque. | Mercadoria + nota → entrada de estoque | Gerente | COMPRA, PRODUTO (possui), MOVIMENTACAO_ESTOQUE | confirmado na visita (quem recebe) / proposta (registro) |
 
 ### 2.3 Processos de Apoio
@@ -123,7 +123,7 @@ Os processos foram organizados em três grupos: **Vendas** (ciclo do atendimento
 |---|----------|-----------|-----------------|-------------|-----------|--------|
 | P11 | 📊 Controle de estoque e validade | Hoje, controlam o estoque de ingredientes, pratos prontos e bebidas, e os garçons conferem a validade uma vez por mês, retiram os itens a até 10 dias do vencimento e anotam em planilha. Neste modelo, toda venda, compra, estorno e ajuste (perda, vencimento) gera uma movimentação, e o saldo é a soma delas. Abaixo do mínimo, há alerta de reposição. | Evento de estoque → saldo atualizado e alerta | Garçons (validade) / gerência `[VALIDAR]` | PRODUTO, MOVIMENTACAO_ESTOQUE | confirmado na visita (validade) / proposta (movimentação) |
 | P12 | 🧑‍🍳 Cadastro de atendentes e escalas | Os funcionários são CLT, em escala 6x1 (seis dias de trabalho e um de folga), e hoje não têm credenciais individuais de gestão. Neste modelo, cada funcionário recebe cadastro com credencial, setor e perfil de acesso. Funcionário desligado é inativado, não excluído. A escala de folgas é rotina de RH e não está modelada nesta versão. | Contratação → atendente ativo com acesso | Gerência `[VALIDAR]` | ATENDENTE, SETOR | original / confirmado na visita (6x1) |
-| P13 | 💰 Caixa e fechamento diário | Ao fim do dia, a gerência confere o total vendido por forma de pagamento (dinheiro, crédito, débito, Pix) com o valor em caixa. É uma consulta sobre os pagamentos do dia, sem entidade própria. | Pagamentos do dia → conferência do caixa | Gerente | PAGAMENTO, PEDIDO | confirmado na visita (quem fecha) / proposta |
+| P13 | 💰 Caixa e fechamento diário | Antes de encerrar o expediente, o gerente confere os pagamentos, que ficam separados por forma (a maquininha gera a nota fiscal e o dinheiro também é lançado no aplicativo do local). No modelo, é uma consulta sobre os pagamentos do dia, sem entidade própria. | Pagamentos do dia → conferência do caixa | Gerente | PAGAMENTO, PEDIDO | confirmado (quem fecha e como confere) / proposta (consulta) |
 
 ### 2.4 Como os processos se integram
 
@@ -137,7 +137,13 @@ Os processos foram organizados em três grupos: **Vendas** (ciclo do atendimento
 
 ### 2.5 Fluxogramas
 
-`[PREENCHER]` O grupo também desenvolve a versão em imagem em [`Fluxograma_Palazio_del_Chef/`](./Fluxograma_Palazio_del_Chef/). Abaixo, os fluxos em Mermaid, que o GitHub renderiza.
+Clique na imagem para abrir em tamanho original (PNG; também há versão SVG na mesma pasta).
+
+[![Fluxo 1 — Atendimento, pedido e pagamento](./Fluxograma_Palazio_del_Chef/fluxo_vendas.png)](./Fluxograma_Palazio_del_Chef/fluxo_vendas.png)
+
+[![Fluxo 2 — Compras, recebimento e estoque](./Fluxograma_Palazio_del_Chef/fluxo_compras.png)](./Fluxograma_Palazio_del_Chef/fluxo_compras.png)
+
+Fontes das imagens: [`fluxo_vendas.dot`](./Fluxograma_Palazio_del_Chef/fluxo_vendas.dot) e [`fluxo_compras.dot`](./Fluxograma_Palazio_del_Chef/fluxo_compras.dot) (Graphviz). Abaixo, os mesmos fluxos em Mermaid, que o GitHub renderiza.
 
 **Fluxo 1 — Atendimento, pedido e pagamento (P1 a P5):**
 
@@ -258,15 +264,15 @@ flowchart TD
 | RN19 | Estoque | **Validade:** os garçons conferem a validade uma vez por mês e retiram os itens a até 10 dias do vencimento, anotando em planilha. No modelo, o item perecível registra a validade no recebimento, e o produto retirado sai do estoque por ajuste, com motivo. | confirmado na visita / proposta (registro) |
 | RN20 | Estoque | **Estoque mínimo:** produto com saldo igual ou abaixo do mínimo entra na lista de reposição. | proposta |
 | RN21 | Estoque | **Toda alteração do saldo** (venda, compra, estorno ou ajuste) gera uma movimentação. O saldo é a soma das movimentações. | proposta |
-| RN22 | Compras | **Compra só de fornecedor cadastrado e ativo.** As compras são feitas pelo proprietário. `[VALIDAR: existem fornecedores fixos?]` | proposta / confirmado na visita (quem compra) |
+| RN22 | Compras | **Compra só de fornecedor cadastrado e ativo.** As compras são feitas pelo proprietário. Os fornecedores reais não foram informados pelo estabelecimento. | proposta / confirmado na visita (quem compra) |
 | RN23 | Compras | O **recebimento** de uma compra gera a entrada de estoque de cada item. Quem recebe é o gerente. Compra recebida não pode ser alterada. | proposta / confirmado na visita (quem recebe) |
 | RN24 | Cadastro | O **preço do produto só é alterado pela gerência**. Cada alteração grava o preço anterior, o novo, o responsável e a data. | proposta |
-| RN25 | Caixa | O **fechamento diário** é feito pelo gerente e compara o total por forma de pagamento com o valor conferido em caixa. | confirmado na visita (quem fecha) / proposta (conferência por forma) |
+| RN25 | Caixa | O **fechamento diário** é feito pelo gerente e compara o total por forma de pagamento com o valor conferido em caixa. | confirmado (conferência antes de encerrar o expediente; dinheiro também lançado no aplicativo) / proposta (conferência por forma) |
 | RN26 | Pedido | **Meia porção** custa **70%** do valor da porção inteira (regra do cardápio). | confirmado (cardápio) |
 | RN27 | Produto | **Variações** de tamanho ou acompanhamento (1 ou 2 pessoas, com ou sem fritas) são produtos distintos, cada um com preço e código próprios. | proposta (a partir do cardápio) |
 | RN28 | Reserva | Uma **reserva** é feita para uma mesa ativa, em uma data e hora, e guarda apenas o nome e o telefone do cliente. | proposta `[VALIDAR]` |
 | RN29 | Produto | Todo produto pertence a **uma categoria** do cardápio (lanches, pratos, porções, bebidas etc.). Bebidas alcoólicas são marcadas, para a regra RN18. | proposta (a partir do cardápio) |
-| RN30 | Estoque | **Insumos** (ingredientes) e produtos prontos têm estoque controlado, como as bebidas. O insumo não aparece no cardápio e não é pedido pelo cliente. Sem ficha técnica, a baixa de insumo é registrada como ajuste de consumo. `[VALIDAR: como o consumo de ingredientes é baixado hoje]` | confirmado na visita (controlam ingredientes) / proposta (baixa) |
+| RN30 | Estoque | **Insumos** (ingredientes) e produtos prontos têm estoque controlado, como as bebidas. O insumo não aparece no cardápio e não é pedido pelo cliente. Hoje a baixa dos insumos é **feita manualmente**; no modelo, é registrada como ajuste de consumo, com motivo. | confirmado (controlam ingredientes; baixa manual) / proposta (registro como ajuste) |
 
 ### 4.2 Restrições organizacionais
 
@@ -600,13 +606,30 @@ Papéis: **Atendimento**, **Preparo** (cozinha e bar), **Gerência** e **Auditor
 
 ## 7. 🔗 Diagrama Entidade-Relacionamento (DER)
 
-`[VALIDAR]` O DER abaixo foi desenhado na notação do BRModelo (Chen), a partir do dicionário proposto. **Confirme se bate com o DER do BRModelo do grupo** e substitua a imagem se o grupo aceitar as entidades marcadas como proposta. O DER **não mostra chaves estrangeiras**: a ligação entre entidades é feita pelo relacionamento, com a cardinalidade (mín,máx) nos dois lados.
+O DER abaixo foi desenhado na notação do BRModelo (Chen), a partir do dicionário. Ele **amplia o DER anterior do grupo** (veja a comparação mais abaixo) com as entidades marcadas como proposta. `[VALIDAR]` O grupo deve refazê-lo no BRModelo e substituir a imagem se aceitar as entidades propostas. O DER **não mostra chaves estrangeiras**: a ligação entre entidades é feita pelo relacionamento, com a cardinalidade (mín,máx) nos dois lados.
 
 <p align="center">
   <img src="./Diagrama_Palazio_del_Chef/diagrama_palazio_del_chef.png" alt="Diagrama Entidade-Relacionamento do Palazio del Chef" width="900">
 </p>
 
-> [Ver Diagrama](./Diagrama_Palazio_del_Chef/)
+> [Ver Diagrama](./Diagrama_Palazio_del_Chef/) · [abrir a imagem em tamanho original](./Diagrama_Palazio_del_Chef/diagrama_palazio_del_chef.png)
+
+### 7.1 DER anterior do grupo (BRModelo, 22/09/2026)
+
+[![DER anterior do grupo no BRModelo](./Diagrama_Palazio_del_Chef/der_grupo_brmodelo_22-09-2026.jpg)](./Diagrama_Palazio_del_Chef/der_grupo_brmodelo_22-09-2026.jpg)
+
+Este foi o DER feito pelo grupo no BRModelo Web, antes das orientações do professor. A versão atual parte dele e muda o seguinte:
+
+| DER anterior do grupo | DER atual | Motivo |
+|-----------------------|-----------|--------|
+| Atendente (0,n) registra Pedido (1,1) | Atendente **(1,N)** registra Pedido (1,1) | Orientação do professor |
+| Entidade Item_pedido (Pedido possui Item_pedido; Produto referente) | **Removida**: "contém" é N:N entre Pedido e Produto, com quantidade, preço unitário, status, horários e observação | Orientação do professor |
+| Atendente só com nome e id | Atendente com **função** (`TP_FUNCAO`), login, perfil, setor e situação | Orientação do professor (especificar a função) e problema de credenciais |
+| `preço_atual` e `preço_unitario` | `VL_PRECO` e `VL_PRECO_UNITARIO` (preço) | Orientação do professor (valor → preço) |
+| Sem histórico de preço | Entidade **Histórico_Produto** | Orientação do professor |
+| `forma_pagamento` e `Nmr_mesa` como atributos do Pedido | Entidades **Pagamento** (várias formas por pedido) e **Mesa** ligada ao Pedido | Pagamento dividido e mesa com dados próprios (proposta) |
+| Produto com `Nmr_setor` | Relacionamento Setor prepara Produto | Evita repetir o setor no produto |
+| Sem reserva, categoria, compra, fornecedor e estoque | **Reserva, Categoria, Compra, Fornecedor, Movimentação de estoque** | Processos relatados na visita (proposta de modelagem) |
 
 Versão de apoio em Mermaid:
 
@@ -752,13 +775,13 @@ erDiagram
 | Item | Registro |
 |------|----------|
 | **Ferramenta e etapa** | **(1) ChatGPT (OpenAI):** ferramenta de apoio na organização da documentação, na estruturação do README, na revisão do texto, na melhoria da clareza e na padronização, usando as informações e as orientações do professor que o grupo já tinha. **(2) Claude (Anthropic):** reorganização do README no formato do esqueleto da Entrega 1, proposta de requisitos, regras, atributos, relacionamentos, justificativas e do DER, incorporação dos dados da visita e ajustes conforme o parecer do professor. |
-| **Motivação** | Organizar e padronizar a documentação segundo o esqueleto da disciplina, informar o uso de IA como o professor pediu e corrigir os pontos apontados no parecer do professor. `[PREENCHER: confirmar com o grupo]` |
+| **Motivação** | Organizar e padronizar a documentação segundo o esqueleto da disciplina, informar o uso de IA como o professor pediu e corrigir os pontos apontados no parecer do professor. (rascunho; o grupo confirma) |
 | **Prompt(s) utilizados** | **ChatGPT:** o prompt enviado pelo grupo está na íntegra em [`evidencias/prompt_chatgpt.md`](./evidencias/prompt_chatgpt.md) (conversa: [chatgpt.com/share/6ac6b6d5-d03c-83e9-8cb3-1928b9067b78](https://chatgpt.com/share/6ac6b6d5-d03c-83e9-8cb3-1928b9067b78)). Ele pedia para organizar e completar a Entrega 1 "sem inventar informações", preservar as alterações pedidas pelo professor (Funcionário → Atendente, função de cada atendente, Valor → Preço, Item_pedido, Atendente (1,N), Histórico_Produto) e informar o uso de IA. Um segundo prompt, mais curto, repete as orientações do professor (inclusive remover Item_pedido) e está registrado no mesmo arquivo; a resposta do ChatGPT ainda será anexada pelo grupo. **Claude:** os usos estão listados na tabela "Usos do Claude" logo abaixo desta. |
 | **Resposta recebida** | ChatGPT: `[PREENCHER: resumo da resposta, que o grupo consulta no link]`. Claude: README reorganizado em 9 seções, mantendo o conteúdo original e marcando o que foi proposto. Depois, 13 processos descritos, requisitos funcionais e não funcionais, regras de negócio, dicionário no modelo da disciplina e DER sem chaves estrangeiras, com a inclusão dos dados da visita (reserva, categoria, taxa de serviço, bebida alcoólica, tipo de mesa, insumos e função do atendente). |
-| **Fontes consultadas e verificadas** | `[PREENCHER]` A IA não teve acesso ao estabelecimento. Tudo o que foi marcado como `(proposta)` ou `[VALIDAR]` precisa ser conferido na pesquisa de campo e com o DER já feito. Foram usados como referência o esqueleto da Entrega 1 e o exemplo de dicionário (02-03g) da disciplina. |
-| **Trechos rejeitados ou corrigidos** | `[PREENCHER]` Ex.: entidades propostas que o grupo removeu, processos que o Palazio não tem (reservas? escalas?), atributos ajustados, regras corrigidas (taxa de serviço, código de barras para pratos). |
-| **Justificativa da escolha final** | `[PREENCHER]` |
-| **Reflexão crítica** | `[PREENCHER]` Pontos de atenção: a IA propôs atributos e processos sem ver o estabelecimento nem o dicionário e o DER do grupo; pode ter assumido processos que o Palazio del Chef não tem (reservas, compras, caixa separado); regras como código de barras para pratos, taxa de serviço e validade precisam de confirmação em campo; os processos e regras de compras e de restrições (sanitária, fiscal) foram propostos com base no que é comum em restaurantes, não no que foi observado. |
+| **Fontes consultadas e verificadas** | **Rascunho para o grupo revisar e assumir:** visita ao estabelecimento em 04/09/2026 (respostas às perguntas do roteiro), cardápio, horário no Google Maps, foto da fachada, parecer e orientações do professor, esqueleto da Entrega 1 e exemplo de dicionário (02-03g) da disciplina, e o DER anterior do grupo no BRModelo. A IA não teve acesso ao estabelecimento. `[PREENCHER: o que o grupo conferiu em campo e no DER]` |
+| **Trechos rejeitados ou corrigidos** | **Rascunho para o grupo revisar e assumir:** corrigido pelas orientações do professor: Funcionário → Atendente com função, Valor → Preço, Item_pedido removido (virou o relacionamento "contém"), Atendente (1,N) e inclusão de Histórico_Produto. Mantidos apenas dados reais da visita; o que a IA propôs sem confirmação ficou marcado como proposta. Fornecedores reais não foram informados pelo estabelecimento, então o modelo só prevê o cadastro. `[PREENCHER: entidades, regras e atributos propostos que o grupo removeu ou alterou]` |
+| **Justificativa da escolha final** | **Rascunho para o grupo revisar e assumir:** foi mantido o modelo com 12 entidades porque cobre os processos relatados na visita (atendimento, reserva, pedido por mesa, pagamento, compras, estoque) e resolve o problema de rastreabilidade com a entidade Atendente. O N:N entre pedido e produto segue a orientação do professor. `[PREENCHER: confirmar com o grupo]` |
+| **Reflexão crítica** | **Rascunho para o grupo revisar e assumir:** a IA acelerou a organização e a padronização do README, mas propôs atributos, regras e entidades sem ver o estabelecimento nem o DER do grupo, e por isso tudo precisou ser comparado com a visita e com as orientações do professor. A remoção do Item_pedido mostrou o limite do modelo: o mesmo produto não repete no pedido e o status de preparo fica por produto, ponto a confirmar com o professor. Regras como código de barras para pratos, taxa de serviço e validade vieram da visita; as de compra e de fornecedor são propostas. `[PREENCHER: o grupo deve reescrever com suas palavras]` |
 
 ### Usos do Claude (Anthropic)
 
@@ -776,7 +799,7 @@ erDiagram
 | 10 | Justificativa técnica | Pedido de justificar as escolhas. | Texto da seção 8, com a limitação apontada pela remoção do Item_pedido. |
 | 11 | Entrega 2 (rascunho) | Pedido de modelo lógico e SQL. | Rascunho, ainda no modelo antigo, a atualizar. |
 
-**Verificação pelo grupo:** `[PREENCHER]` o que o grupo conferiu, corrigiu ou descartou em cada uso acima.
+**Verificação pelo grupo:** **Rascunho para o grupo revisar e assumir:** cada resultado do Claude foi comparado com as orientações do professor, com os dados da visita e com o DER anterior do grupo; o que não foi observado no estabelecimento ficou como proposta ou `[VALIDAR]`. `[PREENCHER: o que o grupo conferiu, corrigiu ou descartou em cada uso]`
 
 ---
 
@@ -802,7 +825,7 @@ erDiagram
 | DER | ✅ 12 entidades e 16 relacionamentos, sem FKs e sem Item_pedido (refazer no BRModelo) |
 | Justificativa técnica | ✅ |
 | Uso de IA | 🔄 Campos do grupo pendentes |
-| Fluxograma em imagem | 🔄 Em desenvolvimento |
+| Fluxograma em imagem | ✅ Dois fluxos em imagem (vendas e compras), com link para o tamanho original |
 
 ### 🛠️ Tecnologias e ferramentas
 

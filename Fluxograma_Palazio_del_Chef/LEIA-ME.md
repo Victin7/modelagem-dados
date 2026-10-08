@@ -1,4 +1,6 @@
-# Fluxograma do processo
+# Fluxogramas do Palazio del Chef
 
-O fluxograma em Mermaid está no `README.md` (seção 2) e é renderizado pelo GitHub.
-Coloque aqui a versão em imagem do grupo com o nome `fluxograma_palazio_del_chef.png`.
+- `fluxo_vendas.png` / `.svg`: atendimento, pedido e pagamento (P1 a P6 e P13).
+- `fluxo_compras.png` / `.svg`: compras, recebimento e estoque (P8 a P11).
+- `*.dot`: fonte Graphviz. Para regerar: `dot -Tpng -Gdpi=130 fluxo_vendas.dot -o fluxo_vendas.png`.
+- Os mesmos fluxos em Mermaid estão no `README.md` (seção 2.5).
