@@ -1,4 +1,4 @@
-"""Gera o DER conceitual do Palazio del Chef (notação Chen, como no BRModelo).
+"""Gera o DER conceitual do Palazio del Chef (notação de Chen).
 Uso: python3 gerar_der.py  ->  diagrama_palazio_del_chef.png
 Sem chaves estrangeiras. Sem entidade ITEM_PEDIDO/ITEM_COMPRA: PEDIDO×PRODUTO e COMPRA×PRODUTO são
 relacionamentos N:N com atributos próprios (círculos presos ao losango)."""
@@ -90,7 +90,7 @@ for n, (x, y, side, attrs) in E.items():
     ax.text(x, y, n, fontsize=11.5, fontweight="bold", color=COR, ha="center", va="center", zorder=4)
     fan(x, y, w, BH, side, attrs)
 ax.text(-1, 2, "DER Conceitual — Palazio del Chef", fontsize=24, fontweight="bold", color=TXT, va="center")
-ax.text(-1, 3.4, "Notação do BRModelo (Chen): retângulo = entidade · losango = relacionamento · círculo = atributo · cardinalidade (mín,máx). Sem chaves estrangeiras.", fontsize=12, color=TXT, va="center")
+ax.text(-1, 3.4, "Notação de Chen: retângulo = entidade · losango = relacionamento · círculo = atributo · cardinalidade (mín,máx). Sem chaves estrangeiras.", fontsize=12, color=TXT, va="center")
 ax.text(-1, 4.5, "PEDIDO × PRODUTO e COMPRA × PRODUTO são relacionamentos N:N com atributos próprios (sem entidade Item_pedido).", fontsize=12, color=COR, va="center")
 ax.add_patch(Circle((-0.8, 5.8), 0.14, fc=TXT, ec=TXT)); ax.text(-0.4, 5.8, "identificador", fontsize=11, va="center")
 ax.add_patch(Circle((-0.8, 6.7), 0.14, fc="white", ec=TXT, lw=1.3)); ax.text(-0.4, 6.7, "atributo", fontsize=11, va="center")

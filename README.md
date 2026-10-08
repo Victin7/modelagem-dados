@@ -606,13 +606,13 @@ Papéis: **Atendimento**, **Preparo** (cozinha e bar), **Gerência** e **Auditor
 
 ## 7. 🔗 Diagrama Entidade-Relacionamento (DER)
 
-O DER abaixo foi desenhado na notação do BRModelo (Chen), a partir do dicionário. Ele **amplia o DER anterior do grupo** (veja a comparação mais abaixo) com as entidades marcadas como proposta. `[VALIDAR]` O grupo deve refazê-lo no BRModelo e substituir a imagem se aceitar as entidades propostas. O DER **não mostra chaves estrangeiras**: a ligação entre entidades é feita pelo relacionamento, com a cardinalidade (mín,máx) nos dois lados.
+O DER abaixo foi desenhado na notação de Chen (retângulo, losango e círculo), a partir do dicionário. Ele **amplia o DER anterior do grupo** (veja a comparação mais abaixo) com as entidades marcadas como proposta. O DER **não mostra chaves estrangeiras**: a ligação entre entidades é feita pelo relacionamento, com a cardinalidade (mín,máx) nos dois lados.
 
 <p align="center">
   <img src="./Diagrama_Palazio_del_Chef/diagrama_palazio_del_chef.png" alt="Diagrama Entidade-Relacionamento do Palazio del Chef" width="900">
 </p>
 
-> [Ver Diagrama](./Diagrama_Palazio_del_Chef/) · [abrir a imagem em tamanho original](./Diagrama_Palazio_del_Chef/diagrama_palazio_del_chef.png) · [roteiro para refazer no BRModelo](./Diagrama_Palazio_del_Chef/roteiro_brmodelo.md)
+> [Ver Diagrama](./Diagrama_Palazio_del_Chef/) · [abrir a imagem em tamanho original](./Diagrama_Palazio_del_Chef/diagrama_palazio_del_chef.png)
 
 ### 7.1 DER anterior do grupo (BRModelo, 22/09/2026)
 
@@ -795,7 +795,7 @@ erDiagram
 | 6 | Correção pelo parecer | Parecer do professor anexado (critérios 1 a 12). | Conferência do que já existia e inclusão do que faltava. |
 | 7 | Dados da visita | Endereço, contato, data, porte, respostas às 24 perguntas, cardápio, fotos, horário, reserva, Instagram, taxa de serviço, link do Maps e RGMs. | Incorporação no README (caracterização, 13 processos, requisitos e regras). |
 | 8 | Requisitos, regras e dicionário | Pedido de requisitos, regras e dicionário no modelo 02-03g. | RF, RNF, RN e dicionário com 12 entidades, cardinalidades, fluxo, log e LGPD. |
-| 9 | DER | Pedido de um DER no BRModelo; depois, as orientações do professor (Atendente, função, Preço, Histórico_Produto, Atendente (1,N), remover Item_pedido). | DER em imagem na notação do BRModelo (Chen), gerado por script (`Diagrama_Palazio_del_Chef/gerar_der.py`); o arquivo nativo `.brM` não pôde ser gerado e deve ser refeito pelo grupo. |
+| 9 | DER | Pedido de um DER; depois, as orientações do professor (Atendente, função, Preço, Histórico_Produto, Atendente (1,N), remover Item_pedido). | DER em imagem na notação de Chen, gerado por script (`Diagrama_Palazio_del_Chef/gerar_der.py`). |
 | 10 | Justificativa técnica | Pedido de justificar as escolhas. | Texto da seção 8, com a limitação apontada pela remoção do Item_pedido. |
 | 11 | Entrega 2 (rascunho) | Pedido de modelo lógico e SQL. | Rascunho, ainda no modelo antigo, a atualizar. |
 
@@ -822,7 +822,7 @@ erDiagram
 | Processos de negócio | ✅ 13 processos descritos, a maioria confirmada na visita |
 | Requisitos e regras de negócio | ✅ (revisar as propostas) |
 | Dicionário de dados | ✅ No modelo da disciplina (conferir com a versão do grupo) |
-| DER | ✅ 12 entidades e 16 relacionamentos, sem FKs e sem Item_pedido (refazer no BRModelo) |
+| DER | ✅ 12 entidades e 16 relacionamentos, sem FKs e sem Item_pedido |
 | Justificativa técnica | ✅ |
 | Uso de IA | 🔄 Campos do grupo pendentes |
 | Fluxograma em imagem | ✅ Dois fluxos em imagem (vendas e compras), com link para o tamanho original |
