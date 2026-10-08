@@ -612,7 +612,7 @@ O DER abaixo foi desenhado na notação do BRModelo (Chen), a partir do dicioná
   <img src="./Diagrama_Palazio_del_Chef/diagrama_palazio_del_chef.png" alt="Diagrama Entidade-Relacionamento do Palazio del Chef" width="900">
 </p>
 
-> [Ver Diagrama](./Diagrama_Palazio_del_Chef/) · [abrir a imagem em tamanho original](./Diagrama_Palazio_del_Chef/diagrama_palazio_del_chef.png)
+> [Ver Diagrama](./Diagrama_Palazio_del_Chef/) · [abrir a imagem em tamanho original](./Diagrama_Palazio_del_Chef/diagrama_palazio_del_chef.png) · [roteiro para refazer no BRModelo](./Diagrama_Palazio_del_Chef/roteiro_brmodelo.md)
 
 ### 7.1 DER anterior do grupo (BRModelo, 22/09/2026)
 
