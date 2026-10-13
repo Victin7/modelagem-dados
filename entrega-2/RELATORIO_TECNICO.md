@@ -30,7 +30,7 @@ O DER da Entrega 1 foi mantido. Foram feitos **três ajustes**, todos nascidos d
 
 | # | Ajuste | Motivo |
 |---|---|---|
-| 1 | Novo atributo `IN_CONTROLA_ESTOQUE` em PRODUTO (`[VALIDAR]`) | Nem todo produto tem estoque por unidade. Cerveja, refrigerante, água, vinho, sobremesa pronta e insumo têm. Prato, pizza, drink e café preparados na hora não têm baixa por porção; o consumo dos ingredientes é lançado à mão (baixa manual de insumos, informada pelo estabelecimento). Sem o atributo, o estoque de um prato ficaria sempre zero e a regra "estoque nunca negativo" bloquearia vendas. Dicionário, DER e HTML foram atualizados. |
+| 1 | Novo atributo `IN_CONTROLA_ESTOQUE` em PRODUTO (`[VALIDAR]`) | Nem todo produto tem estoque por unidade. Cerveja, refrigerante, água, vinho, sobremesa pronta e insumo têm; o controle do que chega ao local é feito pelos garçons. Prato, pizza, drink e café preparados na hora não têm baixa por porção; o consumo dos ingredientes é lançado à mão (baixa manual de insumos, informada pelo estabelecimento). Sem o atributo, o estoque de um prato ficaria sempre zero e a regra "estoque nunca negativo" bloquearia vendas. Dicionário, DER e HTML foram atualizados. |
 | 2 | Chaves compostas nos relacionamentos N:N CONTÉM e POSSUI | Mantém a orientação do professor de **não ter a entidade Item_pedido**. Os atributos do relacionamento (quantidade, preço unitário, status, horários) viram colunas da tabela associativa, com chave `(id_pedido, id_produto)`. |
 | 3 | `TP_FUNCAO` e `TP_LOCAL` detalhados como domínios | Função do funcionário (garçom, caixa, cozinha, bar, gerente, sócio, limpeza) e local (mesa `M` ou bistrô `B`) viraram `CHECK`. |
 
