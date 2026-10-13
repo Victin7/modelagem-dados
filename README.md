@@ -870,3 +870,18 @@ modelagem-dados/
 ## 🎓 Contexto Acadêmico
 
 Projeto desenvolvido como atividade acadêmica da disciplina de Modelagem de Banco de Dados (UNICID), aplicando levantamento de requisitos, modelagem conceitual, entidades, atributos, relacionamentos, cardinalidade, chaves e, na próxima etapa, normalização e implementação.
+
+---
+
+## Entrega 2 — Modelo lógico e SQL
+
+Tudo da segunda entrega está na pasta [`entrega-2/`](entrega-2/):
+
+- [`RELATORIO_TECNICO.md`](entrega-2/RELATORIO_TECNICO.md): revisão do conceitual, conversão para o lógico, PKs/FKs, normalização (1FN a 3FN), justificativas, arquitetura analítica BI/IA, testes e uso de IA.
+- [`docs/modelo_logico.png`](entrega-2/docs/modelo_logico.png): diagrama do modelo lógico (14 tabelas).
+- [`sql/`](entrega-2/sql/): scripts 01 a 08 e `palazio_del_chef_completo.sql` (PostgreSQL 16, testado a partir de banco vazio).
+- [`scripts/gen_data.py`](entrega-2/scripts/gen_data.py): gerador da massa fictícia (≈ 1.650 pedidos em uma semana).
+
+```bash
+cd entrega-2/sql && psql -U postgres -v ON_ERROR_STOP=1 -f palazio_del_chef_completo.sql
+```
