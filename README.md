@@ -380,7 +380,7 @@ O cliente reserva por telefone (RESERVA, ligada a uma MESA) ou entra e vê se h�
 Índices: PK ID_MESA; índice único em NR_MESA.
 
 ### PRODUTO
-`PRODUTO = @ID_PRODUTO + ID_SETOR + ID_CATEGORIA + NM_PRODUTO + NR_CODIGO_BARRAS + VL_PRECO + IN_VENDAVEL + IN_ALCOOLICO + QT_ESTOQUE_ATUAL + QT_ESTOQUE_MINIMO + IN_ATIVO`
+`PRODUTO = @ID_PRODUTO + ID_SETOR + ID_CATEGORIA + NM_PRODUTO + NR_CODIGO_BARRAS + VL_PRECO + IN_VENDAVEL + IN_ALCOOLICO + IN_CONTROLA_ESTOQUE + QT_ESTOQUE_ATUAL + QT_ESTOQUE_MINIMO + IN_ATIVO`
 
 | Atributo | Tipo | Obrig. | Descrição | Regra de negócio associada |
 |----------|------|--------|-----------|----------------------------|
@@ -392,6 +392,7 @@ O cliente reserva por telefone (RESERVA, ligada a uma MESA) ou entra e vê se h�
 | VL_PRECO | decimal(8,2) | Sim | Preço de venda atual. | Maior que zero. Reajuste não altera pedidos antigos (RN07). Só a gerência altera (RN24). |
 | IN_VENDAVEL | boolean | Sim | Verdadeiro para item do cardápio. Falso para insumo (ingrediente), que só tem estoque. | Só item vendável entra em pedido (RN14, RN30). |
 | IN_ALCOOLICO | boolean | Sim | Indica bebida alcoólica. | Venda só para maiores de 18 anos, com conferência de documento (RN18). |
+| IN_CONTROLA_ESTOQUE | boolean | Sim | Indica se o produto tem estoque controlado (bebidas, sobremesas prontas, insumos). Pratos, drinks e cafés preparados na hora não têm baixa por unidade. | Só produto com controle gera movimentação e entra em compra; quando falso, estoque atual e mínimo valem 0. `[VALIDAR]` atributo proposto na Entrega 2. |
 | QT_ESTOQUE_ATUAL | integer | Sim | Quantidade disponível. | Não pode ser negativa (RN08). É a soma das movimentações (RN21). `[VALIDAR]` |
 | QT_ESTOQUE_MINIMO | integer | Sim | Quantidade que dispara o alerta de reposição. | Alerta de reposição (RN20). |
 | IN_ATIVO | boolean | Sim | Se o produto está no cardápio. | Inativo não pode ser pedido (RN13, RN14). |
@@ -682,6 +683,7 @@ erDiagram
         decimal VL_PRECO
         boolean IN_VENDAVEL
         boolean IN_ALCOOLICO
+        boolean IN_CONTROLA_ESTOQUE
         int QT_ESTOQUE_ATUAL
         int QT_ESTOQUE_MINIMO
         boolean IN_ATIVO

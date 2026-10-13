@@ -58,7 +58,7 @@ SELECT verificacao, violacoes, CASE WHEN violacoes = 0 THEN 'OK' ELSE 'FALHOU' E
   SELECT 'A12 produto vendável sem setor de preparo (RN06)', COUNT(*)
     FROM produto p JOIN setor s USING (id_setor) WHERE p.in_vendavel AND NOT s.in_preparo
   UNION ALL
-  SELECT 'A13 pedido aberto por atendente sem perfil de atendimento (RN01)', COUNT(*)
+  SELECT 'A13 pedido aberto por atendente sem perfil de atendimento (RN04)', COUNT(*)
     FROM pedido p JOIN atendente a USING (id_atendente) WHERE a.tp_perfil NOT IN ('A','G','S')
   UNION ALL
   SELECT 'A14 sobreposição de pedidos na mesma mesa (RN05)', COUNT(*)

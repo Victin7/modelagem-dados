@@ -51,7 +51,7 @@ END $$;
 CREATE TRIGGER trg_produto_setor BEFORE INSERT OR UPDATE OF id_setor ON produto
     FOR EACH ROW EXECUTE FUNCTION trg_produto_setor();
 
--- ---------- Alteração de preço: só gerência/sócio e gera histórico (RN14) ----------
+-- ---------- Alteração de preço: só gerência/sócio e gera histórico (regra proposta: perfil e histórico) ----------
 CREATE OR REPLACE FUNCTION trg_produto_preco() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE v_at atendente;
 BEGIN
@@ -89,10 +89,10 @@ DECLARE v_at atendente; v_mesa mesa;
 BEGIN
     SELECT * INTO v_at FROM atendente WHERE id_atendente = NEW.id_atendente;
     IF NOT v_at.in_ativo OR v_at.tp_perfil NOT IN ('A','G','S') THEN
-        RAISE EXCEPTION 'RN01: atendente % não pode abrir pedidos (inativo ou perfil %)', NEW.id_atendente, v_at.tp_perfil;
+        RAISE EXCEPTION 'RN04: atendente % não pode abrir pedidos (inativo ou perfil %)', NEW.id_atendente, v_at.tp_perfil;
     END IF;
     SELECT * INTO v_mesa FROM mesa WHERE id_mesa = NEW.id_mesa FOR UPDATE;
-    IF NOT v_mesa.in_ativa THEN RAISE EXCEPTION 'RN04: mesa % inativa', v_mesa.nr_mesa; END IF;
+    IF NOT v_mesa.in_ativa THEN RAISE EXCEPTION 'Mesa % inativa', v_mesa.nr_mesa; END IF;
     IF v_mesa.tp_status <> 'L' THEN RAISE EXCEPTION 'RN05: mesa % já está ocupada', v_mesa.nr_mesa; END IF;
     NEW.tp_status := 'A'; NEW.dh_fechamento := NULL;
     UPDATE mesa SET tp_status = 'O' WHERE id_mesa = NEW.id_mesa;
@@ -100,7 +100,7 @@ BEGIN
 END $$;
 CREATE TRIGGER trg_pedido_ins BEFORE INSERT ON pedido FOR EACH ROW EXECUTE FUNCTION trg_pedido_ins();
 
--- ---------- Fechamento / cancelamento de pedido (RN09, RN10, RN12) ----------
+-- ---------- Fechamento / cancelamento de pedido (RN10, RN17) ----------
 CREATE OR REPLACE FUNCTION trg_pedido_upd() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE v_total NUMERIC; v_pago NUMERIC;
 BEGIN
@@ -112,10 +112,10 @@ BEGIN
     END IF;
     IF NEW.tp_status = 'F' THEN
         IF EXISTS (SELECT 1 FROM pedido_produto WHERE id_pedido = OLD.id_pedido AND tp_status IN ('P','E','R')) THEN
-            RAISE EXCEPTION 'RN09: pedido % tem itens ainda não entregues', OLD.id_pedido;
+            RAISE EXCEPTION 'RN10: pedido % tem itens ainda não entregues', OLD.id_pedido;
         END IF;
         IF NOT EXISTS (SELECT 1 FROM pedido_produto WHERE id_pedido = OLD.id_pedido AND tp_status = 'N') THEN
-            RAISE EXCEPTION 'RN09: pedido % não tem itens entregues; cancele-o', OLD.id_pedido;
+            RAISE EXCEPTION 'RN10: pedido % não tem itens entregues; cancele-o', OLD.id_pedido;
         END IF;
         v_total := fn_total_pedido(OLD.id_pedido) ;
         -- a taxa informada na mesma instrução vale para o cálculo
@@ -124,7 +124,7 @@ BEGIN
         END IF;
         SELECT COALESCE(SUM(vl_pago),0) INTO v_pago FROM pagamento WHERE id_pedido = OLD.id_pedido;
         IF v_pago <> v_total THEN
-            RAISE EXCEPTION 'RN12: pagamentos (%) diferem do total do pedido (%)', v_pago, v_total;
+            RAISE EXCEPTION 'RN10: pagamentos (%) diferem do total do pedido (%)', v_pago, v_total;
         END IF;
         NEW.dh_fechamento := COALESCE(NEW.dh_fechamento, now());
         UPDATE mesa SET tp_status = 'L' WHERE id_mesa = OLD.id_mesa;
@@ -132,8 +132,8 @@ BEGIN
         IF EXISTS (SELECT 1 FROM pagamento WHERE id_pedido = OLD.id_pedido) THEN
             RAISE EXCEPTION 'RN10: pedido % possui pagamento e não pode ser cancelado', OLD.id_pedido;
         END IF;
-        IF EXISTS (SELECT 1 FROM pedido_produto WHERE id_pedido = OLD.id_pedido AND tp_status = 'N') THEN
-            RAISE EXCEPTION 'RN10: pedido % possui itens já entregues', OLD.id_pedido;
+        IF EXISTS (SELECT 1 FROM pedido_produto WHERE id_pedido = OLD.id_pedido AND tp_status IN ('R','N')) THEN
+            RAISE EXCEPTION 'RN17: pedido % possui itens prontos ou entregues e não pode ser cancelado', OLD.id_pedido;
         END IF;
         UPDATE pedido_produto SET tp_status = 'C' WHERE id_pedido = OLD.id_pedido AND tp_status <> 'C';
         NEW.dh_fechamento := COALESCE(NEW.dh_fechamento, now());
@@ -157,7 +157,7 @@ BEGIN
 
     IF TG_OP = 'INSERT' THEN
         IF NOT v_prod.in_ativo OR NOT v_prod.in_vendavel THEN
-            RAISE EXCEPTION 'Produto "%" não está disponível para venda', v_prod.nm_produto;
+            RAISE EXCEPTION 'RN14: produto "%" não está disponível para venda', v_prod.nm_produto;
         END IF;
         NEW.tp_status := 'P'; NEW.dh_pronto := NULL;
         NEW.vl_preco_unitario := v_prod.vl_preco;                                   -- RN07
@@ -170,7 +170,7 @@ BEGIN
         IF OLD.tp_status = 'C' AND NEW.tp_status <> 'C' THEN                         -- reativação do item (via lancar_item)
             IF NEW.tp_status <> 'P' THEN RAISE EXCEPTION 'Item cancelado só pode voltar como Pendente'; END IF;
             IF NOT v_prod.in_ativo OR NOT v_prod.in_vendavel THEN
-                RAISE EXCEPTION 'Produto "%" não está disponível para venda', v_prod.nm_produto;
+                RAISE EXCEPTION 'RN14: produto "%" não está disponível para venda', v_prod.nm_produto;
             END IF;
             NEW.vl_preco_unitario := v_prod.vl_preco; NEW.dh_registro := now(); NEW.dh_pronto := NULL;
         ELSIF OLD.tp_status = 'C' THEN
@@ -179,8 +179,8 @@ BEGIN
             IF NEW.qt_item <= OLD.qt_item THEN RAISE EXCEPTION 'Voltar item para Pendente exige aumento de quantidade'; END IF;
             NEW.dh_registro := now(); NEW.dh_pronto := NULL;
         ELSIF (OLD.tp_status, NEW.tp_status) NOT IN (('P','P'),('E','E'),('R','R'),('N','N'),('P','E'),('E','R'),('R','N'),
-                                                    ('P','C'),('E','C'),('R','C')) THEN
-            RAISE EXCEPTION 'Transição de status inválida: % -> %', OLD.tp_status, NEW.tp_status;
+                                                    ('P','C'),('E','C')) THEN
+            RAISE EXCEPTION 'RN09/RN17: transição de status inválida: % -> % (item pronto ou entregue não é cancelado)', OLD.tp_status, NEW.tp_status;
         END IF;
         IF NEW.qt_item < OLD.qt_item THEN RAISE EXCEPTION 'Quantidade só pode diminuir por cancelamento do item'; END IF;
         IF OLD.tp_status <> 'C' AND NEW.vl_preco_unitario <> OLD.vl_preco_unitario THEN
@@ -252,7 +252,7 @@ BEGIN
     END IF;
 END $$;
 
--- ---------- Pagamento (RN12) ----------
+-- ---------- Pagamento (RN15) ----------
 CREATE OR REPLACE FUNCTION trg_pagamento_ins() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE v_status CHAR; v_total NUMERIC; v_pago NUMERIC;
 BEGIN
@@ -261,7 +261,7 @@ BEGIN
     v_total := fn_total_pedido(NEW.id_pedido);
     SELECT COALESCE(SUM(vl_pago),0) INTO v_pago FROM pagamento WHERE id_pedido = NEW.id_pedido;
     IF v_pago + NEW.vl_pago > v_total THEN
-        RAISE EXCEPTION 'RN12: pagamento (% + %) excede o total do pedido (%)', v_pago, NEW.vl_pago, v_total;
+        RAISE EXCEPTION 'RN15: pagamento (% + %) excede o total do pedido (%)', v_pago, NEW.vl_pago, v_total;
     END IF;
     RETURN NEW;
 END $$;
@@ -290,11 +290,11 @@ BEGIN
 END $$;
 CREATE TRIGGER trg_mov_after AFTER INSERT ON movimentacao_estoque FOR EACH ROW EXECUTE FUNCTION trg_mov_after();
 
--- ---------- Compras (RN15) ----------
+-- ---------- Compras (regra proposta: só gerência/sócio) ----------
 CREATE OR REPLACE FUNCTION trg_compra_ins() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
     PERFORM 1 FROM atendente WHERE id_atendente = NEW.id_atendente AND in_ativo AND tp_perfil IN ('G','S');
-    IF NOT FOUND THEN RAISE EXCEPTION 'RN15: compras só podem ser registradas por gerência/sócio ativos'; END IF;
+    IF NOT FOUND THEN RAISE EXCEPTION 'Compras só podem ser registradas por gerência/sócio ativos'; END IF;
     IF NOT (SELECT in_ativo FROM fornecedor WHERE id_fornecedor = NEW.id_fornecedor) THEN
         RAISE EXCEPTION 'Fornecedor inativo';
     END IF;

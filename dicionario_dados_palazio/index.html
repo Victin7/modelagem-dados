@@ -318,7 +318,7 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 </table>
 <p>Índices: PK ID_MESA; índice único em NR_MESA.</p>
 <h3>PRODUTO</h3>
-<p><code>PRODUTO = @ID_PRODUTO + ID_SETOR + ID_CATEGORIA + NM_PRODUTO + NR_CODIGO_BARRAS + VL_PRECO + IN_VENDAVEL + IN_ALCOOLICO + QT_ESTOQUE_ATUAL + QT_ESTOQUE_MINIMO + IN_ATIVO</code></p>
+<p><code>PRODUTO = @ID_PRODUTO + ID_SETOR + ID_CATEGORIA + NM_PRODUTO + NR_CODIGO_BARRAS + VL_PRECO + IN_VENDAVEL + IN_ALCOOLICO + IN_CONTROLA_ESTOQUE + QT_ESTOQUE_ATUAL + QT_ESTOQUE_MINIMO + IN_ATIVO</code></p>
 <table>
 <thead>
 <tr>
@@ -385,6 +385,13 @@ img{max-width:100%;height:auto;border:1px solid var(--bd);border-radius:6px}.n{c
 <td>Sim</td>
 <td>Indica bebida alcoólica.</td>
 <td>Venda só para maiores de 18 anos, com conferência de documento (RN18).</td>
+</tr>
+<tr>
+<td>IN_CONTROLA_ESTOQUE</td>
+<td>boolean</td>
+<td>Sim</td>
+<td>Indica se o produto tem estoque controlado (bebidas, sobremesas prontas, insumos). Pratos, drinks e cafés preparados na hora não têm baixa por unidade.</td>
+<td>Só produto com controle gera movimentação e entra em compra; quando falso, estoque atual e mínimo valem 0. <code>[VALIDAR]</code> atributo proposto na Entrega 2.</td>
 </tr>
 <tr>
 <td>QT_ESTOQUE_ATUAL</td>
