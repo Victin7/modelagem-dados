@@ -911,6 +911,14 @@ modelagem-dados/
 
 ---
 
+## 🤝 Contribuição da equipe
+
+O trabalho foi desenvolvido **em conjunto por todos os integrantes** (Victor Sousa dos Anjos, Thiago Rodrigues Ribeiro, Ricardo Santos Marcelino e Raphael Luiz Lima de Araujo), sem divisão fixa de tarefas: a visita ao estabelecimento, o levantamento de requisitos e regras, o DER, o dicionário de dados, o modelo lógico, os scripts SQL e a documentação foram discutidos e revisados pelo grupo. O histórico de commits do repositório registra a evolução do trabalho.
+
+`[PREENCHER]` Se o professor pedir a participação individual, cada integrante descreve aqui, com suas palavras, o que fez.
+
+---
+
 ## 🎓 Contexto Acadêmico
 
 Projeto desenvolvido como atividade acadêmica da disciplina de Modelagem de Banco de Dados (UNICID), aplicando levantamento de requisitos, modelagem conceitual, entidades, atributos, relacionamentos, cardinalidade, chaves e, na próxima etapa, normalização e implementação.
