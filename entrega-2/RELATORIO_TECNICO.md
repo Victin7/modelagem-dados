@@ -236,12 +236,18 @@ Todo o conjunto (`palazio_del_chef_completo.sql`) foi executado em **PostgreSQL 
 
 ## 11. Uso de IA nesta entrega
 
-| Ferramenta | Para quê | O que o grupo verificou |
-|---|---|---|
-| Claude (Anthropic) | Rascunho do modelo lógico, dos scripts SQL (tabelas, triggers, views, consultas), do gerador da massa de dados e deste relatório | `[PREENCHER]` o grupo registra aqui o que revisou, o que corrigiu e o que mudou |
-| Claude (Anthropic) | Geração do diagrama lógico a partir do catálogo do banco | Conferência visual contra o DER |
+O registro completo (todos os prompts do ChatGPT desde 19/08 e todos os usos do Claude) está na **seção 9 do [README](../README.md#9--uso-de-inteligência-artificial)**. Resumo do que foi feito com IA na Entrega 2:
 
-Como a IA foi usada na massa de dados: o Claude escreveu o programa gerador (distribuição de horários, mix de produtos, estoque, pagamentos). **A IA não produziu dados reais; os valores são sintéticos e reproduzíveis pela semente.** O histórico de commits mostra a evolução. `[PREENCHER]` Reflexão crítica do grupo: o que a IA acertou, o que errou (ex.: os primeiros testes mostraram falhas nos próprios scripts: exclusão de compra pendente bloqueada, teste de estoque estourando o tipo `smallint`, reajuste de preço sem efeito) e como o grupo validou.
+| Ferramenta | Para quê | Como foi verificado |
+|---|---|---|
+| Claude (Anthropic) | Modelo lógico, scripts SQL (tabelas, triggers, views, consultas), gerador da massa de dados, diagrama lógico e este relatório | Execução em PostgreSQL 16 a partir de banco vazio; painel de integridade (14 verificações, 0 violações); 15 operações inválidas bloqueadas; comparação com o dicionário e as regras da Entrega 1 |
+| ChatGPT (OpenAI) | Organização do README e orientações para aplicar as alterações do professor no DER (Entrega 1) | Conferência com o parecer do professor e com a visita |
+
+**Massa de dados:** a IA escreveu o programa gerador; os dados são sintéticos, reproduzíveis pela semente, e seguem as estimativas reais de volume do estabelecimento. Nenhum dado real de clientes ou funcionários foi usado.
+
+**Erros da IA encontrados nos testes:** exclusão de compra pendente bloqueada por engano, teste de estoque que estourava o tipo `smallint`, reajuste de preço de teste sem efeito e numeração de regras (RN) diferente do README. Todos corrigidos.
+
+`[PREENCHER]` Reflexão crítica do grupo, com suas palavras: o que a IA acertou, o que errou e como vocês validaram.
 
 ## 12. Limitações e pontos para validar
 
