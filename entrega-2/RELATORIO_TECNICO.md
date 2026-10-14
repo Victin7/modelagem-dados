@@ -34,6 +34,19 @@ O DER da Entrega 1 foi mantido. Foram feitos **três ajustes**, todos nascidos d
 | 2 | Chaves compostas nos relacionamentos N:N CONTÉM e POSSUI | Mantém a orientação do professor de **não ter a entidade Item_pedido**. Os atributos do relacionamento (quantidade, preço unitário, status, horários) viram colunas da tabela associativa, com chave `(id_pedido, id_produto)`. |
 | 3 | `TP_FUNCAO` e `TP_LOCAL` detalhados como domínios | Função do funcionário (garçom, caixa, cozinha, bar, gerente, sócio, limpeza) e local (mesa `M` ou bistrô `B`) viraram `CHECK`. |
 
+**Evidências da organização** (mesma organização real da Entrega 1; não houve nova visita nesta etapa):
+
+| Evidência | Onde está |
+|---|---|
+| Nome e endereço | Palazio del Chef (restaurante e bar), Rua Apucarana, 480, Tatuapé, São Paulo |
+| Foto do estabelecimento | [`imagem_palazio.jpeg`](../imagem_palazio.jpeg) |
+| Horário de funcionamento (Google Maps) | [`evidencias/horario_google_maps.jpg`](../evidencias/horario_google_maps.jpg) |
+| Cardápio | [`evidencias/cardapio_palazio_diurno.pdf`](../evidencias/cardapio_palazio_diurno.pdf) |
+| Roteiro da visita e respostas | [`evidencias/roteiro_entrevista.md`](../evidencias/roteiro_entrevista.md) e README, seções 1 a 4 |
+| Contato com o estabelecimento | Dados de contato e data da visita (04/09/2026) na seção 1 do [README](../README.md) |
+
+**Feedback do professor:** o parecer da Entrega 1 e as orientações em aula (Funcionário → Atendente, Valor → Preço, remover Item_pedido, Atendente 1,N, incluir Histórico_Produto) já estão aplicados no DER.
+
 Consequência assumida do ajuste 2 (para validar com o professor): **o mesmo produto não se repete em um pedido**. Pedir de novo soma a quantidade da linha existente (função `lancar_item`), e o status (pendente, em preparo, pronto, entregue, cancelado) é **por produto**, não por unidade.
 
 ## 2. Conversão do conceitual para o lógico
@@ -114,6 +127,21 @@ Sem `ON DELETE CASCADE`: o histórico de um restaurante não deve sumir em casca
 
 ## 5. Justificativas técnicas
 
+**Justificativa das chaves e restrições.**
+
+| Decisão | Justificativa |
+|---|---|
+| PK substituta (`IDENTITY`) nas entidades | Nomes, CNPJ e código de barras podem mudar ou ser digitados errado; um número interno estável evita atualizar chaves estrangeiras. |
+| PK composta em `pedido_produto` e `compra_produto` | Um item é identificado por (pedido, produto); a chave composta impede o mesmo produto duas vezes na mesma linha e dispensa a entidade Item_pedido (orientação do professor). |
+| FK `pedido.id_atendente` e `pedido.id_mesa` obrigatórias | Resolvem o problema da visita: todo pedido tem responsável (RN01) e mesa (RN02). |
+| FKs sem `ON DELETE CASCADE` | O histórico financeiro e de estoque não pode sumir em cascata; a exclusão é bloqueada por trigger (RN13). |
+| `UNIQUE` em `nm_login`, `nr_cnpj`, `nr_codigo_barras`, `nr_mesa`, nomes de setor/categoria/produto | Evita duplicidade que quebraria o login individual, a identificação do fornecedor, a leitura do código de barras (RN03) e o mapa de mesas. |
+| `NOT NULL` nos atributos de negócio (preço, quantidade, datas, status) | Sem esses valores o pedido, a compra e o estoque deixam de ser calculáveis. Ficam opcionais só `dh_fechamento`, `dh_pronto`, `dh_recebimento`, `nr_telefone`, `dt_validade`, `ds_observacao` e a origem da movimentação. |
+| `CHECK` de domínio (`tp_status`, `tp_forma`, `tp_perfil`, `tp_funcao`, `tp_local`, `tp_movimento`) | Limita os valores aos permitidos pelo dicionário, evitando estados inventados. |
+| `CHECK` de consistência (`dh_fechamento` só se o pedido não está aberto; `dh_pronto` só se o item está pronto/entregue; fechamento ≥ abertura; nota fiscal na compra recebida; sinal e origem da movimentação) | Garantem que o estado e as datas contam a mesma história. |
+| `CHECK` numéricos (`qt_item > 0`, `vl_pago > 0`, estoque ≥ 0, CNPJ com 14 dígitos, telefone com 10 a 15 dígitos) | Bloqueiam valores impossíveis na origem, antes de chegar ao relatório (RN08). |
+| Índice único parcial `ux_pedido_mesa_aberto` | Garante a RN05 (um pedido aberto por mesa) mesmo com dois garçons lançando ao mesmo tempo. |
+
 **Regras de negócio no banco.** As regras do levantamento (README, seção 4) foram implementadas em `03_triggers_views.sql`, para valer mesmo que o app Garçom Web ou outra ferramenta acesse o banco. São 27 triggers:
 
 | Regra (README, seção 4) | Implementação |
@@ -167,6 +195,23 @@ Garçom Web ──► PostgreSQL (OLTP, 14 tabelas)
 | Dimensões | tempo (data/hora), produto/categoria/setor, atendente, mesa | G4 desempenho por garçom; G7 mesas × bistrôs |
 | Métricas | ticket médio, giro de mesa, tempo de preparo (média e P90), margem, ruptura | G5, G7, G8 |
 
+**Informações estratégicas e indicadores (KPIs) propostos:**
+
+| Pergunta de gestão | Indicador | Consulta pronta |
+|---|---|---|
+| Quanto o restaurante fatura e como isso varia na semana? | Faturamento, ticket médio, pedidos por dia | G1 |
+| O que mais gera receita? | Top produtos, participação por categoria/setor, curva ABC | G2, G3, G9 |
+| Estamos lucrando em cada produto? | Margem bruta estimada (preço − custo da última compra) | G8 |
+| Os garçons estão bem distribuídos? | Pedidos, faturamento e ticket por garçom; % de pedidos com taxa removida | G4, B4 |
+| A cozinha e o bar entregam rápido? | Tempo médio e P90 de preparo por setor | G5 |
+| Quando precisamos de mais gente? | Pedidos por hora e dia da semana | G6 |
+| O salão está bem aproveitado? | Giro e permanência por mesa/bistrô | G7 |
+| O que repor e o que vai vencer? | Estoque crítico, sugestão de compra, validade próxima | G12, 5.6, B6 |
+| O reajuste de preço afetou a venda? | Unidades por dia antes e depois | G10 |
+| Os números do caixa batem? | Pagamentos por forma e por dia; painel de integridade | G11, B5, parte A |
+
+**Potencial para BI:** o modelo separa fatos (itens vendidos, pagamentos, movimentações) de dimensões (produto, atendente, mesa, tempo), o que permite montar painéis (faturamento diário, mapa de calor de horários, ranking de produtos, alerta de estoque) apenas conectando uma ferramenta de BI às views e consultas acima.
+
 **Usos de IA que o modelo já sustenta** (propostas, não implementadas):
 1. **Previsão de demanda por produto e hora** (série temporal sobre `pedido_produto`) para dimensionar compras de bebidas e insumos. A semana simulada já mostra picos de almoço e de 19h–21h e o salto de sábado.
 2. **Reposição sugerida**: a consulta G12 é a versão em SQL; um modelo pode substituí-la usando sazonalidade e a validade (`dt_validade`).
@@ -179,7 +224,7 @@ Cuidados: dados pessoais (nome e telefone de reserva, login) ficam fora da camad
 
 ![Modelo lógico](docs/modelo_logico.png)
 
-Gerado a partir do catálogo do banco real por `scripts/gerar_modelo_logico.py` (versão vetorial em `docs/modelo_logico.svg`). Em laranja, as tabelas dos relacionamentos N:N. Cada seta vai do lado 1 para o lado N.
+O dicionário de dados lógico (tipos, restrições e regras `CHECK` de cada tabela) está em [`docs/dicionario_dados_logico.md`](docs/dicionario_dados_logico.md). Gerado a partir do catálogo do banco real por `scripts/gerar_modelo_logico.py` (versão vetorial em `docs/modelo_logico.svg`). Em laranja, as tabelas dos relacionamentos N:N. Cada seta vai do lado 1 para o lado N.
 
 ## 8. Scripts SQL e como executar
 
