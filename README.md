@@ -32,7 +32,7 @@
 ## 1. 📖 Caracterização da Organização
 
 - **Nome e natureza:** **Palazio del Chef** — estabelecimento do segmento de alimentação, com características de **restaurante e bar**, com fins lucrativos.
-- **Contexto e porte:** restaurante e bar no Tatuapé (São Paulo), com um único cardápio (o mesmo no almoço e à noite, com pratos e bar) e entrega por telefone (delivery). O salão tem cerca de **30 mesas e 25 bistrôs** (estimativa do grupo) e o movimento é de **150 a 300 pedidos** por dia em dias de semana e de **400 a 550 pedidos** aos sábados (estimativa do grupo). A operação é dividida entre **salão** (garçons), **cozinha**, **bar**, **gerência** e **limpeza**, com funcionários CLT em escala 6x1. O grupo classifica o porte como **baixo a médio**.
+- **Contexto e porte:** restaurante e bar no Tatuapé (São Paulo), com um único cardápio (o mesmo no almoço e à noite, com pratos e bar) e atendimento presencial, sem delivery. O salão tem cerca de **30 mesas e 25 bistrôs** (estimativa do grupo) e o movimento é de **150 a 300 pedidos** por dia em dias de semana e de **400 a 550 pedidos** aos sábados (estimativa do grupo). A operação é dividida entre **salão** (garçons), **cozinha**, **bar**, **gerência** e **limpeza**, com funcionários CLT em escala 6x1. O grupo classifica o porte como **baixo a médio**.
 
 | Dado de porte | Valor |
 |---------------|-------|
@@ -95,7 +95,7 @@ Durante a visita, foi realizada uma entrevista com um gerente do estabelecimento
 - A **nota fiscal** só vem pela maquininha de cartão, sem cupom no sistema.
 - Os registros são guardados por semestre (meses 1 a 6 e meses 7 a 12). O fechamento do caixa é feito pelo gerente.
 - Os funcionários são CLT, em escala **6x1**. Os funcionários não têm credenciais administrativas e, segundo o gerente, não possuem credenciais individuais de acesso ao aplicativo de pedidos.
-- Segundo o gerente (registro da equipe), o restaurante atende presencialmente e **não realiza entregas por delivery**. `[VALIDAR: este README cita atendimento por telefone/delivery em outros trechos; o grupo deve confirmar qual informação vale]`
+- Segundo o gerente, o restaurante atende presencialmente e **não realiza entregas por delivery**. A reserva de mesa continua sendo feita por telefone.
 
 **Nota de escopo:** os problemas listados na seção 1 vêm do que foi relatado e observado na visita. O grupo não afirma que o estabelecimento tenha falhas comprovadas no atendimento, erros em pedidos ou inconsistências de estoque. A proposta organiza as informações e estabelece uma estrutura adequada para armazená-las e relacioná-las. Dificuldades adicionais dependem de levantamento complementar sobre pagamento, estoque, compras e acompanhamento dos pedidos.
 
@@ -297,7 +297,7 @@ flowchart TD
 | **Venda de bebida alcoólica:** proibida para menores de 18 anos (Estatuto da Criança e do Adolescente). O cardápio traz o aviso, e o garçom pede documento com foto. | É política de atendimento. O sistema não cadastra clientes, então não há atributo de idade. O produto tem um indicador de bebida alcoólica. |
 | **Vigilância sanitária:** controle de validade e armazenamento de alimentos e bebidas. Hoje é feito uma vez por mês, em planilha (RN19). | Por isso o item de compra registra a data de validade e o estoque aceita ajuste por vencimento. |
 | **Obrigação fiscal:** a venda exige nota fiscal. No Palazio, a nota vem pela maquininha de cartão, sem cupom no sistema. | A emissão está **fora do escopo** do banco. O modelo guarda o necessário para emitir (itens, valores, forma de pagamento, data e hora). |
-| **Escopo desta versão:** delivery (o estabelecimento atende por telefone), cadastro de clientes, folha de pagamento, escala de folgas 6x1 e ficha técnica (insumos por prato). | Ficam como evolução. A estrutura atual comporta essas extensões sem reestruturação (seção 8). |
+| **Escopo desta versão:** delivery (o estabelecimento não realiza entregas), cadastro de clientes, folha de pagamento, escala de folgas 6x1 e ficha técnica (insumos por prato). | Ficam como evolução. A estrutura atual comporta essas extensões sem reestruturação (seção 8). |
 
 ---
 
@@ -780,7 +780,7 @@ erDiagram
 - **Escala 6x1 fora do modelo:** a escala de folgas dos funcionários CLT é rotina de RH e não influencia pedidos, estoque ou compras. Modelá-la ampliaria o escopo sem ganho para os processos mapeados. Fica como evolução.
 - **HISTORICO_PRODUTO:** dá rastreabilidade às mudanças de preço e responsabiliza a gerência (RN24).
 - **Sem chaves estrangeiras no DER:** no modelo conceitual, a ligação entre entidades é o relacionamento. As chaves estrangeiras surgem na conversão para o modelo lógico (Entrega 2).
-- **Escalabilidade e integração:** o modelo comporta, sem reestruturação, cadastro de clientes e fidelidade, múltiplas unidades, delivery (o estabelecimento já atende por telefone), ficha técnica de pratos, escala de folgas e nota fiscal. A estrutura de pedido, item e pagamento sustenta indicadores de BI (ticket médio, produtos mais vendidos, desempenho por atendente e por setor, tempo de preparo), e as movimentações sustentam análises de giro e perdas de estoque.
+- **Escalabilidade e integração:** o modelo comporta, sem reestruturação, cadastro de clientes e fidelidade, múltiplas unidades, delivery (o estabelecimento hoje não faz entregas), ficha técnica de pratos, escala de folgas e nota fiscal. A estrutura de pedido, item e pagamento sustenta indicadores de BI (ticket médio, produtos mais vendidos, desempenho por atendente e por setor, tempo de preparo), e as movimentações sustentam análises de giro e perdas de estoque.
 
 ---
 
