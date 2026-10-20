@@ -60,7 +60,8 @@
 
 | Evidência | Registro |
 |-----------|----------|
-| Endereço completo | Rua Apucarana, 480 — Tatuapé |
+| Razão social | Bar e Restaurante Palazio Del Chef Tatuape LTDA. |
+| Endereço completo | Rua Apucarana, 480 — Tatuapé, São Paulo - SP (CEP 03311-000) |
 | CNPJ | 58.759.116/0001-99 |
 | Link no Google Maps | [maps.app.goo.gl/TnAsUSbBUWyaUT7E9](https://maps.app.goo.gl/TnAsUSbBUWyaUT7E9) |
 | Rede social | Instagram: [@palaziodelchef](https://www.instagram.com/palaziodelchef/) |
@@ -69,8 +70,16 @@
 | Datas das visitas | 04/09/2026 |
 | Entrevista e observação | Resumo abaixo, com as informações da visita de 04/09/2026. Roteiro usado: [`evidencias/roteiro_entrevista.md`](./evidencias/roteiro_entrevista.md) |
 | Cardápio | Cardápio do estabelecimento (o mesmo no almoço e à noite), em [`evidencias/`](./evidencias/cardapio_palazio_diurno.pdf) |
-| Fotos da pesquisa de campo | Fachada com a placa "Palazio del Chef — Bar & Restaurante — Tatuapé" e a placa da Rua Apucarana (foto acima). A foto do salão não foi publicada, para não expor clientes. |
+| Fotos da pesquisa de campo | Fachada com a placa "Palazio del Chef — Bar & Restaurante — Tatuapé" e a placa da Rua Apucarana (foto acima). Registro da equipe com o gerente durante a visita (Figura 2, abaixo). A foto do salão não foi publicada, para não expor clientes. |
 | Nome no Google Maps | "Palazio Del Chefe" (a placa da fachada diz "Palazio del Chef") |
+
+Durante a visita, foi realizada uma entrevista com um gerente do estabelecimento, para compreender o atendimento aos clientes, o registro dos pedidos, o encaminhamento à cozinha ou ao bar e o gerenciamento do estoque. Como evidência, apresenta-se a fotografia registrada pela equipe durante o encontro com o gerente.
+
+<p align="center">
+  <img src="./visita_palazio.jpeg" alt="Equipe do projeto com o gerente do Palazio del Chef durante a visita" width="800">
+</p>
+
+*Figura 2 — Registro fotográfico da equipe com o gerente durante a visita ao estabelecimento.*
 
 **Resumo da visita de 04/09/2026** (informações repassadas pelo grupo, a partir do que foi visto e perguntado no local):
 
@@ -85,7 +94,10 @@
 - Controlam o estoque de ingredientes, de pratos prontos e também de bebidas.
 - A **nota fiscal** só vem pela maquininha de cartão, sem cupom no sistema.
 - Os registros são guardados por semestre (meses 1 a 6 e meses 7 a 12). O fechamento do caixa é feito pelo gerente.
-- Os funcionários são CLT, em escala **6x1**. Os funcionários não têm credenciais administrativas.
+- Os funcionários são CLT, em escala **6x1**. Os funcionários não têm credenciais administrativas e, segundo o gerente, não possuem credenciais individuais de acesso ao aplicativo de pedidos.
+- Segundo o gerente (registro da equipe), o restaurante atende presencialmente e **não realiza entregas por delivery**. `[VALIDAR: este README cita atendimento por telefone/delivery em outros trechos; o grupo deve confirmar qual informação vale]`
+
+**Nota de escopo:** os problemas listados na seção 1 vêm do que foi relatado e observado na visita. O grupo não afirma que o estabelecimento tenha falhas comprovadas no atendimento, erros em pedidos ou inconsistências de estoque. A proposta organiza as informações e estabelece uma estrutura adequada para armazená-las e relacioná-las. Dificuldades adicionais dependem de levantamento complementar sobre pagamento, estoque, compras e acompanhamento dos pedidos.
 
 ### 🎯 Objetivo do Projeto (original)
 
@@ -234,6 +246,7 @@ flowchart TD
 | RNF10 | Privacidade (LGPD) | O sistema deve guardar apenas os dados pessoais necessários e restringir o acesso a eles. Os logs de acesso devem ser mantidos. | proposta |
 | RNF11 | Recuperação | Deve haver cópia de segurança diária do banco, com restauração testada. | proposta |
 | RNF12 | Manutenibilidade | O modelo deve permitir novos setores, formas de pagamento e produtos sem alterar a estrutura das tabelas. | proposta |
+| RNF13 | Integridade | Valores monetários devem ser armazenados em tipo numérico decimal apropriado, sem perda de precisão em preços e pagamentos. | proposta |
 
 ---
 
@@ -273,6 +286,7 @@ flowchart TD
 | RN28 | Reserva | Uma **reserva** é feita para uma mesa ativa, em uma data e hora, e guarda apenas o nome e o telefone do cliente. | proposta `[VALIDAR]` |
 | RN29 | Produto | Todo produto pertence a **uma categoria** do cardápio (lanches, pratos, porções, bebidas etc.). Bebidas alcoólicas são marcadas, para a regra RN18. | proposta (a partir do cardápio) |
 | RN30 | Estoque | **Insumos** (ingredientes) e produtos prontos têm estoque controlado, como as bebidas. O insumo não aparece no cardápio e não é pedido pelo cliente. Hoje a baixa dos insumos é **feita manualmente**; no modelo, é registrada como ajuste de consumo, com motivo. | confirmado (controlam ingredientes; baixa manual) / proposta (registro como ajuste) |
+| RN31 | Pedido / Pagamento | **Validação de quantidades e valores:** a quantidade de um produto no pedido deve ser maior que zero. Preço do produto, preço unitário e valor pago não podem ser negativos. A data de pagamento só é preenchida quando o pagamento é realizado. | proposta (aplicada por CHECKs no SQL) |
 
 ### 4.2 Restrições organizacionais
 
@@ -928,7 +942,11 @@ Principais responsabilidades de cada integrante, conforme informado pelo grupo:
 
 ## 🎓 Contexto Acadêmico
 
-Projeto desenvolvido como atividade acadêmica da disciplina de Modelagem de Banco de Dados (UNICID), aplicando levantamento de requisitos, modelagem conceitual, entidades, atributos, relacionamentos, cardinalidade, chaves e, na próxima etapa, normalização e implementação.
+Projeto desenvolvido como atividade acadêmica da disciplina de Modelagem de Banco de Dados do curso de Análise e Desenvolvimento de Sistemas (UNICID), com o objetivo de aplicar os conceitos estudados na construção de um modelo de dados relacional baseado em um estabelecimento real.
+
+A organização escolhida foi o Palazio del Chef, do segmento de alimentação, com características de restaurante e bar. A partir da visita e da entrevista com um gerente, o grupo levantou informações sobre o atendimento presencial, o registro de pedidos, o encaminhamento aos setores de preparo e o gerenciamento de compras e estoque. Com esse levantamento, desenvolveu a análise dos processos, os requisitos funcionais e não funcionais, as regras de negócio, o modelo conceitual (entidades, atributos, relacionamentos, cardinalidades e chaves) e o dicionário de dados. A Entrega 2 traz o modelo lógico, a normalização e a implementação em PostgreSQL, com dados de teste e consultas.
+
+A atividade também exercita interpretar informações de um contexto real, transformar necessidades operacionais em estruturas de dados e justificar as decisões de modelagem. Os arquivos são versionados no Git e no GitHub, e o uso de IA como apoio é descrito na seção 9.
 
 ---
 
