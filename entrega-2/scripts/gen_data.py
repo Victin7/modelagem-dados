@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Gera sql/04_insert_carga.sql — massa de dados FICTÍCIA do Palazio del Chef (semana 06/10 a 12/10/2026).
+"""Gera docs/03_massa_de_dados.sql (MySQL 8) — massa de dados FICTÍCIA do Palazio del Chef (semana 06/10 a 12/10/2026).
 
 Os volumes seguem as estimativas reais informadas pelo estabelecimento (150-300 pedidos em dias úteis,
 400-550 aos sábados, ~30 mesas e ~25 bistrôs); nomes, CNPJs, telefones e valores são inventados.
 Semente fixa: a mesma saída é reproduzida a cada execução.  Uso:  python3 gen_data.py [caminho_saida.sql]
 """
-import random, json, sys, math
+import random, json, sys, math, hashlib
 from datetime import datetime, timedelta, date
 from collections import defaultdict
 
@@ -350,19 +350,22 @@ def block(tabela, cols, rows, size=400):
         w("INSERT INTO %s (%s) VALUES" % (tabela, ", ".join(cols)))
         w(",\n".join("  (" + ", ".join(r) + ")" for r in rows[i:i + size]) + ";")
 w("-- =====================================================================")
-w("-- 4. INSERT — massa de dados FICTÍCIA (gerada por scripts/gen_data.py, semente 20261013)")
+w("-- 4. INSERT — massa de dados FICTÍCIA (gerada por entrega-2/scripts/gen_data.py, semente 20261013)")
 w("-- Semana simulada: ter 06/10/2026 a seg 12/10/2026; 'agora' = seg 12/10/2026 21:20.")
 w("-- Nomes, CNPJs, telefones e valores são inventados; os volumes seguem as estimativas")
-w("-- reais do estabelecimento. Triggers de regra de negócio ficam desabilitados só durante")
-w("-- a carga histórica (inserir datas passadas), e são reabilitados no final.")
+w("-- reais do estabelecimento. As senhas dos atendentes ficam como hash SHA-256 com sal (login + senha),")
+w("-- nunca em texto puro (RNF03). As triggers de regra de negócio (arquivo 04) são criadas DEPOIS desta")
+w("-- carga, porque a carga histórica tem datas passadas e o estado final já consistente.")
+w("USE palazio_del_chef;")
+w("SET NAMES utf8mb4;")
+w("SET FOREIGN_KEY_CHECKS = 1;")
 w("-- =====================================================================")
 TAB = ['reserva','pedido','pedido_produto','pagamento','compra','compra_produto','movimentacao_estoque','historico_produto','produto']
-for t in TAB: w("ALTER TABLE %s DISABLE TRIGGER USER;" % t)
 w("")
 block('setor', ['id_setor','nm_setor','in_preparo'], [(str(i), q(nm), b(pr)) for i, nm, pr in SETORES])
 block('categoria', ['id_categoria','nm_categoria'], [(str(i), q(c)) for c, i in CAT_ID.items()])
 block('atendente', ['id_atendente','id_setor','nm_atendente','nm_login','ds_senha_hash','tp_funcao','tp_perfil','dt_admissao','in_ativo'],
-      [(str(i), str(a[4]), q(a[0]), q(a[1]), "crypt('Senha@2026', gen_salt('bf', 6))", q(a[2]), q(a[3]), q(a[5]), b(a[6])) for i, a in enumerate(ATEND, 1)])
+      [(str(i), str(a[4]), q(a[0]), q(a[1]), q(hashlib.sha256((a[1] + 'Senha@2026').encode()).hexdigest()), q(a[2]), q(a[3]), q(a[5]), b(a[6])) for i, a in enumerate(ATEND, 1)])
 mesas = []
 for i, nr, loc, lug in MESAS:
     aberta = any(o['aberto'] and o['mesa'] == i for o in orders)
@@ -392,21 +395,12 @@ pagamentos.sort(key=lambda x: x[3])
 block('pagamento', ['id_pedido','tp_forma','vl_pago','dh_pagamento'], [(str(a), q(f), '%.2f' % v, ts(d_)) for a, f, v, d_ in pagamentos], 500)
 block('movimentacao_estoque', ['id_produto','id_pedido','id_compra','tp_movimento','qt_movimento','dh_movimento','ds_motivo'],
       [(str(pid), n(ped), n(cp), q(tp), str(qt), ts(dt), q(mo)) for dt, pid, tp, qt, ped, cp, mo in events], 500)
-w("")
-for t in TAB: w("ALTER TABLE %s ENABLE TRIGGER USER;" % t)
-w("")
-w("-- Ajusta as sequências das chaves geradas (identity) para continuar após os valores carregados")
-for t, c in [('setor','id_setor'),('categoria','id_categoria'),('atendente','id_atendente'),('mesa','id_mesa'),('reserva','id_reserva'),
-             ('produto','id_produto'),('historico_produto','id_historico'),('pedido','id_pedido'),('pagamento','id_pagamento'),
-             ('fornecedor','id_fornecedor'),('compra','id_compra'),('movimentacao_estoque','id_movimentacao')]:
-    w("SELECT setval(pg_get_serial_sequence('%s', '%s'), (SELECT COALESCE(MAX(%s), 1) FROM %s));" % (t, c, c, t))
-w("ANALYZE;")
-dest = sys.argv[1] if len(sys.argv) > 1 else "../sql/04_insert_carga.sql"
+dest = sys.argv[1] if len(sys.argv) > 1 else "../../docs/03_massa_de_dados.sql"
 open(dest, "w", encoding="utf-8").write("\n".join(out) + "\n")
 
 stats = dict(pedidos=len(orders), abertos=sum(o['aberto'] for o in orders), cancelados=sum(o['cancelado'] for o in orders),
              itens=len(pp), pagamentos=len(pagamentos), movimentacoes=len(events), compras=len(compras), produtos=len(P),
              por_dia={str(d): pedidos_dia[d] for d in DAYS},
              faturamento=round(sum(o['sub'] + o['vl_taxa'] for o in orders if not o['aberto'] and not o['cancelado']), 2))
-json.dump(stats, open(dest.replace('04_insert_carga.sql', '../scripts/stats.json') if False else "stats.json", "w"), indent=1, ensure_ascii=False)
+json.dump(stats, open("stats.json", "w"), indent=1, ensure_ascii=False)
 print(json.dumps(stats, indent=1, ensure_ascii=False))

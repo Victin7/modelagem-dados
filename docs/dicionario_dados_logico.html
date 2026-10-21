@@ -1,0 +1,172 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dicionário de Dados Lógico — Palazio del Chef (Entrega 2)</title>
+<style>:root{--bg:#fff;--fg:#1d1d1f;--mut:#666;--bd:#d9d9de;--hd:#f1f1f5;--ac:#7a1f2b}@media(prefers-color-scheme:dark){:root{--bg:#16161a;--fg:#ececf0;--mut:#a0a0aa;--bd:#33333b;--hd:#23232a;--ac:#e08a96}}
+body{font:15px/1.55 system-ui,sans-serif;background:var(--bg);color:var(--fg);max-width:1250px;margin:0 auto;padding:24px 16px}h1{color:var(--ac)}h2{margin-top:36px;border-bottom:2px solid var(--ac);padding-bottom:4px}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13.5px;display:block;overflow-x:auto}th,td{border:1px solid var(--bd);padding:5px 8px;text-align:left;vertical-align:top}th{background:var(--hd)}
+code{background:var(--hd);padding:1px 5px;border-radius:4px;font-size:12.5px}.n{color:var(--mut)}nav a{margin-right:10px}</style></head><body>
+<h1>Dicionário de Dados Lógico — Palazio del Chef</h1>
+<p class="n">Entrega 2 · Modelagem de Banco de Dados (UNICID) · modelo do arquivo 02-03g da disciplina · todos os exemplos e dados são fictícios.</p>
+<h2>1. Convenções</h2><ul>
+<li><b>SGBD:</b> MySQL 8.0, mecanismo InnoDB (transações, chaves estrangeiras e CHECK aplicados). <b>Codificação:</b> utf8mb4, collation utf8mb4_0900_ai_ci.</li>
+<li><b>Prefixos:</b> ID_ identificador, NM_ nome, DT_ data, DH_ data e hora, QT_ quantidade, VL_ valor monetário, NR_ número, TP_ tipo/situação (caractere), IN_ indicador booleano, DS_ descrição/texto livre.</li>
+<li><b>Restrições por coluna:</b> Obrigatório (NOT NULL), Único (UNIQUE), Padrão (DEFAULT) e Valores permitidos (CHECK de uma só coluna). CHECK que envolve várias colunas aparece abaixo de cada tabela. Descrições e regras de negócio (RNxx) vêm do dicionário conceitual do README (seção 5.4).</li>
+<li><b>Exemplos de valores:</b> fictícios. Senhas guardadas como hash SHA-256 com sal (RNF03).</li>
+<li><b>Versão:</b> v1.0 do dicionário lógico, 21/10/2026, gerada do catálogo do banco por <code>entrega-2/scripts/gerar_dicionario_logico.py</code>.</li></ul>
+<nav><a href="#atendente">atendente</a><a href="#categoria">categoria</a><a href="#compra">compra</a><a href="#compra_produto">compra_produto</a><a href="#fornecedor">fornecedor</a><a href="#historico_produto">historico_produto</a><a href="#mesa">mesa</a><a href="#movimentacao_estoque">movimentacao_estoque</a><a href="#pagamento">pagamento</a><a href="#pedido">pedido</a><a href="#pedido_produto">pedido_produto</a><a href="#produto">produto</a><a href="#reserva">reserva</a><a href="#setor">setor</a></nav>
+<h2 id="atendente">2. ATENDENTE</h2><p><code>ATENDENTE = @ID_ATENDENTE + ID_SETOR + NM_ATENDENTE + NM_LOGIN + DS_SENHA_HASH + TP_FUNCAO + TP_PERFIL + DT_ADMISSAO + IN_ATIVO</code></p>
+<table><thead><tr><th>Atributo</th><th>Tipo físico</th><th>Obrigatório</th><th>Único</th><th>Padrão</th><th>Valores permitidos (CHECK)</th><th>Chave</th><th>Descrição</th><th>Regra de negócio</th></tr></thead><tbody>
+<tr><td><code>id_atendente</code></td><td>INT</td><td>Sim</td><td>Sim (PK)</td><td>AUTO_INCREMENT</td><td></td><td>PK</td><td>Identifica individualmente cada atendente que registra pedidos.</td><td>Base da rastreabilidade (RN01).</td></tr>
+<tr><td><code>id_setor</code></td><td>SMALLINT</td><td>Sim</td><td></td><td></td><td></td><td>FK → setor.id_setor</td><td>Setor em que o funcionário atua.</td><td>Define quais informações ele visualiza (RNF01).</td></tr>
+<tr><td><code>nm_atendente</code></td><td>VARCHAR(120)</td><td>Sim</td><td></td><td></td><td></td><td></td><td>Nome completo. Ex.: &quot;Mariana Costa&quot; (fictício).</td><td>—</td></tr>
+<tr><td><code>nm_login</code></td><td>VARCHAR(30)</td><td>Sim</td><td>Sim</td><td></td><td><code>regexp_like(nm_login,&#x27;^[a-z0-9._-]{3,30}$&#x27;)</code></td><td></td><td>Credencial de acesso. Ex.: &quot;mariana.costa&quot;.</td><td>Único (RN12).</td></tr>
+<tr><td><code>ds_senha_hash</code></td><td>VARCHAR(255)</td><td>Sim</td><td></td><td></td><td></td><td></td><td>Senha armazenada em hash.</td><td>Nunca em texto puro (RNF03).</td></tr>
+<tr><td><code>tp_funcao</code></td><td>VARCHAR(10)</td><td>Sim</td><td></td><td></td><td><code>tp_funcao in (&#x27;GARCOM&#x27;,&#x27;CAIXA&#x27;,&#x27;COZINHA&#x27;,&#x27;BAR&#x27;,&#x27;GERENTE&#x27;,&#x27;SOCIO&#x27;,&#x27;LIMPEZA&#x27;)</code></td><td></td><td>Função do funcionário no estabelecimento, conforme orientação do professor de especificar a função de cada atendente. <code>[VALIDAR: se a lista de funções está completa]</code></td><td>Define o trabalho, o setor e o perfil de acesso padrão.</td></tr>
+<tr><td><code>tp_perfil</code></td><td>CHAR(1)</td><td>Sim</td><td></td><td></td><td><code>tp_perfil in (&#x27;A&#x27;,&#x27;P&#x27;,&#x27;G&#x27;,&#x27;S&#x27;)</code></td><td></td><td>Perfil de acesso: Atendimento (garçom), Preparo (cozinha ou bar), Gerência ou Sócio (proprietário).</td><td>Define as permissões (RNF02).</td></tr>
+<tr><td><code>dt_admissao</code></td><td>DATE</td><td>Sim</td><td></td><td></td><td></td><td></td><td>Data de admissão.</td><td>Não pode ser futura.</td></tr>
+<tr><td><code>in_ativo</code></td><td>BOOLEAN</td><td>Sim</td><td></td><td>1</td><td></td><td></td><td>Se o funcionário está ativo.</td><td>Inativo não registra pedidos e mantém o histórico (RN04, RN13).</td></tr>
+</tbody></table>
+<p><b>Restrições CHECK de mais de uma coluna:</b></p><ul><li><code>ck_atendente_func_perfil</code>: <code>((tp_funcao in (&#x27;GARCOM&#x27;,&#x27;CAIXA&#x27;,&#x27;LIMPEZA&#x27;)) and (tp_perfil = &#x27;A&#x27;)) or ((tp_funcao in (&#x27;COZINHA&#x27;,&#x27;BAR&#x27;)) and (tp_perfil = &#x27;P&#x27;)) or ((tp_funcao = &#x27;GERENTE&#x27;) and (tp_perfil = &#x27;G&#x27;)) or ((tp_funcao = &#x27;SOCIO&#x27;) and (tp_perfil = &#x27;S&#x27;))</code></li></ul>
+<p><b>Índices:</b> <code>ix_atendente_setor</code> (id_setor); único <code>PRIMARY</code> (id_atendente); único <code>uq_atendente_login</code> (nm_login).</p>
+<h2 id="categoria">3. CATEGORIA</h2><p><code>CATEGORIA = @ID_CATEGORIA + NM_CATEGORIA + IN_ATIVA</code></p>
+<table><thead><tr><th>Atributo</th><th>Tipo físico</th><th>Obrigatório</th><th>Único</th><th>Padrão</th><th>Valores permitidos (CHECK)</th><th>Chave</th><th>Descrição</th><th>Regra de negócio</th></tr></thead><tbody>
+<tr><td><code>id_categoria</code></td><td>SMALLINT</td><td>Sim</td><td>Sim (PK)</td><td>AUTO_INCREMENT</td><td></td><td>PK</td><td>Identificador da categoria.</td><td>—</td></tr>
+<tr><td><code>nm_categoria</code></td><td>VARCHAR(40)</td><td>Sim</td><td>Sim</td><td></td><td></td><td></td><td>Nome do grupo do cardápio. Ex.: Lanches, Porções, Caipirinhas, Cervejas.</td><td>Único.</td></tr>
+<tr><td><code>in_ativa</code></td><td>BOOLEAN</td><td>Sim</td><td></td><td>1</td><td></td><td></td><td>Se a categoria está no cardápio.</td><td>Não se exclui (RN13).</td></tr>
+</tbody></table>
+<p><b>Índices:</b> único <code>PRIMARY</code> (id_categoria); único <code>uq_categoria_nome</code> (nm_categoria).</p>
+<h2 id="compra">4. COMPRA</h2><p><code>COMPRA = @ID_COMPRA + ID_FORNECEDOR + ID_ATENDENTE + DH_COMPRA + TP_STATUS + (NR_NOTA_FISCAL) + (DH_RECEBIMENTO)</code></p>
+<table><thead><tr><th>Atributo</th><th>Tipo físico</th><th>Obrigatório</th><th>Único</th><th>Padrão</th><th>Valores permitidos (CHECK)</th><th>Chave</th><th>Descrição</th><th>Regra de negócio</th></tr></thead><tbody>
+<tr><td><code>id_compra</code></td><td>INT</td><td>Sim</td><td>Sim (PK)</td><td>AUTO_INCREMENT</td><td></td><td>PK</td><td>Identificador da compra.</td><td>—</td></tr>
+<tr><td><code>id_fornecedor</code></td><td>INT</td><td>Sim</td><td></td><td></td><td></td><td>FK → fornecedor.id_fornecedor</td><td>Fornecedor da compra.</td><td>Cadastrado e ativo (RN22).</td></tr>
+<tr><td><code>id_atendente</code></td><td>INT</td><td>Sim</td><td></td><td></td><td></td><td>FK → atendente.id_atendente</td><td>Quem registrou a compra.</td><td>Perfil de Gerência (RNF04).</td></tr>
+<tr><td><code>dh_compra</code></td><td>DATETIME</td><td>Sim</td><td></td><td>CURRENT_TIMESTAMP</td><td></td><td></td><td>Data e hora do registro.</td><td>Automática.</td></tr>
+<tr><td><code>tp_status</code></td><td>CHAR(1)</td><td>Sim</td><td></td><td>P</td><td><code>tp_status in (&#x27;P&#x27;,&#x27;R&#x27;,&#x27;C&#x27;)</code></td><td></td><td>Pedida, Recebida ou Cancelada.</td><td>Compra recebida não é alterada (RN23).</td></tr>
+<tr><td><code>nr_nota_fiscal</code></td><td>VARCHAR(20)</td><td>Não</td><td></td><td></td><td></td><td></td><td>Número da nota fiscal do fornecedor.</td><td>Obrigatório quando recebida.</td></tr>
+<tr><td><code>dh_recebimento</code></td><td>DATETIME</td><td>Não</td><td></td><td></td><td></td><td></td><td>Data e hora do recebimento.</td><td>Preenchida quando a compra passa a Recebida.</td></tr>
+</tbody></table>
+<p><b>Restrições CHECK de mais de uma coluna:</b></p><ul><li><code>ck_compra_datas</code>: <code>(dh_recebimento is null) or (dh_recebimento &gt;= dh_compra)</code></li><li><code>ck_compra_nota</code>: <code>(tp_status &lt;&gt; &#x27;R&#x27;) or (nr_nota_fiscal is not null)</code></li><li><code>ck_compra_recebida</code>: <code>(tp_status = &#x27;R&#x27;) = (dh_recebimento is not null)</code></li></ul>
+<p><b>Índices:</b> <code>fk_compra_atendente</code> (id_atendente); <code>ix_compra_data</code> (dh_compra); <code>ix_compra_fornecedor</code> (id_fornecedor); único <code>PRIMARY</code> (id_compra).</p>
+<h2 id="compra_produto">5. COMPRA_PRODUTO</h2><p><code>COMPRA_PRODUTO = @{ID_COMPRA + ID_PRODUTO} + QT_COMPRADA + VL_CUSTO_UNITARIO + (DT_VALIDADE)</code></p>
+<table><thead><tr><th>Atributo</th><th>Tipo físico</th><th>Obrigatório</th><th>Único</th><th>Padrão</th><th>Valores permitidos (CHECK)</th><th>Chave</th><th>Descrição</th><th>Regra de negócio</th></tr></thead><tbody>
+<tr><td><code>id_compra</code></td><td>INT</td><td>Sim</td><td>Composto</td><td></td><td></td><td>PK, FK → compra.id_compra</td><td>Compra a que pertence (lado do relacionamento).</td><td>—</td></tr>
+<tr><td><code>id_produto</code></td><td>INT</td><td>Sim</td><td>Composto</td><td></td><td></td><td>PK, FK → produto.id_produto</td><td>Produto comprado (lado do relacionamento).</td><td>—</td></tr>
+<tr><td><code>qt_comprada</code></td><td>INT</td><td>Sim</td><td></td><td></td><td><code>qt_comprada &gt; 0</code></td><td></td><td>Quantidade comprada.</td><td>Maior que zero.</td></tr>
+<tr><td><code>vl_custo_unitario</code></td><td>DECIMAL(8,2)</td><td>Sim</td><td></td><td></td><td><code>vl_custo_unitario &gt; 0</code></td><td></td><td>Custo de cada unidade nesta compra.</td><td>Maior que zero.</td></tr>
+<tr><td><code>dt_validade</code></td><td>DATE</td><td>Não</td><td></td><td></td><td></td><td></td><td>Validade do lote recebido.</td><td>Obrigatória para perecíveis (RN19).</td></tr>
+</tbody></table>
+<p><b>Índices:</b> <code>fk_cp_produto</code> (id_produto); único <code>PRIMARY</code> (id_compra, id_produto).</p>
+<h2 id="fornecedor">6. FORNECEDOR</h2><p><code>FORNECEDOR = @ID_FORNECEDOR + NM_FORNECEDOR + NR_CNPJ + (NR_TELEFONE) + IN_ATIVO</code></p>
+<table><thead><tr><th>Atributo</th><th>Tipo físico</th><th>Obrigatório</th><th>Único</th><th>Padrão</th><th>Valores permitidos (CHECK)</th><th>Chave</th><th>Descrição</th><th>Regra de negócio</th></tr></thead><tbody>
+<tr><td><code>id_fornecedor</code></td><td>INT</td><td>Sim</td><td>Sim (PK)</td><td>AUTO_INCREMENT</td><td></td><td>PK</td><td>Identificador do fornecedor.</td><td>—</td></tr>
+<tr><td><code>nm_fornecedor</code></td><td>VARCHAR(120)</td><td>Sim</td><td></td><td></td><td></td><td></td><td>Razão social ou nome fantasia. Ex.: &quot;Distribuidora Aurora&quot; (fictício).</td><td>—</td></tr>
+<tr><td><code>nr_cnpj</code></td><td>VARCHAR(14)</td><td>Sim</td><td>Sim</td><td></td><td><code>regexp_like(nr_cnpj,&#x27;^[0-9]{14}$&#x27;)</code></td><td></td><td>CNPJ, só dígitos. Ex.: &quot;00000000000191&quot; (fictício).</td><td>Único. É pessoa jurídica, fora do escopo da LGPD.</td></tr>
+<tr><td><code>nr_telefone</code></td><td>VARCHAR(15)</td><td>Não</td><td></td><td></td><td><code>(nr_telefone is null) or regexp_like(nr_telefone,&#x27;^[0-9]{10,15}$&#x27;)</code></td><td></td><td>Telefone comercial de contato.</td><td>—</td></tr>
+<tr><td><code>in_ativo</code></td><td>BOOLEAN</td><td>Sim</td><td></td><td>1</td><td></td><td></td><td>Se o fornecedor está ativo.</td><td>Só se compra de fornecedor ativo (RN22). Não se exclui (RN13).</td></tr>
+</tbody></table>
+<p><b>Índices:</b> único <code>PRIMARY</code> (id_fornecedor); único <code>uq_fornecedor_cnpj</code> (nr_cnpj).</p>
+<h2 id="historico_produto">7. HISTORICO_PRODUTO</h2><p><code>HISTORICO_PRODUTO = @ID_HISTORICO + ID_PRODUTO + ID_ATENDENTE + VL_PRECO_ANTERIOR + VL_PRECO_NOVO + DH_ALTERACAO</code></p>
+<table><thead><tr><th>Atributo</th><th>Tipo físico</th><th>Obrigatório</th><th>Único</th><th>Padrão</th><th>Valores permitidos (CHECK)</th><th>Chave</th><th>Descrição</th><th>Regra de negócio</th></tr></thead><tbody>
+<tr><td><code>id_historico</code></td><td>INT</td><td>Sim</td><td>Sim (PK)</td><td>AUTO_INCREMENT</td><td></td><td>PK</td><td>Identificador do registro.</td><td>—</td></tr>
+<tr><td><code>id_produto</code></td><td>INT</td><td>Sim</td><td></td><td></td><td></td><td>FK → produto.id_produto</td><td>Produto alterado.</td><td>—</td></tr>
+<tr><td><code>id_atendente</code></td><td>INT</td><td>Sim</td><td></td><td></td><td></td><td>FK → atendente.id_atendente</td><td>Quem fez a alteração.</td><td>Perfil de Gerência (RN24).</td></tr>
+<tr><td><code>vl_preco_anterior</code></td><td>DECIMAL(8,2)</td><td>Sim</td><td></td><td></td><td></td><td></td><td>Preço antes da alteração.</td><td>—</td></tr>
+<tr><td><code>vl_preco_novo</code></td><td>DECIMAL(8,2)</td><td>Sim</td><td></td><td></td><td></td><td></td><td>Preço depois da alteração.</td><td>Maior que zero.</td></tr>
+<tr><td><code>dh_alteracao</code></td><td>DATETIME</td><td>Sim</td><td></td><td>CURRENT_TIMESTAMP</td><td></td><td></td><td>Data e hora da alteração.</td><td>Automática.</td></tr>
+</tbody></table>
+<p><b>Restrições CHECK de mais de uma coluna:</b></p><ul><li><code>ck_hist_precos</code>: <code>(vl_preco_anterior &gt;= 0) and (vl_preco_novo &gt;= 0) and (vl_preco_anterior &lt;&gt; vl_preco_novo)</code></li></ul>
+<p><b>Índices:</b> <code>fk_hist_atendente</code> (id_atendente); <code>ix_hist_produto_data</code> (id_produto, dh_alteracao); único <code>PRIMARY</code> (id_historico).</p>
+<h2 id="mesa">8. MESA</h2><p><code>MESA = @ID_MESA + NR_MESA + TP_LOCAL + QT_LUGARES + TP_STATUS + IN_ATIVA</code></p>
+<table><thead><tr><th>Atributo</th><th>Tipo físico</th><th>Obrigatório</th><th>Único</th><th>Padrão</th><th>Valores permitidos (CHECK)</th><th>Chave</th><th>Descrição</th><th>Regra de negócio</th></tr></thead><tbody>
+<tr><td><code>id_mesa</code></td><td>SMALLINT</td><td>Sim</td><td>Sim (PK)</td><td>AUTO_INCREMENT</td><td></td><td>PK</td><td>Identificador interno da mesa.</td><td>—</td></tr>
+<tr><td><code>nr_mesa</code></td><td>SMALLINT</td><td>Sim</td><td>Sim</td><td></td><td><code>nr_mesa &gt; 0</code></td><td></td><td>Número da mesa, usado pelo atendente. Ex.: 12.</td><td>Único (RN02).</td></tr>
+<tr><td><code>tp_local</code></td><td>CHAR(1)</td><td>Sim</td><td></td><td></td><td><code>tp_local in (&#x27;M&#x27;,&#x27;B&#x27;)</code></td><td></td><td>Tipo de lugar: mesa ou bistrô. O salão tem cerca de 30 mesas e 25 bistrôs.</td><td>Domínio fechado.</td></tr>
+<tr><td><code>qt_lugares</code></td><td>SMALLINT</td><td>Sim</td><td></td><td></td><td><code>qt_lugares &gt; 0</code></td><td></td><td>Quantidade de lugares.</td><td>Maior que zero.</td></tr>
+<tr><td><code>tp_status</code></td><td>CHAR(1)</td><td>Sim</td><td></td><td>L</td><td><code>tp_status in (&#x27;L&#x27;,&#x27;O&#x27;)</code></td><td></td><td>Situação: Livre ou Ocupada.</td><td>Ocupada ao abrir o pedido, livre ao fechar (RN05, RN10).</td></tr>
+<tr><td><code>in_ativa</code></td><td>BOOLEAN</td><td>Sim</td><td></td><td>1</td><td></td><td></td><td>Se a mesa está em uso.</td><td>Mesa inativa não recebe pedidos (RN13).</td></tr>
+</tbody></table>
+<p><b>Índices:</b> único <code>PRIMARY</code> (id_mesa); único <code>uq_mesa_numero</code> (nr_mesa).</p>
+<h2 id="movimentacao_estoque">9. MOVIMENTACAO_ESTOQUE</h2><p><code>MOVIMENTACAO_ESTOQUE = @ID_MOVIMENTACAO + ID_PRODUTO + (ID_PEDIDO) + (ID_COMPRA) + TP_MOVIMENTO + QT_MOVIMENTO + DH_MOVIMENTO + (DS_MOTIVO)</code></p>
+<table><thead><tr><th>Atributo</th><th>Tipo físico</th><th>Obrigatório</th><th>Único</th><th>Padrão</th><th>Valores permitidos (CHECK)</th><th>Chave</th><th>Descrição</th><th>Regra de negócio</th></tr></thead><tbody>
+<tr><td><code>id_movimentacao</code></td><td>INT</td><td>Sim</td><td>Sim (PK)</td><td>AUTO_INCREMENT</td><td></td><td>PK</td><td>Identificador da movimentação.</td><td>—</td></tr>
+<tr><td><code>id_produto</code></td><td>INT</td><td>Sim</td><td></td><td></td><td></td><td>FK → produto.id_produto</td><td>Produto movimentado.</td><td>—</td></tr>
+<tr><td><code>id_pedido</code></td><td>INT</td><td>Não</td><td></td><td></td><td></td><td>FK → pedido.id_pedido</td><td>Pedido de origem (venda ou estorno).</td><td>—</td></tr>
+<tr><td><code>id_compra</code></td><td>INT</td><td>Não</td><td></td><td></td><td></td><td>FK → compra.id_compra</td><td>Compra de origem (entrada).</td><td>—</td></tr>
+<tr><td><code>tp_movimento</code></td><td>CHAR(1)</td><td>Sim</td><td></td><td></td><td><code>tp_movimento in (&#x27;V&#x27;,&#x27;C&#x27;,&#x27;E&#x27;,&#x27;A&#x27;)</code></td><td></td><td>Venda, Compra, Estorno ou Ajuste.</td><td>Domínio fechado.</td></tr>
+<tr><td><code>qt_movimento</code></td><td>INT</td><td>Sim</td><td></td><td></td><td><code>qt_movimento &lt;&gt; 0</code></td><td></td><td>Quantidade com sinal: negativa para saída, positiva para entrada.</td><td>Diferente de zero. A soma por produto é o saldo (RN21).</td></tr>
+<tr><td><code>dh_movimento</code></td><td>DATETIME</td><td>Sim</td><td></td><td>CURRENT_TIMESTAMP</td><td></td><td></td><td>Data e hora.</td><td>Automática.</td></tr>
+<tr><td><code>ds_motivo</code></td><td>VARCHAR(100)</td><td>Não</td><td></td><td></td><td></td><td></td><td>Motivo, obrigatório no ajuste. Ex.: &quot;garrafa quebrada&quot;.</td><td>Ajuste exige motivo (RN17, RN19).</td></tr>
+</tbody></table>
+<p><b>Restrições CHECK de mais de uma coluna:</b></p><ul><li><code>ck_mov_motivo</code>: <code>(tp_movimento &lt;&gt; &#x27;A&#x27;) or (ds_motivo is not null)</code></li><li><code>ck_mov_origem</code>: <code>((tp_movimento in (&#x27;V&#x27;,&#x27;E&#x27;)) and (id_pedido is not null) and (id_compra is null)) or ((tp_movimento = &#x27;C&#x27;) and (id_compra is not null) and (id_pedido is null)) or ((tp_movimento = &#x27;A&#x27;) and (id_pedido is null) and (id_compra is null))</code></li><li><code>ck_mov_sinal</code>: <code>((tp_movimento = &#x27;V&#x27;) and (qt_movimento &lt; 0)) or ((tp_movimento in (&#x27;C&#x27;,&#x27;E&#x27;)) and (qt_movimento &gt; 0)) or (tp_movimento = &#x27;A&#x27;)</code></li></ul>
+<p><b>Índices:</b> <code>ix_mov_compra</code> (id_compra); <code>ix_mov_pedido</code> (id_pedido); <code>ix_mov_produto_data</code> (id_produto, dh_movimento); único <code>PRIMARY</code> (id_movimentacao).</p>
+<h2 id="pagamento">10. PAGAMENTO</h2><p><code>PAGAMENTO = @ID_PAGAMENTO + ID_PEDIDO + TP_FORMA + VL_PAGO + DH_PAGAMENTO</code></p>
+<table><thead><tr><th>Atributo</th><th>Tipo físico</th><th>Obrigatório</th><th>Único</th><th>Padrão</th><th>Valores permitidos (CHECK)</th><th>Chave</th><th>Descrição</th><th>Regra de negócio</th></tr></thead><tbody>
+<tr><td><code>id_pagamento</code></td><td>INT</td><td>Sim</td><td>Sim (PK)</td><td>AUTO_INCREMENT</td><td></td><td>PK</td><td>Identificador do pagamento.</td><td>—</td></tr>
+<tr><td><code>id_pedido</code></td><td>INT</td><td>Sim</td><td></td><td></td><td></td><td>FK → pedido.id_pedido</td><td>Pedido quitado.</td><td>Um pedido pode ter vários pagamentos (RN15).</td></tr>
+<tr><td><code>tp_forma</code></td><td>CHAR(1)</td><td>Sim</td><td></td><td></td><td><code>tp_forma in (&#x27;D&#x27;,&#x27;C&#x27;,&#x27;B&#x27;,&#x27;P&#x27;)</code></td><td></td><td>Dinheiro, crédito, débito ou Pix.</td><td>Domínio fechado (RN15).</td></tr>
+<tr><td><code>vl_pago</code></td><td>DECIMAL(8,2)</td><td>Sim</td><td></td><td></td><td><code>vl_pago &gt; 0</code></td><td></td><td>Valor pago nesta forma.</td><td>Maior que zero. A soma deve igualar o total (RN10, RN11).</td></tr>
+<tr><td><code>dh_pagamento</code></td><td>DATETIME</td><td>Sim</td><td></td><td>CURRENT_TIMESTAMP</td><td></td><td></td><td>Data e hora do pagamento.</td><td>Automática.</td></tr>
+</tbody></table>
+<p><b>Índices:</b> <code>ix_pagamento_data</code> (dh_pagamento); <code>ix_pagamento_pedido</code> (id_pedido); único <code>PRIMARY</code> (id_pagamento).</p>
+<h2 id="pedido">11. PEDIDO</h2><p><code>PEDIDO = @ID_PEDIDO + ID_MESA + ID_ATENDENTE + DH_ABERTURA + (DH_FECHAMENTO) + IN_TAXA_SERVICO + TP_STATUS + (DS_OBSERVACAO) + (ID_MESA_ABERTA)</code></p>
+<table><thead><tr><th>Atributo</th><th>Tipo físico</th><th>Obrigatório</th><th>Único</th><th>Padrão</th><th>Valores permitidos (CHECK)</th><th>Chave</th><th>Descrição</th><th>Regra de negócio</th></tr></thead><tbody>
+<tr><td><code>id_pedido</code></td><td>INT</td><td>Sim</td><td>Sim (PK)</td><td>AUTO_INCREMENT</td><td></td><td>PK</td><td>Identificador do pedido.</td><td>—</td></tr>
+<tr><td><code>id_mesa</code></td><td>SMALLINT</td><td>Sim</td><td></td><td></td><td></td><td>FK → mesa.id_mesa</td><td>Mesa do pedido.</td><td>Obrigatório: não existe pedido sem mesa (RN02). Uma mesa tem no máximo um pedido aberto (RN05).</td></tr>
+<tr><td><code>id_atendente</code></td><td>INT</td><td>Sim</td><td></td><td></td><td></td><td>FK → atendente.id_atendente</td><td>Atendente que registrou o pedido.</td><td>Obrigatório e ativo (RN01, RN04).</td></tr>
+<tr><td><code>dh_abertura</code></td><td>DATETIME</td><td>Sim</td><td></td><td>CURRENT_TIMESTAMP</td><td></td><td></td><td>Data e hora de abertura.</td><td>Automática.</td></tr>
+<tr><td><code>dh_fechamento</code></td><td>DATETIME</td><td>Não</td><td></td><td></td><td></td><td></td><td>Data e hora de fechamento.</td><td>Obrigatória quando o status for Fechado (RN10).</td></tr>
+<tr><td><code>in_taxa_servico</code></td><td>BOOLEAN</td><td>Sim</td><td></td><td>1</td><td></td><td></td><td>Se a taxa de serviço de 10% foi cobrada neste pedido.</td><td>Padrão: verdadeiro. Falso quando o cliente pede para retirar a taxa (RN16).</td></tr>
+<tr><td><code>tp_status</code></td><td>CHAR(1)</td><td>Sim</td><td></td><td>A</td><td><code>tp_status in (&#x27;A&#x27;,&#x27;F&#x27;,&#x27;C&#x27;)</code></td><td></td><td>Aberto, Fechado ou Cancelado.</td><td>Fecha só se estiver pago (RN10).</td></tr>
+<tr><td><code>ds_observacao</code></td><td>VARCHAR(200)</td><td>Não</td><td></td><td></td><td></td><td></td><td>Observação geral.</td><td>—</td></tr>
+<tr><td><code>id_mesa_aberta</code></td><td>SMALLINT</td><td>Não</td><td>Sim</td><td></td><td></td><td>gerada</td><td>Coluna gerada: vale id_mesa enquanto o pedido está aberto e NULL nos demais.</td><td>Com o índice único ux_pedido_mesa_aberto, garante um único pedido aberto por mesa (RN05).</td></tr>
+</tbody></table>
+<p><b>Restrições CHECK de mais de uma coluna:</b></p><ul><li><code>ck_pedido_datas</code>: <code>(dh_fechamento is null) or (dh_fechamento &gt;= dh_abertura)</code></li><li><code>ck_pedido_fechamento</code>: <code>(tp_status = &#x27;A&#x27;) = (dh_fechamento is null)</code></li></ul>
+<p><b>Índices:</b> <code>fk_pedido_mesa</code> (id_mesa); <code>ix_pedido_abertura</code> (dh_abertura); <code>ix_pedido_atendente</code> (id_atendente); único <code>PRIMARY</code> (id_pedido); único <code>ux_pedido_mesa_aberto</code> (id_mesa_aberta).</p>
+<h2 id="pedido_produto">12. PEDIDO_PRODUTO</h2><p><code>PEDIDO_PRODUTO = @{ID_PEDIDO + ID_PRODUTO} + QT_ITEM + VL_PRECO_UNITARIO + TP_STATUS + DH_REGISTRO + (DH_PRONTO) + (DS_OBSERVACAO)</code></p>
+<table><thead><tr><th>Atributo</th><th>Tipo físico</th><th>Obrigatório</th><th>Único</th><th>Padrão</th><th>Valores permitidos (CHECK)</th><th>Chave</th><th>Descrição</th><th>Regra de negócio</th></tr></thead><tbody>
+<tr><td><code>id_pedido</code></td><td>INT</td><td>Sim</td><td>Composto</td><td></td><td></td><td>PK, FK → pedido.id_pedido</td><td>Pedido ao qual pertence (lado do relacionamento, não é chave estrangeira no DER).</td><td>Só em pedido aberto.</td></tr>
+<tr><td><code>id_produto</code></td><td>INT</td><td>Sim</td><td>Composto</td><td></td><td></td><td>PK, FK → produto.id_produto</td><td>Produto pedido (lado do relacionamento).</td><td>Produto ativo e com estoque (RN08, RN13, RN14).</td></tr>
+<tr><td><code>qt_item</code></td><td>SMALLINT</td><td>Sim</td><td></td><td></td><td><code>qt_item &gt; 0</code></td><td></td><td>Quantidade pedida.</td><td>Maior que zero.</td></tr>
+<tr><td><code>vl_preco_unitario</code></td><td>DECIMAL(8,2)</td><td>Sim</td><td></td><td></td><td><code>vl_preco_unitario &gt; 0</code></td><td></td><td>Preço unitário no momento do pedido.</td><td>Cópia do preço vigente (RN07).</td></tr>
+<tr><td><code>tp_status</code></td><td>CHAR(1)</td><td>Sim</td><td></td><td>P</td><td><code>tp_status in (&#x27;P&#x27;,&#x27;E&#x27;,&#x27;R&#x27;,&#x27;N&#x27;,&#x27;C&#x27;)</code></td><td></td><td>Pendente, Em preparo, Pronto, Entregue ou Cancelado.</td><td>Cancela só se pendente (RN09, RN17). O setor do produto determina quem atualiza (RN06).</td></tr>
+<tr><td><code>dh_registro</code></td><td>DATETIME</td><td>Sim</td><td></td><td>CURRENT_TIMESTAMP</td><td></td><td></td><td>Quando o item foi lançado.</td><td>Automática.</td></tr>
+<tr><td><code>dh_pronto</code></td><td>DATETIME</td><td>Não</td><td></td><td></td><td></td><td></td><td>Quando o item ficou pronto.</td><td>Preenchida quando o status passa a Pronto. Permite medir o tempo de preparo.</td></tr>
+<tr><td><code>ds_observacao</code></td><td>VARCHAR(100)</td><td>Não</td><td></td><td></td><td></td><td></td><td>Observação do cliente. Ex.: &quot;sem gelo&quot;.</td><td>—</td></tr>
+</tbody></table>
+<p><b>Restrições CHECK de mais de uma coluna:</b></p><ul><li><code>ck_pp_datas</code>: <code>(dh_pronto is null) or (dh_pronto &gt;= dh_registro)</code></li><li><code>ck_pp_pronto</code>: <code>(tp_status in (&#x27;R&#x27;,&#x27;N&#x27;)) = (dh_pronto is not null)</code></li></ul>
+<p><b>Índices:</b> <code>ix_pp_fila</code> (tp_status, dh_registro); <code>ix_pp_produto</code> (id_produto); único <code>PRIMARY</code> (id_pedido, id_produto).</p>
+<h2 id="produto">13. PRODUTO</h2><p><code>PRODUTO = @ID_PRODUTO + ID_SETOR + ID_CATEGORIA + NM_PRODUTO + NR_CODIGO_BARRAS + VL_PRECO + IN_VENDAVEL + IN_ALCOOLICO + IN_CONTROLA_ESTOQUE + QT_ESTOQUE_ATUAL + QT_ESTOQUE_MINIMO + IN_ATIVO</code></p>
+<table><thead><tr><th>Atributo</th><th>Tipo físico</th><th>Obrigatório</th><th>Único</th><th>Padrão</th><th>Valores permitidos (CHECK)</th><th>Chave</th><th>Descrição</th><th>Regra de negócio</th></tr></thead><tbody>
+<tr><td><code>id_produto</code></td><td>INT</td><td>Sim</td><td>Sim (PK)</td><td>AUTO_INCREMENT</td><td></td><td>PK</td><td>Identificador do produto.</td><td>—</td></tr>
+<tr><td><code>id_setor</code></td><td>SMALLINT</td><td>Sim</td><td></td><td></td><td></td><td>FK → setor.id_setor</td><td>Setor responsável pelo preparo (Cozinha ou Bar).</td><td>Setor com IN_PREPARO verdadeiro (RN06).</td></tr>
+<tr><td><code>id_categoria</code></td><td>SMALLINT</td><td>Sim</td><td></td><td></td><td></td><td>FK → categoria.id_categoria</td><td>Categoria do cardápio do produto.</td><td>Todo produto tem uma categoria (RN29).</td></tr>
+<tr><td><code>nm_produto</code></td><td>VARCHAR(80)</td><td>Sim</td><td>Sim</td><td></td><td></td><td></td><td>Nome no cardápio, com a variação de tamanho quando houver. Ex.: &quot;Risoto de cogumelos&quot;, &quot;Bife de contrafilé (2 pessoas)&quot;.</td><td>Variações são produtos distintos (RN27).</td></tr>
+<tr><td><code>nr_codigo_barras</code></td><td>VARCHAR(14)</td><td>Sim</td><td>Sim</td><td></td><td><code>regexp_like(nr_codigo_barras,&#x27;^[0-9]{8,14}$&#x27;)</code></td><td></td><td>Código de barras.</td><td>Único (RN03). <code>[VALIDAR]</code></td></tr>
+<tr><td><code>vl_preco</code></td><td>DECIMAL(8,2)</td><td>Sim</td><td></td><td></td><td></td><td></td><td>Preço de venda atual.</td><td>Maior que zero. Reajuste não altera pedidos antigos (RN07). Só a gerência altera (RN24).</td></tr>
+<tr><td><code>in_vendavel</code></td><td>BOOLEAN</td><td>Sim</td><td></td><td>1</td><td></td><td></td><td>Verdadeiro para item do cardápio. Falso para insumo (ingrediente), que só tem estoque.</td><td>Só item vendável entra em pedido (RN14, RN30).</td></tr>
+<tr><td><code>in_alcoolico</code></td><td>BOOLEAN</td><td>Sim</td><td></td><td>0</td><td></td><td></td><td>Indica bebida alcoólica.</td><td>Venda só para maiores de 18 anos, com conferência de documento (RN18).</td></tr>
+<tr><td><code>in_controla_estoque</code></td><td>BOOLEAN</td><td>Sim</td><td></td><td>0</td><td></td><td></td><td>Indica se o produto tem estoque controlado (bebidas, sobremesas prontas, insumos). Pratos, drinks e cafés preparados na hora não têm baixa por unidade. O controle do que chega ao local é feito especificamente pelos garçons.</td><td>Só produto com controle gera movimentação e entra em compra; quando falso, estoque atual e mínimo valem 0. <code>[VALIDAR]</code> atributo proposto na Entrega 2.</td></tr>
+<tr><td><code>qt_estoque_atual</code></td><td>INT</td><td>Sim</td><td></td><td>0</td><td><code>qt_estoque_atual &gt;= 0</code></td><td></td><td>Quantidade disponível.</td><td>Não pode ser negativa (RN08). É a soma das movimentações (RN21). <code>[VALIDAR]</code></td></tr>
+<tr><td><code>qt_estoque_minimo</code></td><td>INT</td><td>Sim</td><td></td><td>0</td><td><code>qt_estoque_minimo &gt;= 0</code></td><td></td><td>Quantidade que dispara o alerta de reposição.</td><td>Alerta de reposição (RN20).</td></tr>
+<tr><td><code>in_ativo</code></td><td>BOOLEAN</td><td>Sim</td><td></td><td>1</td><td></td><td></td><td>Se o produto está no cardápio.</td><td>Inativo não pode ser pedido (RN13, RN14).</td></tr>
+</tbody></table>
+<p><b>Restrições CHECK de mais de uma coluna:</b></p><ul><li><code>ck_produto_estoque</code>: <code>(0 &lt;&gt; in_controla_estoque) or ((qt_estoque_atual = 0) and (qt_estoque_minimo = 0))</code></li><li><code>ck_produto_insumo</code>: <code>(0 &lt;&gt; in_vendavel) or ((0 &lt;&gt; in_controla_estoque) and (0 = in_alcoolico))</code></li><li><code>ck_produto_preco</code>: <code>(vl_preco &gt;= 0) and ((0 = in_vendavel) or (vl_preco &gt; 0))</code></li></ul>
+<p><b>Índices:</b> <code>ix_produto_categoria</code> (id_categoria); <code>ix_produto_setor</code> (id_setor); único <code>PRIMARY</code> (id_produto); único <code>uq_produto_barras</code> (nr_codigo_barras); único <code>uq_produto_nome</code> (nm_produto).</p>
+<h2 id="reserva">14. RESERVA</h2><p><code>RESERVA = @ID_RESERVA + ID_MESA + NM_CLIENTE + (NR_TELEFONE) + DH_RESERVA + QT_PESSOAS + TP_STATUS</code></p>
+<table><thead><tr><th>Atributo</th><th>Tipo físico</th><th>Obrigatório</th><th>Único</th><th>Padrão</th><th>Valores permitidos (CHECK)</th><th>Chave</th><th>Descrição</th><th>Regra de negócio</th></tr></thead><tbody>
+<tr><td><code>id_reserva</code></td><td>INT</td><td>Sim</td><td>Sim (PK)</td><td>AUTO_INCREMENT</td><td></td><td>PK</td><td>Identificador da reserva.</td><td>—</td></tr>
+<tr><td><code>id_mesa</code></td><td>SMALLINT</td><td>Sim</td><td></td><td></td><td></td><td>FK → mesa.id_mesa</td><td>Mesa reservada.</td><td>Mesa ativa (RN28).</td></tr>
+<tr><td><code>nm_cliente</code></td><td>VARCHAR(80)</td><td>Sim</td><td></td><td></td><td></td><td></td><td>Nome de quem reservou. Ex.: &quot;Carlos Mendes&quot; (fictício).</td><td>Dado pessoal mínimo (LGPD).</td></tr>
+<tr><td><code>nr_telefone</code></td><td>VARCHAR(15)</td><td>Não</td><td></td><td></td><td><code>(nr_telefone is null) or regexp_like(nr_telefone,&#x27;^[0-9]{10,15}$&#x27;)</code></td><td></td><td>Telefone para confirmar.</td><td>Dado pessoal; acesso restrito (seção 5.6).</td></tr>
+<tr><td><code>dh_reserva</code></td><td>DATETIME</td><td>Sim</td><td></td><td></td><td></td><td></td><td>Data e hora para as quais a mesa foi reservada.</td><td>Futuro no momento do cadastro.</td></tr>
+<tr><td><code>qt_pessoas</code></td><td>SMALLINT</td><td>Sim</td><td></td><td></td><td><code>qt_pessoas &gt; 0</code></td><td></td><td>Quantidade de pessoas.</td><td>Maior que zero e não maior que os lugares da mesa.</td></tr>
+<tr><td><code>tp_status</code></td><td>CHAR(1)</td><td>Sim</td><td></td><td>A</td><td><code>tp_status in (&#x27;A&#x27;,&#x27;T&#x27;,&#x27;C&#x27;)</code></td><td></td><td>Ativa, Atendida ou Cancelada.</td><td>Reserva não se exclui (RN13).</td></tr>
+</tbody></table>
+<p><b>Índices:</b> <code>ix_reserva_mesa_data</code> (id_mesa, dh_reserva); único <code>PRIMARY</code> (id_reserva).</p>
+<h2 id="setor">15. SETOR</h2><p><code>SETOR = @ID_SETOR + NM_SETOR + IN_PREPARO</code></p>
+<table><thead><tr><th>Atributo</th><th>Tipo físico</th><th>Obrigatório</th><th>Único</th><th>Padrão</th><th>Valores permitidos (CHECK)</th><th>Chave</th><th>Descrição</th><th>Regra de negócio</th></tr></thead><tbody>
+<tr><td><code>id_setor</code></td><td>SMALLINT</td><td>Sim</td><td>Sim (PK)</td><td>AUTO_INCREMENT</td><td></td><td>PK</td><td>Identificador do setor.</td><td>—</td></tr>
+<tr><td><code>nm_setor</code></td><td>VARCHAR(30)</td><td>Sim</td><td>Sim</td><td></td><td></td><td></td><td>Nome do setor. Ex.: Salão, Cozinha, Bar, Gerência, Limpeza.</td><td>Único.</td></tr>
+<tr><td><code>in_preparo</code></td><td>BOOLEAN</td><td>Sim</td><td></td><td></td><td></td><td></td><td>Indica se o setor prepara produtos.</td><td>Verdadeiro para Cozinha e Bar; falso para Salão, Gerência e Limpeza. Só esses setores podem ser setor de preparo de um produto (RN06).</td></tr>
+</tbody></table>
+<p><b>Índices:</b> único <code>PRIMARY</code> (id_setor); único <code>uq_setor_nome</code> (nm_setor).</p>
+</body></html>

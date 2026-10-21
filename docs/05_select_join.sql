@@ -1,5 +1,6 @@
+USE palazio_del_chef;
 -- =====================================================================
--- 5. SELECT com JOIN (consultas operacionais do dia a dia)
+-- 5. SELECT com JOIN (MySQL 8.0) (consultas operacionais do dia a dia)
 -- =====================================================================
 
 -- 5.1 Comanda completa de um pedido (pedido × mesa × atendente × itens × produto)
@@ -20,7 +21,7 @@ SELECT t.id_pedido, m.nr_mesa, t.vl_subtotal, t.vl_taxa, t.vl_total, t.vl_pago
 
 -- 5.3 Mesas ocupadas agora, com garçom, tempo de permanência e consumo parcial (referência 12/10/2026 21:20)
 SELECT m.nr_mesa, m.tp_local, a.nm_atendente AS garcom, p.dh_abertura,
-       ROUND(EXTRACT(EPOCH FROM (TIMESTAMP '2026-10-12 21:20' - p.dh_abertura)) / 60) AS minutos_na_mesa,
+       ROUND(TIMESTAMPDIFF(SECOND, p.dh_abertura, '2026-10-12 21:20:00') / 60) AS minutos_na_mesa,
        t.vl_subtotal
   FROM mesa m
   JOIN pedido p          ON p.id_mesa = m.id_mesa AND p.tp_status = 'A'
@@ -44,9 +45,9 @@ SELECT c.nm_categoria, pr.nm_produto, s.nm_setor, pr.vl_preco, pr.in_alcoolico A
 -- 5.6 Produtos com estoque crítico e último fornecedor (produto × compra_produto × compra × fornecedor)
 SELECT e.nm_produto, e.qt_estoque_atual, e.qt_estoque_minimo, f.nm_fornecedor AS ultimo_fornecedor, c.dh_recebimento AS ultima_entrada
   FROM vw_estoque_critico e
-  LEFT JOIN LATERAL (SELECT c.* FROM compra_produto cp JOIN compra c USING (id_compra)
-                      WHERE cp.id_produto = e.id_produto AND c.tp_status = 'R'
-                      ORDER BY c.dh_recebimento DESC LIMIT 1) c ON TRUE
+  LEFT JOIN compra c ON c.id_compra = (SELECT cp.id_compra FROM compra_produto cp JOIN compra c2 ON c2.id_compra = cp.id_compra
+                                        WHERE cp.id_produto = e.id_produto AND c2.tp_status = 'R'
+                                        ORDER BY c2.dh_recebimento DESC LIMIT 1)
   LEFT JOIN fornecedor f ON f.id_fornecedor = c.id_fornecedor
  ORDER BY e.nm_produto;
 
@@ -62,7 +63,7 @@ SELECT c.id_compra, c.nr_nota_fiscal, c.tp_status, f.nm_fornecedor, COUNT(*) AS 
 -- 5.8 Extrato de movimentação de um produto (venda, compra, estorno, ajuste) com saldo acumulado
 SELECT m.dh_movimento, m.tp_movimento, m.qt_movimento,
        SUM(m.qt_movimento) OVER (ORDER BY m.dh_movimento, m.id_movimentacao) AS saldo,
-       COALESCE('pedido ' || m.id_pedido, 'compra ' || m.id_compra, m.ds_motivo) AS origem
+       COALESCE(CONCAT('pedido ', m.id_pedido), CONCAT('compra ', m.id_compra), m.ds_motivo) AS origem
   FROM movimentacao_estoque m JOIN produto p USING (id_produto)
  WHERE p.nm_produto = 'Heineken long neck'
  ORDER BY m.dh_movimento, m.id_movimentacao

@@ -1,19 +1,14 @@
 -- =====================================================================
--- 4. INSERT — massa de dados FICTÍCIA (gerada por scripts/gen_data.py, semente 20261013)
+-- 4. INSERT — massa de dados FICTÍCIA (gerada por entrega-2/scripts/gen_data.py, semente 20261013)
 -- Semana simulada: ter 06/10/2026 a seg 12/10/2026; 'agora' = seg 12/10/2026 21:20.
 -- Nomes, CNPJs, telefones e valores são inventados; os volumes seguem as estimativas
--- reais do estabelecimento. Triggers de regra de negócio ficam desabilitados só durante
--- a carga histórica (inserir datas passadas), e são reabilitados no final.
+-- reais do estabelecimento. As senhas dos atendentes ficam como hash SHA-256 com sal (login + senha),
+-- nunca em texto puro (RNF03). As triggers de regra de negócio (arquivo 04) são criadas DEPOIS desta
+-- carga, porque a carga histórica tem datas passadas e o estado final já consistente.
+USE palazio_del_chef;
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 1;
 -- =====================================================================
-ALTER TABLE reserva DISABLE TRIGGER USER;
-ALTER TABLE pedido DISABLE TRIGGER USER;
-ALTER TABLE pedido_produto DISABLE TRIGGER USER;
-ALTER TABLE pagamento DISABLE TRIGGER USER;
-ALTER TABLE compra DISABLE TRIGGER USER;
-ALTER TABLE compra_produto DISABLE TRIGGER USER;
-ALTER TABLE movimentacao_estoque DISABLE TRIGGER USER;
-ALTER TABLE historico_produto DISABLE TRIGGER USER;
-ALTER TABLE produto DISABLE TRIGGER USER;
 
 INSERT INTO setor (id_setor, nm_setor, in_preparo) VALUES
   (1, 'Salão', FALSE),
@@ -34,21 +29,21 @@ INSERT INTO categoria (id_categoria, nm_categoria) VALUES
   (10, 'Sucos e cafés'),
   (11, 'Insumos');
 INSERT INTO atendente (id_atendente, id_setor, nm_atendente, nm_login, ds_senha_hash, tp_funcao, tp_perfil, dt_admissao, in_ativo) VALUES
-  (1, 4, 'Marcos Antônio Teixeira', 'marcos.teixeira', crypt('Senha@2026', gen_salt('bf', 6)), 'SOCIO', 'S', '2019-03-04', TRUE),
-  (2, 4, 'Patrícia Nogueira Alves', 'patricia.alves', crypt('Senha@2026', gen_salt('bf', 6)), 'GERENTE', 'G', '2021-08-16', TRUE),
-  (3, 1, 'Fernanda Lopes Barreto', 'fernanda.barreto', crypt('Senha@2026', gen_salt('bf', 6)), 'CAIXA', 'A', '2022-02-07', TRUE),
-  (4, 1, 'Diego Martins Rocha', 'diego.rocha', crypt('Senha@2026', gen_salt('bf', 6)), 'GARCOM', 'A', '2023-05-02', TRUE),
-  (5, 1, 'Camila Freitas Duarte', 'camila.duarte', crypt('Senha@2026', gen_salt('bf', 6)), 'GARCOM', 'A', '2023-09-11', TRUE),
-  (6, 1, 'Lucas Pereira Matos', 'lucas.matos', crypt('Senha@2026', gen_salt('bf', 6)), 'GARCOM', 'A', '2024-01-15', TRUE),
-  (7, 1, 'Juliana Ramos Costa', 'juliana.costa', crypt('Senha@2026', gen_salt('bf', 6)), 'GARCOM', 'A', '2024-06-03', TRUE),
-  (8, 1, 'Rafael Gomes Vieira', 'rafael.vieira', crypt('Senha@2026', gen_salt('bf', 6)), 'GARCOM', 'A', '2025-02-10', TRUE),
-  (9, 1, 'Bruno Carvalho Lima', 'bruno.lima', crypt('Senha@2026', gen_salt('bf', 6)), 'GARCOM', 'A', '2025-04-22', FALSE),
-  (10, 2, 'Antônio Ferreira Prado', 'antonio.prado', crypt('Senha@2026', gen_salt('bf', 6)), 'COZINHA', 'P', '2020-10-05', TRUE),
-  (11, 2, 'Viviane Souza Melo', 'viviane.melo', crypt('Senha@2026', gen_salt('bf', 6)), 'COZINHA', 'P', '2022-07-18', TRUE),
-  (12, 2, 'Gustavo Henrique Lins', 'gustavo.lins', crypt('Senha@2026', gen_salt('bf', 6)), 'COZINHA', 'P', '2024-03-25', TRUE),
-  (13, 3, 'Renata Campos Pinto', 'renata.pinto', crypt('Senha@2026', gen_salt('bf', 6)), 'BAR', 'P', '2022-11-14', TRUE),
-  (14, 3, 'Thiago Moreira Santana', 'thiago.santana', crypt('Senha@2026', gen_salt('bf', 6)), 'BAR', 'P', '2025-01-20', TRUE),
-  (15, 5, 'Sueli Aparecida Dias', 'sueli.dias', crypt('Senha@2026', gen_salt('bf', 6)), 'LIMPEZA', 'A', '2021-04-12', TRUE);
+  (1, 4, 'Marcos Antônio Teixeira', 'marcos.teixeira', '32dc4d9f0a2126ea3d8a2162a41e8f5521dff80a7477b2f7e8943c19328c46b5', 'SOCIO', 'S', '2019-03-04', TRUE),
+  (2, 4, 'Patrícia Nogueira Alves', 'patricia.alves', '01b42ef80e1ccd0cd844b4483bbde957a06d0929fc3f659e1509e12e29662fae', 'GERENTE', 'G', '2021-08-16', TRUE),
+  (3, 1, 'Fernanda Lopes Barreto', 'fernanda.barreto', '51a886919dd869b1a34e8f6925ab84ea56faa76967923dbee0b3e814713cc767', 'CAIXA', 'A', '2022-02-07', TRUE),
+  (4, 1, 'Diego Martins Rocha', 'diego.rocha', '090f9af8e4154e9966cc672405a67881fda05146e594742b561610d2aca3200d', 'GARCOM', 'A', '2023-05-02', TRUE),
+  (5, 1, 'Camila Freitas Duarte', 'camila.duarte', 'd58b6a2e50f382a51e9e32bf98af43cc62c29881e1243288fa868edf678ce261', 'GARCOM', 'A', '2023-09-11', TRUE),
+  (6, 1, 'Lucas Pereira Matos', 'lucas.matos', '6ca2ceabf1775ca6f4a09f0c4a49a28d7bec4dd766889fc94b969865e23d1245', 'GARCOM', 'A', '2024-01-15', TRUE),
+  (7, 1, 'Juliana Ramos Costa', 'juliana.costa', '8b81d44b2531d9e1f21eff959c66d84f725499e476b9734924cc2749269d0576', 'GARCOM', 'A', '2024-06-03', TRUE),
+  (8, 1, 'Rafael Gomes Vieira', 'rafael.vieira', '2e1ba0458380408c04a10a30207a061e2db926b42c167de6b2f3e0d7bd13bd3c', 'GARCOM', 'A', '2025-02-10', TRUE),
+  (9, 1, 'Bruno Carvalho Lima', 'bruno.lima', 'a84084f598ee825fdab5909f3fe0159ad451f6a85219c844ff02472d50c792b8', 'GARCOM', 'A', '2025-04-22', FALSE),
+  (10, 2, 'Antônio Ferreira Prado', 'antonio.prado', '891905c593f77165143b743860cd36aebe3f20148293571f87fa6c1d5ce74aef', 'COZINHA', 'P', '2020-10-05', TRUE),
+  (11, 2, 'Viviane Souza Melo', 'viviane.melo', '69a98854b21045a674c524ff63a65f1271c0ce6a726d2c1e9f9c933fd2db2842', 'COZINHA', 'P', '2022-07-18', TRUE),
+  (12, 2, 'Gustavo Henrique Lins', 'gustavo.lins', 'c1a680206cd73f2cb6d12c32bdff88129c61a790ccaa2185d5a0411cb3d6341e', 'COZINHA', 'P', '2024-03-25', TRUE),
+  (13, 3, 'Renata Campos Pinto', 'renata.pinto', 'd05ebd149e604d89112f5688f8cecff27cdbbdafcfc3f0ab7871b7246af3da63', 'BAR', 'P', '2022-11-14', TRUE),
+  (14, 3, 'Thiago Moreira Santana', 'thiago.santana', 'c6791b82e8feb1e3dc06a5d84e01ff6998213f60de5d194047e3ed60acfd842c', 'BAR', 'P', '2025-01-20', TRUE),
+  (15, 5, 'Sueli Aparecida Dias', 'sueli.dias', 'aac28b2ca8bd91002eb6d71a0f955b5da2f5089c87af45b3f81e08fec0f3cfb3', 'LIMPEZA', 'A', '2021-04-12', TRUE);
 INSERT INTO mesa (id_mesa, nr_mesa, tp_local, qt_lugares, tp_status) VALUES
   (1, 1, 'M', 4, 'O'),
   (2, 2, 'M', 4, 'O'),
@@ -11510,28 +11505,3 @@ INSERT INTO movimentacao_estoque (id_produto, id_pedido, id_compra, tp_movimento
   (34, 1641, NULL, 'V', -1, '2026-10-12 21:13:08', 'Baixa por venda'),
   (37, 1637, NULL, 'V', -1, '2026-10-12 21:13:50', 'Baixa por venda'),
   (27, 1634, NULL, 'V', -1, '2026-10-12 21:15:43', 'Baixa por venda');
-
-ALTER TABLE reserva ENABLE TRIGGER USER;
-ALTER TABLE pedido ENABLE TRIGGER USER;
-ALTER TABLE pedido_produto ENABLE TRIGGER USER;
-ALTER TABLE pagamento ENABLE TRIGGER USER;
-ALTER TABLE compra ENABLE TRIGGER USER;
-ALTER TABLE compra_produto ENABLE TRIGGER USER;
-ALTER TABLE movimentacao_estoque ENABLE TRIGGER USER;
-ALTER TABLE historico_produto ENABLE TRIGGER USER;
-ALTER TABLE produto ENABLE TRIGGER USER;
-
--- Ajusta as sequências das chaves geradas (identity) para continuar após os valores carregados
-SELECT setval(pg_get_serial_sequence('setor', 'id_setor'), (SELECT COALESCE(MAX(id_setor), 1) FROM setor));
-SELECT setval(pg_get_serial_sequence('categoria', 'id_categoria'), (SELECT COALESCE(MAX(id_categoria), 1) FROM categoria));
-SELECT setval(pg_get_serial_sequence('atendente', 'id_atendente'), (SELECT COALESCE(MAX(id_atendente), 1) FROM atendente));
-SELECT setval(pg_get_serial_sequence('mesa', 'id_mesa'), (SELECT COALESCE(MAX(id_mesa), 1) FROM mesa));
-SELECT setval(pg_get_serial_sequence('reserva', 'id_reserva'), (SELECT COALESCE(MAX(id_reserva), 1) FROM reserva));
-SELECT setval(pg_get_serial_sequence('produto', 'id_produto'), (SELECT COALESCE(MAX(id_produto), 1) FROM produto));
-SELECT setval(pg_get_serial_sequence('historico_produto', 'id_historico'), (SELECT COALESCE(MAX(id_historico), 1) FROM historico_produto));
-SELECT setval(pg_get_serial_sequence('pedido', 'id_pedido'), (SELECT COALESCE(MAX(id_pedido), 1) FROM pedido));
-SELECT setval(pg_get_serial_sequence('pagamento', 'id_pagamento'), (SELECT COALESCE(MAX(id_pagamento), 1) FROM pagamento));
-SELECT setval(pg_get_serial_sequence('fornecedor', 'id_fornecedor'), (SELECT COALESCE(MAX(id_fornecedor), 1) FROM fornecedor));
-SELECT setval(pg_get_serial_sequence('compra', 'id_compra'), (SELECT COALESCE(MAX(id_compra), 1) FROM compra));
-SELECT setval(pg_get_serial_sequence('movimentacao_estoque', 'id_movimentacao'), (SELECT COALESCE(MAX(id_movimentacao), 1) FROM movimentacao_estoque));
-ANALYZE;
