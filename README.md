@@ -67,15 +67,20 @@
 
 **Processos, requisitos e regras.** Estão detalhados, com os campos de dados de cada um, no [Anexo A, seções 2 a 4](#2--processos-de-negócio) (13 processos, requisitos funcionais e não funcionais, 31 regras de negócio). Ficaram de fora, por falta de informação do local, mas são prováveis: controle de escala e ponto, programa de fidelidade, entrega (o gerente disse que não há) e emissão de nota fiscal de venda (feita na maquininha). `[VALIDAR]`
 
-**Revisão do modelo conceitual (Caso A).** `[PREENCHER]` Abaixo, a tabela exigida; a coluna 1 deve ser preenchida com os apontamentos do professor na correção da Entrega 1. As três mudanças feitas ao implementar estão registradas:
+**Revisão do modelo conceitual (Caso A).** Mudanças em relação ao DER entregue na Entrega 1, partindo das orientações do professor e dos ajustes feitos ao implementar. O DER anterior do grupo (BRModelo, 22/09/2026) e a comparação completa estão no [Anexo A, seção 7.1](#71-der-anterior-do-grupo-brmodelo-22092026).
 
 | Apontamento da correção da Entrega 1 | O que mudou | Por quê |
 |---|---|---|
-| `[PREENCHER]` | — | — |
-| (orientação em aula) Funcionário → Atendente, Valor → Preço, remover Item_pedido, Atendente 1,N, incluir Histórico_Produto | Já aplicado no DER e no dicionário | Orientação do professor |
-| (nosso, ao implementar) novo atributo `IN_CONTROLA_ESTOQUE` em PRODUTO `[VALIDAR]` | Produto de revenda tem estoque por unidade; prato e drink preparados na hora não | Sem ele o estoque de um prato ficaria zero e a regra "estoque nunca negativo" bloquearia vendas |
-| (nosso) chaves compostas em CONTÉM e POSSUI | Atributos do relacionamento viram colunas da tabela associativa com PK `(id_pedido, id_produto)` | Mantém a orientação de não ter Item_pedido |
-| (nosso) `TP_FUNCAO` e `TP_LOCAL` como domínios | Viraram `CHECK` | Função (garçom, caixa, cozinha, bar, gerente, sócio, limpeza) e local (mesa `M` ou bistrô `B`) |
+| Atendente com cardinalidade (1,N) em "registra" Pedido | Atendente (1,N) registra Pedido (1,1); era (0,n) | Todo atendente cadastrado deve ter participação no processo; o pedido sempre tem um responsável (RN01) |
+| Remover a entidade Item_pedido | Virou o relacionamento N:N "contém" entre Pedido e Produto, com `qt_item`, `vl_preco_unitario`, `tp_status`, `dh_registro`, `dh_pronto` e `ds_observacao`. No lógico, tabela `pedido_produto` com PK composta `(id_pedido, id_produto)` | Orientação do professor; o item é identificado por (pedido, produto) |
+| Especificar a função do funcionário (Funcionário → Atendente) | Atendente com `tp_funcao`, `nm_login`, `tp_perfil`, setor e `in_ativo` | Distinguir garçom, caixa, cozinha, bar, gerente, sócio e limpeza, e resolver o problema de credenciais (P1) |
+| Valor → Preço nos nomes dos atributos | `preço_atual` e `preço_unitario` viraram `vl_preco` e `vl_preco_unitario` | Padronização do dicionário |
+| Incluir Histórico_Produto | Nova entidade `historico_produto` (preço anterior, preço novo, data, quem alterou) | Guardar os reajustes com responsável (P2) |
+| (nosso) Pagamento e Mesa como entidades | `forma_pagamento` e `Nmr_mesa` deixaram de ser atributos do Pedido | Pagamento dividido em várias formas e mesa com dados próprios (P6) |
+| (nosso) Setor prepara Produto | Produto deixou de ter `Nmr_setor` como atributo solto | Evita repetir o setor em cada produto |
+| (nosso) Reserva, Categoria, Compra, Fornecedor e Movimentação de estoque | Cinco entidades novas e o relacionamento N:N "possui" (`compra_produto`) | Processos relatados na visita: reserva por telefone, compras, estoque (P3, P4, P5) |
+| (nosso, ao implementar) `in_controla_estoque` em Produto `[VALIDAR]` | Produto de revenda tem estoque por unidade; prato e drink preparados na hora não | Sem ele o estoque de um prato ficaria zero e a regra "estoque nunca negativo" bloquearia vendas |
+| (nosso, ao implementar) `tp_funcao` e `tp_local` como domínios | Viraram `CHECK` | Função e local (mesa `M` ou bistrô `B`) com valores fechados |
 
 **DER.** Notação de Chen no [Anexo A, seção 7](#7--diagrama-entidade-relacionamento-der) (12 entidades, 16 relacionamentos) e DER anterior do grupo em BRModelo, em [`Diagrama_Palazio_del_Chef/`](Diagrama_Palazio_del_Chef/). Software: BRModelo (DER anterior) e Graphviz (diagrama gerado). `[VALIDAR]` se o professor exige o DER final em notação BRModelo.
 
