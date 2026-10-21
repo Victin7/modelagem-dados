@@ -1,35 +1,345 @@
-# 🍽️ Projeto: Palazio del Chef
-### Entrega 1 — Modelo Conceitual (DER)
+# 🍽️ Palazio del Chef — Relatório Técnico Final
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Status-Entrega%201-yellow?style=for-the-badge" alt="Status">
-  <img src="https://img.shields.io/badge/Banco_de_Dados-Relacional-blue?style=for-the-badge&logo=postgresql" alt="Banco de Dados">
-</p>
+### Modelagem de Banco de Dados · Entrega 2 (modelo lógico, SQL em MySQL e arquitetura analítica)
 
-> **Como ler os marcadores deste arquivo** *(apague este bloco antes de entregar)*
-> - **`[VALIDAR]`** — informação proposta na organização do texto, que precisa ser confirmada com o grupo ou no estabelecimento.
-> - **`[PREENCHER]`** — dado que só o grupo tem (RGM, endereço, contato, fotos etc.).
-> - **`(proposta)`** — regra, requisito, processo ou entidade **nova**, que não estava no README original. O grupo decide se mantém ou remove.
-> - Itens marcados **`(original)`** vieram do README anterior do grupo.
-> - **Nada marcado como `(proposta)` foi observado no estabelecimento.** A pesquisa de campo é que confirma ou descarta cada item.
+> Este README é o relatório da Entrega 2. A Entrega 1 (modelo conceitual, processos, requisitos, regras, dicionário conceitual e DER) está preservada no **[Anexo A](#anexo-a--entrega-1-modelo-conceitual)** no fim do arquivo.
+> Marcadores: **`[PREENCHER]`** = dado que só o grupo tem · **`[VALIDAR]`** = ponto a confirmar com o grupo, o estabelecimento ou o professor.
+
+## Integrantes
+
+| Integrante | RGM | Usuário no GitHub |
+|---|---|---|
+| Raphael Luiz Lima de Araujo | 46995773 | `[PREENCHER]` |
+| Ricardo Santos Marcelino | 47023708 | `[PREENCHER]` |
+| Thiago Rodrigues Ribeiro | 47188049 | `[PREENCHER]` |
+| Victor Sousa dos Anjos | 47333235 | `[PREENCHER]` (repositório `Victin7/modelagem-dados`) |
+
+**Curso / Disciplina:** Análise e Desenvolvimento de Sistemas — Modelagem de Banco de Dados (UNICID) · Prof. Cid Andrade.
+**SGBD:** MySQL 8.0 (InnoDB, `utf8mb4`) · **Banco:** `palazio_del_chef`.
+
+## Sumário
+
+1. [Modelo conceitual (revisão)](#1-modelo-conceitual)
+   1.1 [Caracterização, problemas e evidências](#11-caracterização-da-organização-problemas-e-evidências) · 1.2 [Conversão](#12-conversão-do-conceitual-para-o-lógico) · 1.3 [PKs e FKs](#13-chaves-primárias-e-estrangeiras) · 1.4 [Normalização](#14-normalização) · 1.5 [Justificativas](#15-justificativas-técnicas) · 1.6 [BI e IA](#16-arquitetura-analítica-bi-e-ia)
+2. [Modelo lógico](#2-modelo-lógico)
+3. [Script SQL](#3-script-sql)
+4. [Massa de dados](#4-massa-de-dados)
+5. [Repositório](#5-repositório)
+6. [Uso de IA](#6-uso-de-inteligência-artificial-nesta-entrega)
+7. [Pitch](#7-pitch-de-8-minutos)
+8. [Limitações e pontos a validar](#8-limitações-e-pontos-a-validar)
 
 ---
 
-## 👥 Metadados
+## 1. Modelo conceitual
 
-| Integrante | RGM |
-|------------|-----|
-| Raphael Luiz Lima de Araujo | 46995773 |
-| Ricardo Santos Marcelino | 47023708 |
-| Thiago Rodrigues Ribeiro | 47188049 |
-| Victor Sousa dos Anjos | 47333235 |
+### 1.1 Caracterização da organização, problemas e evidências
 
-- **Curso / Disciplina:** Análise e Desenvolvimento de Sistemas — Modelagem de Banco de Dados (UNICID) — Prof. Cid Andrade
-- **Versão do documento:** v2.0 — 07/10/2026
+**Organização real:** Palazio del Chef (Bar e Restaurante Palazio Del Chef Tatuape LTDA., CNPJ 58.759.116/0001-99), Rua Apucarana, 480, Tatuapé, São Paulo. Restaurante e bar de atendimento presencial, **cerca de 30 mesas e 25 bistrôs**, **150 a 300 pedidos por dia útil e 400 a 550 aos sábados** (estimativa informada), funcionários CLT em escala 6x1, pedidos lançados no aplicativo Garçom Web. A caracterização completa, o horário e o cardápio estão no [Anexo A, seção 1](#1--caracterização-da-organização).
+
+**Problemas identificados** (cada um é resolvido pelo modelo e tem consulta que o demonstra; a tabela de rastreabilidade está na seção 1.6):
+
+| # | Problema (relatado ou observado na visita) | Como o modelo resolve |
+|---|---|---|
+| P1 | Equipe sem credenciais individuais: não se sabe quem registrou cada pedido ou ação | `atendente` com login único e perfil; `pedido.id_atendente` obrigatório; o banco confere o perfil de quem opera |
+| P2 | Compras e cadastros (preço, estoque) dependem de poucas pessoas e não ficam registrados por responsável | Só gerência/sócio muda preço (com `historico_produto`), registra compra e faz ajuste de estoque |
+| P3 | Compras sem registro estruturado (fornecedor, nota, custo) | `fornecedor`, `compra`, `compra_produto` com nota fiscal e custo unitário |
+| P4 | Validade e estoque em planilha mensal, sem histórico nem alerta de reposição | `movimentacao_estoque` (saldo = soma das movimentações), `dt_validade`, `qt_estoque_minimo` |
+| P5 | Pedido, estoque e compras fora do mesmo fluxo | Venda baixa estoque e compra recebida dá entrada, por trigger, na mesma transação |
+| P6 | Pagamento e fechamento do caixa conferidos à mão | `pagamento` por forma, pagamento dividido que fecha o total do pedido ao centavo, painel de auditoria |
+
+**Escopo.** O modelo cobre todos os dados da organização: atendimento (mesa, reserva, pedido, item), setores de preparo, cardápio com histórico de preço, pagamento, compras, fornecedores e estoque. Ficou fora o que não é dado do restaurante: folha de pagamento, escala de funcionários, nota fiscal de venda (emitida na maquininha) e dados pessoais de clientes.
+
+**Justificativa da escolha.** O porte é adequado: tem processos de atendimento, produção em dois setores, compras, estoque e pagamento, o suficiente para exercitar o modelo sem exigir módulos fora do escopo. `[PREENCHER]` como o grupo tem acesso ao local (vínculo com o proprietário, se houver).
+
+**Evidências.**
+
+| Evidência | Registro |
+|---|---|
+| Endereço e CNPJ | Rua Apucarana, 480, Tatuapé, São Paulo · 58.759.116/0001-99 |
+| Google Maps | [maps.app.goo.gl/TnAsUSbBUWyaUT7E9](https://maps.app.goo.gl/TnAsUSbBUWyaUT7E9) · horário em [`evidencias/horario_google_maps.jpg`](evidencias/horario_google_maps.jpg) |
+| Rede social | [@palaziodelchef](https://www.instagram.com/palaziodelchef/) |
+| Responsável | Ivo Diogo Alcantara Parente, proprietário e sócio-administrador · telefone (11) 2359-7134 |
+| Fotos | [`imagem_palazio.jpeg`](imagem_palazio.jpeg) (fachada) · [`visita_palazio.jpeg`](visita_palazio.jpeg) (equipe com o gerente) |
+| Cardápio | [`evidencias/cardapio_palazio_diurno.pdf`](evidencias/cardapio_palazio_diurno.pdf) |
+
+**Relatório da entrevista.** Visita em **04/09/2026**, no estabelecimento, com **um gerente** (entrevistado) e os quatro integrantes. Foram levantados: atendimento e reserva, registro e encaminhamento do pedido, cancelamento, taxa de serviço, pagamento, compras e recebimento, validade e estoque, fechamento do caixa e regime dos funcionários. O texto organizado, com **observações separadas das respostas**, está em [`levantamento/levantamento.md`](levantamento/levantamento.md); o roteiro, em [`evidencias/roteiro_entrevista.md`](evidencias/roteiro_entrevista.md).
+
+**Processos, requisitos e regras.** Estão detalhados, com os campos de dados de cada um, no [Anexo A, seções 2 a 4](#2--processos-de-negócio) (13 processos, requisitos funcionais e não funcionais, 31 regras de negócio). Ficaram de fora, por falta de informação do local, mas são prováveis: controle de escala e ponto, programa de fidelidade, entrega (o gerente disse que não há) e emissão de nota fiscal de venda (feita na maquininha). `[VALIDAR]`
+
+**Revisão do modelo conceitual (Caso A).** `[PREENCHER]` Abaixo, a tabela exigida; a coluna 1 deve ser preenchida com os apontamentos do professor na correção da Entrega 1. As três mudanças feitas ao implementar estão registradas:
+
+| Apontamento da correção da Entrega 1 | O que mudou | Por quê |
+|---|---|---|
+| `[PREENCHER]` | — | — |
+| (orientação em aula) Funcionário → Atendente, Valor → Preço, remover Item_pedido, Atendente 1,N, incluir Histórico_Produto | Já aplicado no DER e no dicionário | Orientação do professor |
+| (nosso, ao implementar) novo atributo `IN_CONTROLA_ESTOQUE` em PRODUTO `[VALIDAR]` | Produto de revenda tem estoque por unidade; prato e drink preparados na hora não | Sem ele o estoque de um prato ficaria zero e a regra "estoque nunca negativo" bloquearia vendas |
+| (nosso) chaves compostas em CONTÉM e POSSUI | Atributos do relacionamento viram colunas da tabela associativa com PK `(id_pedido, id_produto)` | Mantém a orientação de não ter Item_pedido |
+| (nosso) `TP_FUNCAO` e `TP_LOCAL` como domínios | Viraram `CHECK` | Função (garçom, caixa, cozinha, bar, gerente, sócio, limpeza) e local (mesa `M` ou bistrô `B`) |
+
+**DER.** Notação de Chen no [Anexo A, seção 7](#7--diagrama-entidade-relacionamento-der) (12 entidades, 16 relacionamentos) e DER anterior do grupo em BRModelo, em [`Diagrama_Palazio_del_Chef/`](Diagrama_Palazio_del_Chef/). Software: BRModelo (DER anterior) e Graphviz (diagrama gerado). `[VALIDAR]` se o professor exige o DER final em notação BRModelo.
+
+### 1.2 Conversão do conceitual para o lógico
+
+| Construção do DER | Tabela/coluna resultante |
+|---|---|
+| Entidade | Uma tabela; o identificador vira PK |
+| Relacionamento 1:N | FK no lado N |
+| Relacionamento N:N com atributos (CONTÉM, POSSUI) | Tabela associativa com PK composta e duas FKs |
+| Atributo opcional | Coluna que aceita `NULL` (`dh_fechamento`, `dh_pronto`, `nr_telefone`, `dt_validade`...) |
+| Domínio fechado (`TP_*`, `IN_*`) | `CHAR`/`TINYINT(1)` com `CHECK` |
+| Atributo derivado (total do pedido, taxa de 10%, saldo) | **Não é coluna**: view `vw_pedido_total` e função `fn_total_pedido` |
+
+Resultado: **14 tabelas** (12 entidades + `pedido_produto` + `compra_produto`) e **18 chaves estrangeiras**.
+
+| Tabela | Origem | Linhas na massa |
+|---|---|---|
+| setor | SETOR | 5 |
+| categoria | CATEGORIA | 11 |
+| atendente | ATENDENTE | 15 |
+| mesa | MESA | 55 (30 mesas + 25 bistrôs) |
+| reserva | RESERVA | 14 |
+| produto | PRODUTO | 62 (54 do cardápio + 8 insumos) |
+| historico_produto | HISTORICO_PRODUTO | 8 |
+| pedido | PEDIDO | 1.649 |
+| pedido_produto | CONTÉM | 5.936 |
+| pagamento | PAGAMENTO | 1.933 |
+| fornecedor | FORNECEDOR | 6 |
+| compra | COMPRA | 11 |
+| compra_produto | POSSUI | 36 |
+| movimentacao_estoque | MOVIMENTACAO_ESTOQUE | 1.720 |
+
+### 1.3 Chaves primárias e estrangeiras
+
+**PKs.** Substitutas (`INT`/`SMALLINT AUTO_INCREMENT`) nas entidades. Compostas só em `pedido_produto (id_pedido, id_produto)` e `compra_produto (id_compra, id_produto)`. Identificadores naturais (`nm_login`, `nr_cnpj`, `nr_codigo_barras`, `nr_mesa`, `nm_produto`) ficam `UNIQUE`.
+
+| Tabela filha | Coluna(s) FK | Tabela pai | Cardinalidade |
+|---|---|---|---|
+| atendente | id_setor | setor | N:1 |
+| produto | id_setor, id_categoria | setor, categoria | N:1 |
+| historico_produto | id_produto, id_atendente | produto, atendente | N:1 |
+| reserva | id_mesa | mesa | N:1 |
+| pedido | id_mesa, id_atendente | mesa, atendente | N:1 |
+| pedido_produto | id_pedido, id_produto | pedido, produto | N:1 (PK composta) |
+| pagamento | id_pedido | pedido | N:1 |
+| compra | id_fornecedor, id_atendente | fornecedor, atendente | N:1 |
+| compra_produto | id_compra, id_produto | compra, produto | N:1 (PK composta) |
+| movimentacao_estoque | id_produto; id_pedido ou id_compra (um dos dois, conforme o tipo) | produto, pedido, compra | N:1 |
+
+Sem `ON DELETE CASCADE`: o histórico não some em cascata; exclusões são barradas por trigger (RN13).
+
+### 1.4 Normalização
+
+**1FN.** Colunas atômicas, sem listas nem grupos repetidos; itens do pedido e da compra estão em tabelas próprias; toda tabela tem PK.
+
+**2FN.** Nas tabelas de PK composta, todo atributo depende da chave inteira: em `pedido_produto`, `qt_item`, `vl_preco_unitario`, `tp_status`, `dh_registro`, `dh_pronto` e `ds_observacao` dependem de (pedido, produto); em `compra_produto`, `qt_comprada`, `vl_custo_unitario` e `dt_validade` dependem de (compra, produto). Nome e preço de tabela do produto ficam em `produto`. As demais têm PK simples.
+
+**3FN.** Nenhum atributo não-chave depende de outro não-chave: nome de setor/categoria fica nas suas tabelas, dados do garçom não se repetem em `pedido`, e **total, taxa de serviço e saldo não são armazenados** (view `vw_pedido_total`).
+
+**Redundâncias deliberadas e proteção:**
+
+| Redundância | Por quê | Proteção |
+|---|---|---|
+| `produto.qt_estoque_atual` | Consulta rápida no salão | Só o trigger `trg_mov_ai` altera o saldo; auditoria **A06** confere saldo = soma das movimentações |
+| `pedido_produto.vl_preco_unitario` | O preço da venda não muda quando o cardápio muda (RN07) | Trigger copia o preço e impede alteração; auditoria **A08** compara com o histórico |
+| `mesa.tp_status` | Mapa de mesas em tempo real | Triggers de pedido; auditoria **A05** confere com os pedidos abertos |
+
+### 1.5 Justificativas técnicas
+
+| Decisão | Justificativa |
+|---|---|
+| PK substituta nas entidades | Nome, CNPJ e código de barras mudam ou são digitados errado; um número interno estável evita atualizar FKs |
+| PK composta em `pedido_produto` e `compra_produto` | Um item é identificado por (pedido, produto); impede o mesmo produto duas vezes e dispensa Item_pedido (orientação do professor) |
+| `pedido.id_atendente` e `id_mesa` obrigatórias | Todo pedido tem responsável (RN01) e mesa (RN02): resolve P1 |
+| FKs sem `CASCADE` | Histórico financeiro e de estoque não pode sumir (RN13) |
+| `UNIQUE` em login, CNPJ, código de barras, número da mesa e nomes de setor/categoria/produto | Evita duplicidade que quebraria login individual (RN12), identificação do fornecedor, leitura do código (RN03) e mapa de mesas |
+| `NOT NULL` nos atributos de negócio | Sem preço, quantidade, data e status o pedido, a compra e o estoque deixam de ser calculáveis; opcionais só `dh_fechamento`, `dh_pronto`, `dh_recebimento`, `nr_telefone`, `dt_validade`, `ds_observacao` e a origem da movimentação |
+| `CHECK` de domínio (`tp_status`, `tp_forma`, `tp_perfil`, `tp_funcao`, `tp_local`, `tp_movimento`) | Só valores previstos no dicionário |
+| `CHECK` de consistência (fechamento ≥ abertura; `dh_pronto` só se pronto/entregue; nota fiscal na compra recebida; sinal e origem da movimentação) | Estado e datas contam a mesma história |
+| `CHECK` numéricos (`qt_item > 0`, `vl_pago > 0`, estoque ≥ 0, CNPJ 14 dígitos, telefone 10 a 15) | Bloqueiam valores impossíveis na origem (RN08); são 41 `CHECK`s |
+| Coluna gerada `id_mesa_aberta` + `UNIQUE ux_pedido_mesa_aberto` | RN05 (um pedido aberto por mesa). O MySQL não tem índice parcial; a coluna só tem valor quando o pedido está aberto, e `UNIQUE` aceita vários `NULL` |
+
+**Regras de negócio no banco** (script `04_regras_triggers_views.sql`, **32 triggers**, 6 funções/procedimentos, 3 views). Valem mesmo que o Garçom Web ou outra ferramenta acesse o banco:
+
+| Regra (Anexo A, seção 4) | Implementação |
+|---|---|
+| RN01 pedido com atendente; RN02 com mesa | FKs `NOT NULL` |
+| RN03 código de barras único | `UNIQUE` + `CHECK` |
+| RN04 só atendente ativo abre pedido | `trg_pedido_bi` |
+| RN05 um pedido aberto por mesa | `trg_pedido_bi` + `ux_pedido_mesa_aberto` |
+| RN06 item vai ao setor de preparo do produto | `trg_produto_bi/bu` |
+| RN07 preço congelado no item | `trg_pp_bi/bu` |
+| RN08 estoque suficiente, nunca negativo | `trg_pp_bi`, `trg_mov_bi` e `CHECK` |
+| RN09/RN17 cancelar item só antes de ficar pronto | matriz de transições em `trg_pp_bu` |
+| RN10 fechar só pago e sem itens pendentes | `trg_pedido_bu` |
+| RN11 total calculado | `vw_pedido_total`, `fn_total_pedido` |
+| RN13 cadastros não são excluídos | `trg_nodel_*` |
+| RN14 produto indisponível não é pedido | `trg_pp_bi` |
+| RN15 pagamento dividido, sem exceder a conta | `trg_pagamento_bi` |
+| RN16 taxa de 10% removível | `in_taxa_servico` + `vw_pedido_total` |
+| RN21 saldo = soma das movimentações | `trg_mov_ai` (única porta do saldo) |
+| RN24 só gerência/sócio muda preço, com histórico | `trg_produto_bu` |
+| RN22/RN23 compra só de fornecedor ativo, pela gerência/sócio, com nota ao receber | `trg_compra_bi/bu/au`, `trg_cp_*` |
+| RN30 insumo com estoque e fora do cardápio | `CHECK ck_produto_insumo` |
+| Histórico imutável (pagamento, movimentação, histórico de preço) | `trg_ro_*` |
+
+**Quem fez a operação.** O app informa o usuário com `SET @id_atendente = <id>` na sessão; o procedimento `sp_exige_perfil` confere o perfil (A atendimento, P preparo, G gerência, S sócio). Item só vai a "em preparo/pronto" por quem é do setor do produto (ou gerência); só gerência/sócio faz ajuste manual de estoque ou muda preço.
+
+**Particularidades do MySQL.** `CURRENT_DATE` não é aceito em `CHECK`; a data de admissão futura é barrada por trigger. Triggers são por linha e separados para `INSERT` e `UPDATE` (por isso 32 e não 27). Mensagens de erro usam `SIGNAL SQLSTATE '45000'`. Como não é possível desabilitar triggers por tabela, eles são criados **depois** da carga histórica.
+
+**Índices.** Além de PKs e `UNIQUE`: fila de preparo (`ix_pp_fila`), caixa por data (`ix_pagamento_data`), extrato de estoque (`ix_mov_produto_data`) e as FKs mais consultadas (16 índices).
+
+**Por que MySQL.** É o SGBD definido pela disciplina. Atende `CHECK` (8.0.16+), colunas geradas, funções de janela (`PERCENT_RANK`, `ROLLUP`) e triggers.
+
+### 1.6 Arquitetura analítica (BI e IA)
+
+O banco transacional atende o salão; a análise lê dele sem escrever:
+
+```
+Garçom Web ──► MySQL (OLTP, 14 tabelas)
+                    │  réplica de leitura / carga noturna
+                    ▼
+          Camada analítica (views e tabelas agregadas)
+                    │
+        ┌───────────┴────────────┐
+        ▼                        ▼
+  Painéis de BI (gerência)   Modelos de IA (previsão)
+```
+
+Fatos: `pedido_produto`, `pagamento`, `movimentacao_estoque`. Dimensões: tempo, produto/categoria/setor, atendente, mesa.
+
+**Rastreabilidade: problema ou indicador → tabelas → consulta** (arquivos `docs/07_consultas_gerenciais.sql` e `docs/08_consultas_auditoria.sql`):
+
+| Problema / indicador (KPI) | Tabelas | Consulta |
+|---|---|---|
+| P1 quem registrou cada pedido; desempenho por atendente | pedido, atendente | G04, G15, A17, A18 |
+| P2 alteração de preço e compras com responsável | produto, historico_produto, compra, atendente | G10, A15, A20 |
+| P3 compras com fornecedor, nota e custo; margem | compra, compra_produto, fornecedor, produto | G08, G13, A20 |
+| P4 estoque crítico, validade, reposição | produto, movimentacao_estoque, compra_produto | G12, G14, A16 |
+| P5 item do lançamento ao preparo; baixa automática | pedido_produto, movimentacao_estoque | G05, A10 |
+| P6 conferência do caixa por forma de pagamento | pagamento, pedido, pedido_produto | G01, G11, A19, A01–A02 |
+| KPI faturamento e ticket médio | pedido, pedido_produto, pagamento | G01 |
+| KPI produtos mais vendidos, curva ABC | pedido_produto, produto | G02, G09 |
+| KPI receita por setor e categoria | pedido_produto, produto, setor, categoria | G03 |
+| KPI pedidos por hora (escala de equipe) | pedido | G06 |
+| KPI giro e permanência das mesas | pedido, mesa | G07 |
+| Integridade geral do banco (14 verificações) | todas | A01 a A14 |
+
+**Potencial para BI:** ligar uma ferramenta de BI às views e consultas acima já entrega painéis de faturamento diário, mapa de calor de horários, ranking de produtos e alerta de estoque.
+
+**Usos de IA que o modelo sustenta** (propostas, não implementadas): (1) previsão de demanda por produto e hora, sobre `pedido_produto`; (2) reposição sugerida, em que G12 é a versão em SQL e um modelo pode substituí-la usando sazonalidade e validade; (3) elasticidade de preço, partindo de G10; (4) detecção de anomalias em cancelamentos e taxa removida (A17, A18).
+
+Cuidados: dados pessoais (nome e telefone de reserva, login) ficam fora da camada analítica. Nenhum dado real foi usado.
 
 ---
 
-## 1. 📖 Caracterização da Organização
+## 2. Modelo lógico
+
+![Modelo lógico](docs/modelo_logico.png)
+
+Diagrama gerado pelo **Graphviz** a partir do catálogo do MySQL real (`entrega-2/scripts/gerar_modelo_logico.py`), com PK/FK, tipos e cardinalidade mínima e máxima (mín,máx) em cada ponta. Versão vetorial: [`docs/modelo_logico.svg`](docs/modelo_logico.svg). `[VALIDAR]` se o professor exige a notação do BRModelo; o fonte `.dot` está em `docs/`.
+
+**Dicionário de dados lógico** (tipos, restrições, `CHECK`, índices e a regra de negócio de cada atributo): [`docs/dicionario_dados_logico.html`](docs/dicionario_dados_logico.html), em um único arquivo HTML.
+
+## 3. Script SQL
+
+O script único é [`docs/script.sql`](docs/script.sql) (gerado pela concatenação dos arquivos numerados, que também estão em `docs/`):
+
+| Arquivo | Conteúdo |
+|---|---|
+| `01_create_database.sql` | `CREATE DATABASE` |
+| `02_create_tables.sql` | `CREATE TABLE` com PK, FK, `UNIQUE`, `NOT NULL`, `CHECK` e índices |
+| `03_massa_de_dados.sql` | `INSERT` da massa fictícia (≈ 0,8 MB) |
+| `04_regras_triggers_views.sql` | Funções, procedimentos, 32 triggers e 3 views |
+| `05_select_join.sql` | 10 `SELECT` com `JOIN` (comanda, conta, mesas ocupadas, fila, estoque crítico...) |
+| `06_update_delete.sql` | Ciclo completo de um pedido com `UPDATE` e `DELETE` (termina em `ROLLBACK`) e 15 testes de operação bloqueada |
+| `07_consultas_gerenciais.sql` | G01 a G15, cada uma com a pergunta e o problema que atende |
+| `08_consultas_auditoria.sql` | A01 a A14 (painel de integridade) e A15 a A20 (trilhas) |
+
+```bash
+mysql -u root -p --default-character-set=utf8mb4 < docs/script.sql
+```
+
+Reexecutar é seguro: o script recria o banco. Requer MySQL 8.0.16 ou superior. Testado em MySQL 8.0.46 a partir de banco vazio, sem erros (exit 0). Resultado: 14 tabelas, 3 views, 32 triggers, 41 `CHECK`s.
+
+**Testes e evidências.**
+- **Painel A01 a A14:** todas com **0 violações** (pagamento = total, nenhum pedido fechado com item pendente, saldo = soma das movimentações, sem estoque negativo, preço do item = preço vigente, mesa coerente, perfil de quem abre pedido, etc.). `[PREENCHER]` print da execução na máquina do grupo.
+- **Bloqueios:** 15 operações inválidas rejeitadas com a mensagem da regra (mesa ocupada, perfil sem permissão, estoque insuficiente, pagamento acima do total, exclusão de pedido, alteração de pagamento, código de barras duplicado...), todas "OK".
+- **Fluxo (06, parte 1):** abre pedido, lança itens, preparo, entrega, cancelamento com estorno, remoção da taxa, pagamento dividido, fechamento com liberação da mesa, reajuste com histórico, recebimento de compra e `DELETE`s permitidos; termina com `ROLLBACK` e a carga continua com 1.649 pedidos.
+
+## 4. Massa de dados
+
+Gerada por [`entrega-2/scripts/gen_data.py`](entrega-2/scripts/gen_data.py) (Python, semente `20261013`; mesma saída a cada execução). **Nomes, CNPJs, telefones, notas fiscais e valores são inventados**; senhas são guardadas como SHA-256 com sal.
+
+**Volume versus números reais.** O restaurante tem 150 a 300 pedidos por dia útil e 400 a 550 aos sábados. A massa simula **uma semana** (ter 06/10 a seg 12/10/2026, "agora" = seg 21h20) com **1.649 pedidos** (1.611 fechados, 27 abertos, 11 cancelados), que equivale a uma semana real, e não ao histórico de meses. Escolhemos uma semana para as consultas gerenciais terem variação (dias úteis, sábado, domingo, reajuste de preço em 09/10) sem inflar o arquivo.
+
+| Item | Real (informado) | Na massa |
+|---|---|---|
+| Pedidos em dias úteis | 150 a 300 | seg 153, ter 180, qua 195, qui 245, sex 273 |
+| Pedidos no sábado | 400 a 550 | 430 |
+| Domingo | menor movimento | 135 |
+| Mesas / bistrôs | cerca de 30 / 25 | 30 / 25 |
+| Horário | seg–qua 6h–23h; qui–sáb 6h–0h; dom 11h–18h | pedidos só dentro do horário |
+| Taxa de serviço | 10%, removível | 4% dos pedidos sem taxa |
+| Pagamento | Pix, crédito, débito, dinheiro | 34% / 31% / 25% / 10% |
+
+**Coerência.** O gerador simula a semana em ordem cronológica; estoque, compras e baixas são calculados juntos para nenhum saldo ficar negativo, e cada pagamento fecha o total do pedido ao centavo. O painel A01–A14 prova isso.
+
+**Uso de LLM.** O Claude escreveu o programa gerador; os dados são sintéticos e reproduzíveis. Foi o grupo quem informou os volumes reais; cardápio, setores, horários e regras vieram do levantamento. É inventado: preços de alguns itens, nomes de pessoas e fornecedores (o local não informou fornecedores), quantidades e custos.
+
+## 5. Repositório
+
+```text
+modelagem-dados/
+├── README.md                          ← este relatório
+├── imagem_palazio.jpeg · visita_palazio.jpeg
+├── levantamento/levantamento.md
+├── evidencias/                        ← roteiro, cardápio, horário, prompts
+├── docs/                              ← script.sql, 01..08, modelo lógico (.png/.svg/.dot), dicionário lógico (.html)
+├── dicionario_dados_palazio/          ← dicionário conceitual (Entrega 1, HTML)
+├── Diagrama_Palazio_del_Chef/         ← DER (Entrega 1)
+├── Fluxograma_Palazio_del_Chef/       ← fluxos de vendas e compras
+└── entrega-2/scripts/                 ← gerador da massa, do diagrama e do dicionário
+```
+
+**Commits.** O histórico deve mostrar contribuições equilibradas de cada integrante, feitas pela **própria conta do GitHub**, com o nome igual ao da tabela de integrantes. `[PREENCHER]`/`[VALIDAR]` conferir antes da entrega. O professor corrige apenas a branch `main`.
+
+**Responsabilidades:** Thiago (diagrama e entrevista), Ricardo (análise da atividade e entrevista), Victor (estrutura do projeto, README, banco MySQL), Raphael (fluxograma e etapa por etapa).
+
+## 6. Uso de inteligência artificial nesta entrega
+
+O registro completo (prompts do ChatGPT desde 19/08 e usos do Claude) está no [Anexo A, seção 9](#9--uso-de-inteligência-artificial).
+
+| Ferramenta | Para quê | Como foi verificado |
+|---|---|---|
+| Claude (Anthropic) | Modelo lógico, scripts SQL em MySQL (tabelas, triggers, views, consultas), gerador da massa, diagrama e dicionário lógico, este relatório | Execução em MySQL 8.0.46 a partir de banco vazio; painel de 14 verificações com 0 violações; 15 operações inválidas bloqueadas; comparação com o dicionário e as regras da Entrega 1 |
+| ChatGPT (OpenAI) | Organização do README e orientações para aplicar as alterações do professor no DER (Entrega 1) | Conferência com o parecer do professor e com a visita |
+
+**Erros da IA encontrados nos testes:** `SIGNAL` com `CONCAT` direto (erro de sintaxe no MySQL), `CHECK` com `CURRENT_DATE` (não aceito), índice parcial inexistente no MySQL (trocado por coluna gerada), exclusão de compra pendente bloqueada por engano, teste de estoque que estourava o tipo, reajuste de teste sem efeito e numeração das regras diferente do README. Todos corrigidos.
+
+`[PREENCHER]` Reflexão crítica do grupo, com suas palavras: o que a IA acertou, o que errou e como vocês validaram.
+
+## 7. Pitch de 8 minutos
+
+Roteiro sugerido, na ordem pedida: **(1) problema** (P1 a P6, com a foto da visita); **(2) solução** (14 tabelas, regras no banco); **(3) modelo lógico** (diagrama); **(4) demonstração em SQL** (rodar `script.sql`, mostrar o painel A01–A14 e um bloqueio de `06_update_delete.sql`); **(5) consultas** (G01, G04, G12); **(6) BI e IA** (tabela de rastreabilidade); **(7) benefícios** (quem fez o quê, estoque e caixa conferidos). O deck está no artefato de slides do grupo. `[VALIDAR]` o tempo ensaiando.
+
+## 8. Limitações e pontos a validar
+
+1. **Item_pedido removido** (orientação do professor): o mesmo produto não repete no pedido e o status é por produto. Pedir de novo soma à linha existente (`sp_lancar_item`); pedir mais de um produto já entregue reinicia o status da linha. `[VALIDAR]` com o professor.
+2. **`movimentacao_estoque` não guarda quem fez** (o dicionário da Entrega 1 não tem `id_atendente`); o banco só valida o perfil na hora. `[VALIDAR]`
+3. **`IN_CONTROLA_ESTOQUE`** é atributo novo. `[VALIDAR]`
+4. **Baixa de insumos** é manual no estabelecimento; a massa simula lançamentos de ajuste diários.
+5. **Conferência de documento para bebida alcoólica** (RN18) é feita pessoalmente e não é registrada.
+6. **Fornecedores:** o local não os informou; os seis da carga são fictícios.
+7. A nota fiscal é emitida pela maquininha; `nr_nota_fiscal` existe só em compras.
+
+---
+
+# Anexo A — Entrega 1 (modelo conceitual)
+
+*Conteúdo da Entrega 1 preservado integralmente. Os processos usam o prefixo `PR` (PR1 a PR13) para não se confundir com os problemas P1 a P6 acima.*
+
+### 1. 📖 Caracterização da Organização
 
 - **Nome e natureza:** **Palazio del Chef** — estabelecimento do segmento de alimentação, com características de **restaurante e bar**, com fins lucrativos.
 - **Contexto e porte:** restaurante e bar no Tatuapé (São Paulo), com um único cardápio (o mesmo no almoço e à noite, com pratos e bar) e atendimento presencial, sem delivery. O salão tem cerca de **30 mesas e 25 bistrôs** (estimativa do grupo) e o movimento é de **150 a 300 pedidos** por dia em dias de semana e de **400 a 550 pedidos** aos sábados (estimativa do grupo). A operação é dividida entre **salão** (garçons), **cozinha**, **bar**, **gerência** e **limpeza**, com funcionários CLT em escala 6x1. O grupo classifica o porte como **baixo a médio**.
@@ -99,55 +409,55 @@ Durante a visita, foi realizada uma entrevista com um gerente do estabelecimento
 
 **Nota de escopo:** os problemas listados na seção 1 vêm do que foi relatado e observado na visita. O grupo não afirma que o estabelecimento tenha falhas comprovadas no atendimento, erros em pedidos ou inconsistências de estoque. A proposta organiza as informações e estabelece uma estrutura adequada para armazená-las e relacioná-las. Dificuldades adicionais dependem de levantamento complementar sobre pagamento, estoque, compras e acompanhamento dos pedidos.
 
-### 🎯 Objetivo do Projeto (original)
+#### 🎯 Objetivo do Projeto (original)
 
 Analisar os processos do estabelecimento e desenvolver uma modelagem de banco de dados capaz de organizar as principais informações relacionadas ao **atendimento, pedidos, produtos, mesas, setores e atendentes**. Nesta versão, o escopo também cobre **pagamento, compras, fornecedores e controle de estoque** `(proposta)`.
 
 ---
 
-## 2. 🗺️ Processos de Negócio
+### 2. 🗺️ Processos de Negócio
 
 Os processos foram organizados em três grupos: **Vendas** (ciclo do atendimento), **Compras** (reposição de mercadoria) e **Apoio** (estoque, pessoas e caixa). A coluna *Origem* indica se o processo veio do README original ou é uma proposta a validar em campo.
 
-### 2.1 Processos de Vendas
+#### 2.1 Processos de Vendas
 
 | # | Processo | Descrição | Entrada → Saída | Responsável | Entidades | Origem |
 |---|----------|-----------|-----------------|-------------|-----------|--------|
-| P1 | 🛎️ Atendimento e abertura de mesa | O cliente chega e é acomodado em uma mesa ou bistrô (com ou sem reserva). O garçom abre o pedido da mesa, que passa a ocupada. | Cliente → pedido aberto na mesa | Garçom | MESA, PEDIDO, ATENDENTE | original / confirmado na visita |
-| P2 | 📝 Registro do pedido | O garçom marca o pedido por mesa na comanda e o lança no aplicativo Garçom Web (produto, quantidade, observação). O preço do cardápio é copiado para o item e o estoque é baixado. Sem estoque, o item é bloqueado. | Pedido do cliente → itens pendentes | Garçom | PEDIDO, PRODUTO (relacionamento contém) | original / confirmado na visita |
-| P3 | 🏃 Encaminhamento para cozinha e bar | Depois do lançamento, o pedido é encaminhado ao bar ou à cozinha, com notificação ao chefe de cozinha para o preparo. | Item pendente → fila do setor | Garçom / sistema | PEDIDO, PRODUTO (contém), SETOR | original / confirmado na visita |
-| P4 | 🍳 Preparo | O setor prepara o item e o marca como em preparo e depois como pronto. O atendente entrega e marca como entregue. | Item na fila → item entregue | Cozinha / Bar / Atendente | PEDIDO, PRODUTO (contém) | original |
-| P5 | 💳 Fechamento da conta e pagamento | O garçom gera a conta no aplicativo e cobra o cliente. A conta soma os itens e a **taxa de serviço de 10%**. O pagamento é em dinheiro, cartão ou Pix, podendo ser dividido. Com a conta quitada, o pedido é fechado e a mesa é liberada. A nota fiscal vem pela maquininha de cartão. | Pedido entregue → pedido fechado, mesa livre | Garçom | PEDIDO, PAGAMENTO, MESA | original / confirmado na visita |
-| P6 | 📅 Reservas | O cliente reserva mesa por telefone. No dia, a reserva vira o atendimento da mesa. Quem não reservou entra e vê se há lugar. A atendente que fica no caixa registra a reserva no sistema do estabelecimento e a marca pelo número da mesa. | Pedido de reserva → mesa reservada | Atendente do caixa |  RESERVA, MESA | confirmado na visita |
-| P7 | 📋 Cadastro de cardápio e preços | Cada produto recebido é cadastrado com código de barras próprio, e os pratos também existem no sistema. O cardápio tem categorias (lanches, pratos, porções, bebidas etc.). Cada reajuste de preço fica no histórico, com responsável e data. `[VALIDAR: quem cadastra e reajusta]` | Decisão de preço → cardápio atualizado | Gerência `[VALIDAR]` | PRODUTO, CATEGORIA, HISTORICO_PRODUTO, SETOR | confirmado na visita / proposta |
+| PR1 | 🛎️ Atendimento e abertura de mesa | O cliente chega e é acomodado em uma mesa ou bistrô (com ou sem reserva). O garçom abre o pedido da mesa, que passa a ocupada. | Cliente → pedido aberto na mesa | Garçom | MESA, PEDIDO, ATENDENTE | original / confirmado na visita |
+| PR2 | 📝 Registro do pedido | O garçom marca o pedido por mesa na comanda e o lança no aplicativo Garçom Web (produto, quantidade, observação). O preço do cardápio é copiado para o item e o estoque é baixado. Sem estoque, o item é bloqueado. | Pedido do cliente → itens pendentes | Garçom | PEDIDO, PRODUTO (relacionamento contém) | original / confirmado na visita |
+| PR3 | 🏃 Encaminhamento para cozinha e bar | Depois do lançamento, o pedido é encaminhado ao bar ou à cozinha, com notificação ao chefe de cozinha para o preparo. | Item pendente → fila do setor | Garçom / sistema | PEDIDO, PRODUTO (contém), SETOR | original / confirmado na visita |
+| PR4 | 🍳 Preparo | O setor prepara o item e o marca como em preparo e depois como pronto. O atendente entrega e marca como entregue. | Item na fila → item entregue | Cozinha / Bar / Atendente | PEDIDO, PRODUTO (contém) | original |
+| PR5 | 💳 Fechamento da conta e pagamento | O garçom gera a conta no aplicativo e cobra o cliente. A conta soma os itens e a **taxa de serviço de 10%**. O pagamento é em dinheiro, cartão ou Pix, podendo ser dividido. Com a conta quitada, o pedido é fechado e a mesa é liberada. A nota fiscal vem pela maquininha de cartão. | Pedido entregue → pedido fechado, mesa livre | Garçom | PEDIDO, PAGAMENTO, MESA | original / confirmado na visita |
+| PR6 | 📅 Reservas | O cliente reserva mesa por telefone. No dia, a reserva vira o atendimento da mesa. Quem não reservou entra e vê se há lugar. A atendente que fica no caixa registra a reserva no sistema do estabelecimento e a marca pelo número da mesa. | Pedido de reserva → mesa reservada | Atendente do caixa |  RESERVA, MESA | confirmado na visita |
+| PR7 | 📋 Cadastro de cardápio e preços | Cada produto recebido é cadastrado com código de barras próprio, e os pratos também existem no sistema. O cardápio tem categorias (lanches, pratos, porções, bebidas etc.). Cada reajuste de preço fica no histórico, com responsável e data. `[VALIDAR: quem cadastra e reajusta]` | Decisão de preço → cardápio atualizado | Gerência `[VALIDAR]` | PRODUTO, CATEGORIA, HISTORICO_PRODUTO, SETOR | confirmado na visita / proposta |
 
-### 2.2 Processos de Compras
-
-| # | Processo | Descrição | Entrada → Saída | Responsável | Entidades | Origem |
-|---|----------|-----------|-----------------|-------------|-----------|--------|
-| P8 | 🛒 Compra de insumos e bebidas | O proprietário compra produtos e insumos. Neste modelo, a compra passa a ser registrada com fornecedor, itens, quantidades e custo, a partir do alerta de estoque mínimo. | Alerta de estoque → compra registrada | Proprietário | COMPRA, PRODUTO (relacionamento possui) | confirmado na visita (quem compra) / proposta (registro) |
-| P9 | 🏭 Cadastro de fornecedores | O estabelecimento **não quis informar** os fornecedores. O modelo propõe cadastrá-los (nome, CNPJ, telefone), sem dados reais do Palazio. Só se compra de fornecedor cadastrado e ativo. | Dados do fornecedor → fornecedor ativo | Proprietário / gerência | FORNECEDOR | proposta (fornecedores reais não informados) |
-| P10 | 📦 Recebimento de mercadorias | O gerente recebe a mercadoria. Cada produto recebido é cadastrado com código de barras próprio. Neste modelo, o recebimento registra nota fiscal, quantidade e validade e gera a entrada no estoque. | Mercadoria + nota → entrada de estoque | Gerente | COMPRA, PRODUTO (possui), MOVIMENTACAO_ESTOQUE | confirmado na visita (quem recebe) / proposta (registro) |
-
-### 2.3 Processos de Apoio
+#### 2.2 Processos de Compras
 
 | # | Processo | Descrição | Entrada → Saída | Responsável | Entidades | Origem |
 |---|----------|-----------|-----------------|-------------|-----------|--------|
-| P11 | 📊 Controle de estoque e validade | Hoje, controlam o estoque de ingredientes, pratos prontos e bebidas, e os garçons conferem a validade uma vez por mês, retiram os itens a até 10 dias do vencimento e anotam em planilha. Neste modelo, toda venda, compra, estorno e ajuste (perda, vencimento) gera uma movimentação, e o saldo é a soma delas. Abaixo do mínimo, há alerta de reposição. | Evento de estoque → saldo atualizado e alerta | Garçons (validade) / gerência `[VALIDAR]` | PRODUTO, MOVIMENTACAO_ESTOQUE | confirmado na visita (validade) / proposta (movimentação) |
-| P12 | 🧑‍🍳 Cadastro de atendentes e escalas | Os funcionários são CLT, em escala 6x1 (seis dias de trabalho e um de folga), e hoje não têm credenciais individuais de gestão. Neste modelo, cada funcionário recebe cadastro com credencial, setor e perfil de acesso. Funcionário desligado é inativado, não excluído. A escala de folgas é rotina de RH e não está modelada nesta versão. | Contratação → atendente ativo com acesso | Gerência `[VALIDAR]` | ATENDENTE, SETOR | original / confirmado na visita (6x1) |
-| P13 | 💰 Caixa e fechamento diário | Antes de encerrar o expediente, o gerente confere os pagamentos, que ficam separados por forma (a maquininha gera a nota fiscal e o dinheiro também é lançado no aplicativo do local). No modelo, é uma consulta sobre os pagamentos do dia, sem entidade própria. | Pagamentos do dia → conferência do caixa | Gerente | PAGAMENTO, PEDIDO | confirmado (quem fecha e como confere) / proposta (consulta) |
+| PR8 | 🛒 Compra de insumos e bebidas | O proprietário compra produtos e insumos. Neste modelo, a compra passa a ser registrada com fornecedor, itens, quantidades e custo, a partir do alerta de estoque mínimo. | Alerta de estoque → compra registrada | Proprietário | COMPRA, PRODUTO (relacionamento possui) | confirmado na visita (quem compra) / proposta (registro) |
+| PR9 | 🏭 Cadastro de fornecedores | O estabelecimento **não quis informar** os fornecedores. O modelo propõe cadastrá-los (nome, CNPJ, telefone), sem dados reais do Palazio. Só se compra de fornecedor cadastrado e ativo. | Dados do fornecedor → fornecedor ativo | Proprietário / gerência | FORNECEDOR | proposta (fornecedores reais não informados) |
+| PR10 | 📦 Recebimento de mercadorias | O gerente recebe a mercadoria. Cada produto recebido é cadastrado com código de barras próprio. Neste modelo, o recebimento registra nota fiscal, quantidade e validade e gera a entrada no estoque. | Mercadoria + nota → entrada de estoque | Gerente | COMPRA, PRODUTO (possui), MOVIMENTACAO_ESTOQUE | confirmado na visita (quem recebe) / proposta (registro) |
 
-### 2.4 Como os processos se integram
+#### 2.3 Processos de Apoio
 
-- **Vendas → Estoque:** o lançamento de cada item (P2) baixa o estoque (P11). O cancelamento de um item pendente estorna a baixa.
-- **Estoque → Compras:** o saldo no mínimo ou abaixo (P11) dispara a compra (P8) a um fornecedor cadastrado (P9).
-- **Compras → Estoque:** o recebimento (P10) gera a entrada de estoque (P11) e registra a validade dos perecíveis.
-- **Cardápio → Vendas:** só produto ativo e com estoque entra em um pedido. O preço vigente (P7) é copiado para o item (P2).
-- **Reservas → Vendas:** a reserva (P6) garante a mesa; no dia, o atendimento abre o pedido (P1) na mesma mesa.
-- **Pessoas → todos:** nenhum processo ocorre sem atendente autenticado (P12). Por isso cada pedido, compra e reajuste tem um responsável.
-- **Vendas → Caixa:** os pagamentos (P5) alimentam o fechamento diário (P13).
+| # | Processo | Descrição | Entrada → Saída | Responsável | Entidades | Origem |
+|---|----------|-----------|-----------------|-------------|-----------|--------|
+| PR11 | 📊 Controle de estoque e validade | Hoje, controlam o estoque de ingredientes, pratos prontos e bebidas, e os garçons conferem a validade uma vez por mês, retiram os itens a até 10 dias do vencimento e anotam em planilha. Neste modelo, toda venda, compra, estorno e ajuste (perda, vencimento) gera uma movimentação, e o saldo é a soma delas. Abaixo do mínimo, há alerta de reposição. | Evento de estoque → saldo atualizado e alerta | Garçons (validade) / gerência `[VALIDAR]` | PRODUTO, MOVIMENTACAO_ESTOQUE | confirmado na visita (validade) / proposta (movimentação) |
+| PR12 | 🧑‍🍳 Cadastro de atendentes e escalas | Os funcionários são CLT, em escala 6x1 (seis dias de trabalho e um de folga), e hoje não têm credenciais individuais de gestão. Neste modelo, cada funcionário recebe cadastro com credencial, setor e perfil de acesso. Funcionário desligado é inativado, não excluído. A escala de folgas é rotina de RH e não está modelada nesta versão. | Contratação → atendente ativo com acesso | Gerência `[VALIDAR]` | ATENDENTE, SETOR | original / confirmado na visita (6x1) |
+| PR13 | 💰 Caixa e fechamento diário | Antes de encerrar o expediente, o gerente confere os pagamentos, que ficam separados por forma (a maquininha gera a nota fiscal e o dinheiro também é lançado no aplicativo do local). No modelo, é uma consulta sobre os pagamentos do dia, sem entidade própria. | Pagamentos do dia → conferência do caixa | Gerente | PAGAMENTO, PEDIDO | confirmado (quem fecha e como confere) / proposta (consulta) |
 
-### 2.5 Fluxogramas
+#### 2.4 Como os processos se integram
+
+- **Vendas → Estoque:** o lançamento de cada item (PR2) baixa o estoque (PR11). O cancelamento de um item pendente estorna a baixa.
+- **Estoque → Compras:** o saldo no mínimo ou abaixo (PR11) dispara a compra (PR8) a um fornecedor cadastrado (PR9).
+- **Compras → Estoque:** o recebimento (PR10) gera a entrada de estoque (PR11) e registra a validade dos perecíveis.
+- **Cardápio → Vendas:** só produto ativo e com estoque entra em um pedido. O preço vigente (PR7) é copiado para o item (PR2).
+- **Reservas → Vendas:** a reserva (PR6) garante a mesa; no dia, o atendimento abre o pedido (PR1) na mesma mesa.
+- **Pessoas → todos:** nenhum processo ocorre sem atendente autenticado (PR12). Por isso cada pedido, compra e reajuste tem um responsável.
+- **Vendas → Caixa:** os pagamentos (PR5) alimentam o fechamento diário (PR13).
+
+#### 2.5 Fluxogramas
 
 Clique na imagem para abrir em tamanho original (PNG; também há versão SVG na mesma pasta).
 
@@ -157,7 +467,7 @@ Clique na imagem para abrir em tamanho original (PNG; também há versão SVG na
 
 Fontes das imagens: [`fluxo_vendas.dot`](./Fluxograma_Palazio_del_Chef/fluxo_vendas.dot) e [`fluxo_compras.dot`](./Fluxograma_Palazio_del_Chef/fluxo_compras.dot) (Graphviz). Abaixo, os mesmos fluxos em Mermaid, que o GitHub renderiza.
 
-**Fluxo 1 — Atendimento, pedido e pagamento (P1 a P5):**
+**Fluxo 1 — Atendimento, pedido e pagamento (PR1 a PR5):**
 
 ```mermaid
 flowchart TD
@@ -179,7 +489,7 @@ flowchart TD
     E -. baixa .-> O[(Estoque do produto)]
 ```
 
-**Fluxo 2 — Compras, recebimento e estoque (P8 a P11):**
+**Fluxo 2 — Compras, recebimento e estoque (PR8 a PR11):**
 
 ```mermaid
 flowchart TD
@@ -198,39 +508,39 @@ flowchart TD
 
 ---
 
-## 3. ⚙️ Requisitos do Sistema
+### 3. ⚙️ Requisitos do Sistema
 
-### 3.1 Requisitos Funcionais
+#### 3.1 Requisitos Funcionais
 
 | Código | Requisito | Processo | Origem |
 |--------|-----------|----------|--------|
-| RF01 | O sistema deve permitir que o atendente registre um pedido de forma eficiente. | P2 | original |
-| RF02 | O sistema deve cadastrar atendentes com credenciais individuais (login e senha), setor e perfil de acesso. | P12 | proposta (resolve o problema identificado) |
-| RF03 | O sistema deve exigir autenticação do atendente antes de registrar ou alterar um pedido. | P2 | proposta |
-| RF04 | O sistema deve vincular cada pedido a uma mesa e ao atendente que o registrou. | P1 | proposta (formaliza as regras originais) |
-| RF05 | O sistema deve permitir adicionar itens a um pedido aberto, com quantidade e observação. | P2 | proposta |
-| RF06 | O sistema deve encaminhar cada item ao setor responsável pelo preparo (cozinha ou bar). | P3 | proposta |
-| RF07 | O sistema deve permitir que cozinha e bar atualizem o status dos itens (em preparo, pronto) e o atendente, o de entregue. | P4 | proposta |
-| RF08 | O sistema deve cadastrar produtos com código de barras, preço, setor de preparo e estoque mínimo. | P7 | proposta |
-| RF09 | O sistema deve atualizar o estoque a cada venda e alertar quando o saldo atingir o mínimo. | P11 | proposta |
-| RF10 | O sistema deve registrar o histórico de alterações de preço dos produtos, com responsável e data. | P7 | proposta |
-| RF11 | O sistema deve calcular o total do pedido e registrar um ou mais pagamentos, por forma de pagamento. | P5 | proposta |
-| RF12 | O sistema deve fechar o pedido somente após o pagamento integral e liberar a mesa. | P5 | proposta |
-| RF13 | O sistema deve emitir relatórios de vendas por período, por atendente, por setor e por produto. | P5 | proposta |
-| RF14 | O sistema deve permitir cancelar um item pendente ou um pedido, com estorno do estoque. | P2 | proposta |
-| RF15 | O sistema deve cadastrar, alterar e inativar fornecedores. | P9 | proposta |
-| RF16 | O sistema deve registrar compras a fornecedores, com os itens, as quantidades e o custo unitário. | P8 | proposta |
-| RF17 | O sistema deve registrar o recebimento da compra, com nota fiscal e validade, e dar entrada no estoque. | P10 | proposta |
-| RF18 | O sistema deve registrar ajustes de estoque (perda, quebra, vencimento) com motivo e responsável. | P11 | proposta |
-| RF19 | O sistema deve listar os produtos no estoque mínimo ou abaixo, para reposição. | P11 | proposta |
-| RF20 | O sistema deve apresentar o fechamento diário do caixa, com o total por forma de pagamento. | P13 | proposta `[VALIDAR]` |
-| RF21 | O sistema deve permitir inativar atendentes, produtos e mesas, sem apagar o histórico. | P7, P12 | proposta |
-| RF22 | O sistema deve registrar reservas de mesa, com data, hora, quantidade de pessoas e o contato do cliente. | P6 | confirmado na visita (existem reservas por telefone) |
-| RF23 | O sistema deve agrupar os produtos em categorias do cardápio e marcar quais são bebidas alcoólicas. | P7 | proposta (a partir do cardápio) |
-| RF24 | O sistema deve calcular a taxa de serviço de 10% sobre os itens, quando cobrada, e incluí-la na conta. | P5 | confirmado na visita |
-| RF25 | O sistema deve bloquear o item cancelado também no setor de preparo. | P3 | confirmado na visita |
+| RF01 | O sistema deve permitir que o atendente registre um pedido de forma eficiente. | PR2 | original |
+| RF02 | O sistema deve cadastrar atendentes com credenciais individuais (login e senha), setor e perfil de acesso. | PR12 | proposta (resolve o problema identificado) |
+| RF03 | O sistema deve exigir autenticação do atendente antes de registrar ou alterar um pedido. | PR2 | proposta |
+| RF04 | O sistema deve vincular cada pedido a uma mesa e ao atendente que o registrou. | PR1 | proposta (formaliza as regras originais) |
+| RF05 | O sistema deve permitir adicionar itens a um pedido aberto, com quantidade e observação. | PR2 | proposta |
+| RF06 | O sistema deve encaminhar cada item ao setor responsável pelo preparo (cozinha ou bar). | PR3 | proposta |
+| RF07 | O sistema deve permitir que cozinha e bar atualizem o status dos itens (em preparo, pronto) e o atendente, o de entregue. | PR4 | proposta |
+| RF08 | O sistema deve cadastrar produtos com código de barras, preço, setor de preparo e estoque mínimo. | PR7 | proposta |
+| RF09 | O sistema deve atualizar o estoque a cada venda e alertar quando o saldo atingir o mínimo. | PR11 | proposta |
+| RF10 | O sistema deve registrar o histórico de alterações de preço dos produtos, com responsável e data. | PR7 | proposta |
+| RF11 | O sistema deve calcular o total do pedido e registrar um ou mais pagamentos, por forma de pagamento. | PR5 | proposta |
+| RF12 | O sistema deve fechar o pedido somente após o pagamento integral e liberar a mesa. | PR5 | proposta |
+| RF13 | O sistema deve emitir relatórios de vendas por período, por atendente, por setor e por produto. | PR5 | proposta |
+| RF14 | O sistema deve permitir cancelar um item pendente ou um pedido, com estorno do estoque. | PR2 | proposta |
+| RF15 | O sistema deve cadastrar, alterar e inativar fornecedores. | PR9 | proposta |
+| RF16 | O sistema deve registrar compras a fornecedores, com os itens, as quantidades e o custo unitário. | PR8 | proposta |
+| RF17 | O sistema deve registrar o recebimento da compra, com nota fiscal e validade, e dar entrada no estoque. | PR10 | proposta |
+| RF18 | O sistema deve registrar ajustes de estoque (perda, quebra, vencimento) com motivo e responsável. | PR11 | proposta |
+| RF19 | O sistema deve listar os produtos no estoque mínimo ou abaixo, para reposição. | PR11 | proposta |
+| RF20 | O sistema deve apresentar o fechamento diário do caixa, com o total por forma de pagamento. | PR13 | proposta `[VALIDAR]` |
+| RF21 | O sistema deve permitir inativar atendentes, produtos e mesas, sem apagar o histórico. | PR7, PR12 | proposta |
+| RF22 | O sistema deve registrar reservas de mesa, com data, hora, quantidade de pessoas e o contato do cliente. | PR6 | confirmado na visita (existem reservas por telefone) |
+| RF23 | O sistema deve agrupar os produtos em categorias do cardápio e marcar quais são bebidas alcoólicas. | PR7 | proposta (a partir do cardápio) |
+| RF24 | O sistema deve calcular a taxa de serviço de 10% sobre os itens, quando cobrada, e incluí-la na conta. | PR5 | confirmado na visita |
+| RF25 | O sistema deve bloquear o item cancelado também no setor de preparo. | PR3 | confirmado na visita |
 
-### 3.2 Requisitos Não Funcionais
+#### 3.2 Requisitos Não Funcionais
 
 | Código | Categoria | Requisito | Origem |
 |--------|-----------|-----------|--------|
@@ -250,9 +560,9 @@ flowchart TD
 
 ---
 
-## 4. 📜 Regras de Negócio
+### 4. 📜 Regras de Negócio
 
-### 4.1 Regras operacionais
+#### 4.1 Regras operacionais
 
 | Código | Processo | Regra | Origem |
 |--------|----------|-------|--------|
@@ -288,7 +598,7 @@ flowchart TD
 | RN30 | Estoque | **Insumos** (ingredientes) e produtos prontos têm estoque controlado, como as bebidas. O insumo não aparece no cardápio e não é pedido pelo cliente. Hoje a baixa dos insumos é **feita manualmente**; no modelo, é registrada como ajuste de consumo, com motivo. | confirmado (controlam ingredientes; baixa manual) / proposta (registro como ajuste) |
 | RN31 | Pedido / Pagamento | **Validação de quantidades e valores:** a quantidade de um produto no pedido deve ser maior que zero. Preço do produto, preço unitário e valor pago não podem ser negativos. A data de pagamento só é preenchida quando o pagamento é realizado. | proposta (aplicada por CHECKs no SQL) |
 
-### 4.2 Restrições organizacionais
+#### 4.2 Restrições organizacionais
 
 | Restrição | Por que importa para o modelo |
 |-----------|-------------------------------|
@@ -301,13 +611,13 @@ flowchart TD
 
 ---
 
-## 5. 🗄️ Dicionário de Dados Conceitual (Preliminar)
+### 5. 🗄️ Dicionário de Dados Conceitual (Preliminar)
 
 > Segue o modelo do arquivo 02-03g da disciplina. A versão completa em HTML está em [`dicionario_dados_palazio/index.html`](./dicionario_dados_palazio/index.html).
 > **Privacidade:** todos os exemplos de valores são **fictícios**.
 > `[VALIDAR]` Os atributos são uma proposta. **Confira com o dicionário e o DER que o grupo já fez** e ajuste o que divergir.
 
-### 5.1 Modelo conceitual e cardinalidades
+#### 5.1 Modelo conceitual e cardinalidades
 
 Este modelo representa um restaurante e bar em que o cliente, com ou sem **reserva**, é atendido em uma **mesa** (ou bistrô). Um **atendente** (o garçom) registra o **pedido**, que **contém** produtos (com quantidade, preço e status de preparo). Cada **produto** que pertence a uma **categoria** do cardápio e é preparado no **setor** (cozinha ou bar), e a conta é quitada por um ou mais **pagamentos**. O estoque dos produtos é reposto por **compras** a **fornecedores** e controlado por **movimentações**.
 
@@ -332,22 +642,22 @@ Este modelo representa um restaurante e bar em que o cliente, com ou sem **reser
 
 **Definições.** **Setor** é a área de trabalho (salão, cozinha, bar, gerência, limpeza). **Categoria** é o grupo do cardápio (lanches, pratos, porções, sobremesas, bebidas etc.). **Reserva** é a mesa guardada por telefone, para uma data e hora. **Atendente** é o funcionário com credencial individual. **Mesa** é o local do cliente. **Produto** é o item vendido e estocado. **Pedido** é o atendimento de uma mesa. **Contém** é o relacionamento entre pedido e produto, com quantidade, preço unitário e status. **Pagamento** é a quitação, total ou parcial, do pedido. **Fornecedor** é a empresa que vende mercadoria. **Compra** é o pedido de mercadoria a um fornecedor. **Possui** é o relacionamento entre compra e produto, com quantidade, custo e validade. **Movimentação de estoque** é cada entrada, saída, estorno ou ajuste do saldo de um produto. **Histórico do produto** é o registro de cada alteração de preço.
 
-### 5.2 Fluxo de dados
+#### 5.2 Fluxo de dados
 
 O cliente reserva por telefone (RESERVA, ligada a uma MESA) ou entra e vê se há lugar → o atendente (autenticado em ATENDENTE) abre um PEDIDO em uma MESA → o PEDIDO contém PRODUTOS (relacionamento com quantidade, preço e status), e cada produto carrega a CATEGORIA do cardápio e o SETOR de preparo → cada produto lançado no pedido gera uma baixa em MOVIMENTACAO_ESTOQUE e atualiza o saldo do PRODUTO → cozinha e bar atualizam o status do item → o cliente paga e cada forma usada vira um registro em PAGAMENTO → com a soma dos pagamentos igual ao total, o PEDIDO é fechado e a MESA liberada. Quando o saldo do PRODUTO chega ao mínimo, a gerência registra uma COMPRA a um FORNECEDOR, com os produtos comprados → no recebimento, cada produto gera uma entrada em MOVIMENTACAO_ESTOQUE. Os reajustes de preço feitos pela gerência geram registros em HISTORICO_PRODUTO. Toda leitura ou escrita relevante é registrada no log do SGBD (seção 5.5), o que sustenta a auditoria e a conformidade com a LGPD (seção 5.6).
 
-### 5.3 Convenções do dicionário
+#### 5.3 Convenções do dicionário
 
-- **SGBD de referência:** PostgreSQL 16.
+- **SGBD de referência:** MySQL 8.0.
 - **Codificação de caracteres:** UTF-8, para guardar acentuação do português sem perda em nomes e observações.
 - **Prefixos:** `NM_` nome · `DT_` data · `DH_` data e hora · `ID_` identificador (não sofre operação matemática) · `QT_` quantidade · `VL_` valor monetário · `NR_` número · `TP_` tipo (categorização) · `IN_` indicador booleano · `DS_` descrição ou texto livre.
 - **Notação formal:** `=` é composto de · `+` e (elementos obrigatórios) · `( )` opcional · `[ | ]` escolha obrigatória entre alternativas · `@` identificador (chave primária).
 - **Chave estrangeira (FK):** aparece nos dicionários como atributo da entidade do lado N, com a indicação (FK). O **DER** não a desenha: no modelo conceitual a ligação é o relacionamento.
 - **Versão deste dicionário:** v2.0, 07/10/2026. Qualquer alteração de estrutura gera nova revisão registrada aqui.
 
-### 5.4 Dicionário de dados por entidade
+#### 5.4 Dicionário de dados por entidade
 
-### SETOR
+#### SETOR
 `SETOR = @ID_SETOR + NM_SETOR + IN_PREPARO`
 
 | Atributo | Tipo | Obrig. | Descrição | Regra de negócio associada |
@@ -358,7 +668,7 @@ O cliente reserva por telefone (RESERVA, ligada a uma MESA) ou entra e vê se h�
 
 Índices: PK ID_SETOR; índice único em NM_SETOR.
 
-### ATENDENTE
+#### ATENDENTE
 `ATENDENTE = @ID_ATENDENTE + ID_SETOR + NM_ATENDENTE + NM_LOGIN + DS_SENHA_HASH + TP_FUNCAO + TP_PERFIL + DT_ADMISSAO + IN_ATIVO`
 
 *Leitura:* `TP_FUNCAO` exige escolher a função do funcionário: Garçom, Caixa, Cozinha, Bar, Gerente, Sócio ou Limpeza. `TP_PERFIL` exige escolher um perfil entre Atendimento (A), Preparo (P), Gerência (G) e Sócio (S). Todos os campos são obrigatórios. A equipe de limpeza só é cadastrada se precisar de acesso `[VALIDAR]`.
@@ -377,7 +687,7 @@ O cliente reserva por telefone (RESERVA, ligada a uma MESA) ou entra e vê se h�
 
 Índices: PK ID_ATENDENTE; índice único em NM_LOGIN (autenticação); índice em ID_SETOR.
 
-### MESA
+#### MESA
 `MESA = @ID_MESA + NR_MESA + TP_LOCAL + QT_LUGARES + TP_STATUS + IN_ATIVA`
 
 *Leitura:* `TP_LOCAL` é Mesa (M) ou Bistrô (B). `TP_STATUS` é Livre (L) ou Ocupada (O).
@@ -393,7 +703,7 @@ O cliente reserva por telefone (RESERVA, ligada a uma MESA) ou entra e vê se h�
 
 Índices: PK ID_MESA; índice único em NR_MESA.
 
-### PRODUTO
+#### PRODUTO
 `PRODUTO = @ID_PRODUTO + ID_SETOR + ID_CATEGORIA + NM_PRODUTO + NR_CODIGO_BARRAS + VL_PRECO + IN_VENDAVEL + IN_ALCOOLICO + IN_CONTROLA_ESTOQUE + QT_ESTOQUE_ATUAL + QT_ESTOQUE_MINIMO + IN_ATIVO`
 
 | Atributo | Tipo | Obrig. | Descrição | Regra de negócio associada |
@@ -413,7 +723,7 @@ O cliente reserva por telefone (RESERVA, ligada a uma MESA) ou entra e vê se h�
 
 Índices: PK ID_PRODUTO; índice único em NR_CODIGO_BARRAS; índice em ID_SETOR; índice em ID_CATEGORIA; índice em NM_PRODUTO (busca no lançamento do pedido).
 
-### HISTORICO_PRODUTO *(proposta de definição — o README original só citava o nome)*
+#### HISTORICO_PRODUTO *(proposta de definição — o README original só citava o nome)*
 `HISTORICO_PRODUTO = @ID_HISTORICO + ID_PRODUTO + ID_ATENDENTE + VL_PRECO_ANTERIOR + VL_PRECO_NOVO + DH_ALTERACAO`
 
 | Atributo | Tipo | Obrig. | Descrição | Regra de negócio associada |
@@ -427,7 +737,7 @@ O cliente reserva por telefone (RESERVA, ligada a uma MESA) ou entra e vê se h�
 
 Índices: PK ID_HISTORICO; índice em (ID_PRODUTO, DH_ALTERACAO).
 
-### PEDIDO
+#### PEDIDO
 `PEDIDO = @ID_PEDIDO + ID_MESA + ID_ATENDENTE + DH_ABERTURA + (DH_FECHAMENTO) + IN_TAXA_SERVICO + TP_STATUS + (DS_OBSERVACAO)`
 
 *Leitura:* `DH_FECHAMENTO` e `DS_OBSERVACAO` são opcionais. `TP_STATUS` é Aberto (A), Fechado (F) ou Cancelado (C).
@@ -447,7 +757,7 @@ O **total do pedido não é atributo**: é derivado (RN11), assim como o valor d
 
 Índices: PK ID_PEDIDO; índice em ID_MESA; índice em ID_ATENDENTE; índice em DH_ABERTURA (relatórios por período); índice único parcial em ID_MESA para pedidos abertos (RN05).
 
-### Relacionamento CONTÉM *(PEDIDO × PRODUTO, N:N com atributos)*
+#### Relacionamento CONTÉM *(PEDIDO × PRODUTO, N:N com atributos)*
 `CONTÉM = ID_PEDIDO + ID_PRODUTO + QT_ITEM + VL_PRECO_UNITARIO + TP_STATUS + DH_REGISTRO + (DH_PRONTO) + (DS_OBSERVACAO)`
 
 *Leitura:* `TP_STATUS` é Pendente (P), Em preparo (E), Pronto (R), Entregue (N) ou Cancelado (C).
@@ -464,7 +774,7 @@ O **total do pedido não é atributo**: é derivado (RN11), assim como o valor d
 | DS_OBSERVACAO | varchar(100) | Não | Observação do cliente. Ex.: "sem gelo". | — |
 
 Índices e chave: definidos na modelagem lógica (Entrega 2). **Ponto a validar com o professor:** sem a entidade Item_pedido, o par (pedido, produto) não repete; se o mesmo produto for pedido duas vezes no mesmo pedido, a quantidade é somada e o status de preparo passa a ser por produto, não por lançamento.
-### CATEGORIA *(proposta, a partir do cardápio)*
+#### CATEGORIA *(proposta, a partir do cardápio)*
 `CATEGORIA = @ID_CATEGORIA + NM_CATEGORIA + IN_ATIVA`
 
 | Atributo | Tipo | Obrig. | Descrição | Regra de negócio associada |
@@ -475,7 +785,7 @@ O **total do pedido não é atributo**: é derivado (RN11), assim como o valor d
 
 Índices: PK ID_CATEGORIA; índice único em NM_CATEGORIA.
 
-### RESERVA *(confirmada na visita; atributos propostos)*
+#### RESERVA *(confirmada na visita; atributos propostos)*
 `RESERVA = @ID_RESERVA + ID_MESA + NM_CLIENTE + (NR_TELEFONE) + DH_RESERVA + QT_PESSOAS + TP_STATUS`
 
 *Leitura:* `TP_STATUS` é Ativa (A), Atendida (T) ou Cancelada (C). `NR_TELEFONE` é opcional.
@@ -492,7 +802,7 @@ O **total do pedido não é atributo**: é derivado (RN11), assim como o valor d
 
 Índices: PK ID_RESERVA; índice em (ID_MESA, DH_RESERVA).
 
-### PAGAMENTO *(proposta — o processo "Pagamento" não tinha entidade)*
+#### PAGAMENTO *(proposta — o processo "Pagamento" não tinha entidade)*
 `PAGAMENTO = @ID_PAGAMENTO + ID_PEDIDO + TP_FORMA + VL_PAGO + DH_PAGAMENTO`
 
 *Leitura:* `TP_FORMA` é Dinheiro (D), Crédito (C), Débito (B) ou Pix (P).
@@ -507,7 +817,7 @@ O **total do pedido não é atributo**: é derivado (RN11), assim como o valor d
 
 Índices: PK ID_PAGAMENTO; índice em ID_PEDIDO; índice em DH_PAGAMENTO (fechamento diário do caixa, RN25).
 
-### FORNECEDOR *(proposta)*
+#### FORNECEDOR *(proposta)*
 `FORNECEDOR = @ID_FORNECEDOR + NM_FORNECEDOR + NR_CNPJ + (NR_TELEFONE) + IN_ATIVO`
 
 | Atributo | Tipo | Obrig. | Descrição | Regra de negócio associada |
@@ -520,7 +830,7 @@ O **total do pedido não é atributo**: é derivado (RN11), assim como o valor d
 
 Índices: PK ID_FORNECEDOR; índice único em NR_CNPJ.
 
-### COMPRA *(proposta)*
+#### COMPRA *(proposta)*
 `COMPRA = @ID_COMPRA + ID_FORNECEDOR + ID_ATENDENTE + DH_COMPRA + TP_STATUS + (NR_NOTA_FISCAL) + (DH_RECEBIMENTO)`
 
 *Leitura:* `TP_STATUS` é Pedida (P), Recebida (R) ou Cancelada (C). `NR_NOTA_FISCAL` e `DH_RECEBIMENTO` são preenchidos no recebimento.
@@ -537,7 +847,7 @@ O **total do pedido não é atributo**: é derivado (RN11), assim como o valor d
 
 Índices: PK ID_COMPRA; índice em ID_FORNECEDOR; índice em DH_COMPRA.
 
-### Relacionamento POSSUI *(COMPRA × PRODUTO, N:N com atributos — proposta)*
+#### Relacionamento POSSUI *(COMPRA × PRODUTO, N:N com atributos — proposta)*
 `POSSUI = ID_COMPRA + ID_PRODUTO + QT_COMPRADA + VL_CUSTO_UNITARIO + (DT_VALIDADE)`
 
 | Atributo | Tipo | Obrig. | Descrição | Regra de negócio associada |
@@ -549,7 +859,7 @@ O **total do pedido não é atributo**: é derivado (RN11), assim como o valor d
 | DT_VALIDADE | date | Não | Validade do lote recebido. | Obrigatória para perecíveis (RN19). |
 
 Índices e chave: definidos na modelagem lógica (Entrega 2).
-### MOVIMENTACAO_ESTOQUE *(proposta)*
+#### MOVIMENTACAO_ESTOQUE *(proposta)*
 `MOVIMENTACAO_ESTOQUE = @ID_MOVIMENTACAO + ID_PRODUTO + (ID_PEDIDO) + (ID_COMPRA) + TP_MOVIMENTO + QT_MOVIMENTO + DH_MOVIMENTO + (DS_MOTIVO)`
 
 *Leitura:* `TP_MOVIMENTO` é Venda (V), Compra (C), Estorno (E) ou Ajuste (A). `ID_PEDIDO` e `ID_COMPRA` são opcionais: preenchidos quando a movimentação vem de uma venda ou de uma compra.
@@ -567,11 +877,11 @@ O **total do pedido não é atributo**: é derivado (RN11), assim como o valor d
 
 Índices: PK ID_MOVIMENTACAO; índice em (ID_PRODUTO, DH_MOVIMENTO).
 
-### 5.5 Log de acesso (metadado operacional)
+#### 5.5 Log de acesso (metadado operacional)
 
-Todas as tabelas ficam sob o mesmo mecanismo de auditoria do SGBD. No PostgreSQL, a configuração `log_statement = 'mod'` registra todo `INSERT`, `UPDATE` e `DELETE` no arquivo de log do servidor, com usuário e horário. A extensão `pgaudit` pode ser usada para registrar também as leituras (`SELECT`) das tabelas sensíveis. A retenção e a rotação do log seguem política própria, independente da retenção dos dados de negócio. `[VALIDAR com o grupo qual mecanismo será adotado na Entrega 2]`
+Todas as tabelas ficam sob o mesmo mecanismo de auditoria do SGBD. No MySQL, o log geral (`general_log`) ou o plugin de auditoria registram todo `INSERT`, `UPDATE` e `DELETE` no arquivo de log do servidor, com usuário e horário. A extensão `pgaudit` pode ser usada para registrar também as leituras (`SELECT`) das tabelas sensíveis. A retenção e a rotação do log seguem política própria, independente da retenção dos dados de negócio. `[VALIDAR com o grupo qual mecanismo será adotado na Entrega 2]`
 
-### 5.6 Acesso por operação e conformidade com a LGPD (metadado administrativo)
+#### 5.6 Acesso por operação e conformidade com a LGPD (metadado administrativo)
 
 Papéis: **Atendimento**, **Preparo** (cozinha e bar), **Gerência** e **Auditoria**.
 
@@ -592,7 +902,7 @@ Papéis: **Atendimento**, **Preparo** (cozinha e bar), **Gerência** e **Auditor
 
 ---
 
-## 6. 🧠 Modelagem Conceitual (Entidades, Atributos, Relacionamentos)
+### 6. 🧠 Modelagem Conceitual (Entidades, Atributos, Relacionamentos)
 
 - **Entidades reconhecidas:**
 
@@ -604,12 +914,12 @@ Papéis: **Atendimento**, **Preparo** (cozinha e bar), **Gerência** e **Auditor
 | PRODUTO | Itens vendidos, com código de barras e saldo de estoque. | original |
 | SETOR | Define salão, cozinha e bar, tanto para a lotação do funcionário quanto para o encaminhamento do preparo. | original |
 | HISTORICO_PRODUTO | Histórico de alterações de preço dos produtos. | original (nome) / proposta (definição) |
-| PAGAMENTO | Registra a quitação do pedido, inclusive dividida em várias formas. Mapeia o processo P5. | proposta |
-| RESERVA | Registra a reserva de mesa por telefone, processo P6 confirmado na visita. | proposta (processo confirmado) |
+| PAGAMENTO | Registra a quitação do pedido, inclusive dividida em várias formas. Mapeia o processo PR5. | proposta |
+| RESERVA | Registra a reserva de mesa por telefone, processo PR6 confirmado na visita. | proposta (processo confirmado) |
 | CATEGORIA | Organiza o cardápio em grupos (lanches, pratos, porções, bebidas...), em vez de repetir o nome do grupo em cada produto. | proposta (a partir do cardápio) |
-| MOVIMENTACAO_ESTOQUE | Dá entidade ao controle de estoque (P11): cada entrada, venda, estorno ou ajuste fica registrado, e o saldo do produto pode ser auditado. | proposta |
-| FORNECEDOR | Empresa de quem se compra. Mapeia o processo P9. | proposta |
-| COMPRA | Registro da reposição de mercadoria (P8 e P10). | proposta |
+| MOVIMENTACAO_ESTOQUE | Dá entidade ao controle de estoque (PR11): cada entrada, venda, estorno ou ajuste fica registrado, e o saldo do produto pode ser auditado. | proposta |
+| FORNECEDOR | Empresa de quem se compra. Mapeia o processo PR9. | proposta |
+| COMPRA | Registro da reposição de mercadoria (PR8 e PR10). | proposta |
 
 - **Atributos e classificações:** detalhados no dicionário (seção 5.4). Identificadores `ID_*`. Opcionais entre parênteses. Domínios fechados em `TP_*`. **Derivados (não armazenados):** total do pedido, taxa de serviço (10% dos itens) e fechamento do caixa. **Redundância deliberada:** `QT_ESTOQUE_ATUAL` em PRODUTO (saldo calculável pelas movimentações, guardado para consulta rápida e protegido pela regra RN21) e `VL_PRECO_UNITARIO` no relacionamento contém (RN07).
 
@@ -619,7 +929,7 @@ Papéis: **Atendimento**, **Preparo** (cozinha e bar), **Gerência** e **Auditor
 
 ---
 
-## 7. 🔗 Diagrama Entidade-Relacionamento (DER)
+### 7. 🔗 Diagrama Entidade-Relacionamento (DER)
 
 O DER abaixo foi desenhado na notação de Chen (retângulo, losango e círculo), a partir do dicionário. Ele **amplia o DER anterior do grupo** (veja a comparação mais abaixo) com as entidades marcadas como proposta. O DER **não mostra chaves estrangeiras**: a ligação entre entidades é feita pelo relacionamento, com a cardinalidade (mín,máx) nos dois lados.
 
@@ -629,7 +939,7 @@ O DER abaixo foi desenhado na notação de Chen (retângulo, losango e círculo)
 
 > [Ver Diagrama](./Diagrama_Palazio_del_Chef/) · [abrir a imagem em tamanho original](./Diagrama_Palazio_del_Chef/diagrama_palazio_del_chef.png)
 
-### 7.1 DER anterior do grupo (BRModelo, 22/09/2026)
+#### 7.1 DER anterior do grupo (BRModelo, 22/09/2026)
 
 [![DER anterior do grupo no BRModelo](./Diagrama_Palazio_del_Chef/der_grupo_brmodelo_22-09-2026.jpg)](./Diagrama_Palazio_del_Chef/der_grupo_brmodelo_22-09-2026.jpg)
 
@@ -762,7 +1072,7 @@ erDiagram
 
 ---
 
-## 8. 🧾 Justificativa Técnica
+### 8. 🧾 Justificativa Técnica
 
 - **Entidade ATENDENTE com credencial e função:** a função de cada funcionário (garçom, caixa, cozinha, bar, gerente, sócio, limpeza) é um atributo explícito, conforme orientou o professor. O perfil de acesso é separado da função, pois várias funções podem ter o mesmo acesso. A cardinalidade (1,N) do atendente no relacionamento "registra" também segue a orientação do professor. A solução resolve diretamente o problema identificado. Como a equipe não era registrada, não havia como saber quem registrou cada pedido. Com `ID_ATENDENTE` e login individual, cada pedido passa a ter um responsável (RN01), o que dá rastreabilidade e responsabilização. O modelo guarda **senha em hash** e apenas os dados pessoais necessários, por minimização de dados (LGPD). A alternativa, um campo de texto com o nome do garçom no pedido, permitiria grafias diferentes e não daria controle de acesso.
 - **SETOR como entidade:** serve a dois fins do mesmo conceito: lotação do funcionário (quem vê o quê, RNF01) e destino do preparo do produto (cozinha ou bar). Como atributo de texto, o nome do setor se repetiria e permitiria grafias diferentes ("Bar", "bar", "BAR"). Como entidade, centraliza o dado e permite novos setores sem alterar a estrutura.
@@ -772,8 +1082,8 @@ erDiagram
 - **PRODUTO com código de barras único:** atende à regra original e facilita o registro e o controle de estoque (RN03). A pendência de validar se vale para pratos feitos na casa está registrada na regra.
 - **PAGAMENTO como entidade, e não como atributo do pedido:** o DER anterior tinha só a forma de pagamento como atributo de PEDIDO. Isso impede registrar a conta dividida (por exemplo, metade em Pix e metade no cartão) e o fechamento por forma de pagamento. Como entidade (1:N com o pedido), cada pagamento tem forma, valor e horário próprios.
 - **Estoque com entidade própria (MOVIMENTACAO_ESTOQUE):** só um campo de saldo em PRODUTO não diz de onde veio a quantidade nem permite achar uma divergência. Cada entrada, venda, estorno e ajuste vira um registro, e o saldo é a soma das movimentações (RN21). O saldo fica também em PRODUTO como redundância deliberada, para consulta rápida e alerta de reposição. A regra RN21 mantém os dois coerentes. A opção de modelar também **insumos** (ingredientes de cada prato, com ficha técnica) foi deixada como evolução, pois exige uma tabela de composição por prato `[VALIDAR: a cozinha controla estoque de ingredientes ou só de produtos prontos e bebidas?]`.
-- **FORNECEDOR e COMPRA:** o processo de reposição (P8 a P10) é a origem das entradas de estoque. COMPRA guarda fornecedor, data, nota e responsável; o relacionamento **possui** (COMPRA × PRODUTO) guarda quantidade, custo e validade de cada lote, o que atende à vigilância sanitária (RN19) e permite calcular o custo e a margem dos produtos.
-- **Fechamento de caixa sem entidade própria:** o fechamento diário (P13) é um total dos pagamentos do dia por forma. Guardá-lo em tabela duplicaria dado já existente em PAGAMENTO. Fica como consulta.
+- **FORNECEDOR e COMPRA:** o processo de reposição (PR8 a PR10) é a origem das entradas de estoque. COMPRA guarda fornecedor, data, nota e responsável; o relacionamento **possui** (COMPRA × PRODUTO) guarda quantidade, custo e validade de cada lote, o que atende à vigilância sanitária (RN19) e permite calcular o custo e a margem dos produtos.
+- **Fechamento de caixa sem entidade própria:** o fechamento diário (PR13) é um total dos pagamentos do dia por forma. Guardá-lo em tabela duplicaria dado já existente em PAGAMENTO. Fica como consulta.
 - **RESERVA como entidade:** a visita confirmou que o cliente reserva mesa por telefone. A reserva tem data, hora, quantidade de pessoas e contato, e muda de situação (ativa, atendida, cancelada). Guardá-la como atributo da mesa não permitiria várias reservas da mesma mesa em dias diferentes. O cadastro do cliente é mínimo (nome e telefone) por causa da LGPD. A reserva não é ligada ao pedido, porque nem todo pedido tem reserva.
 - **CATEGORIA como entidade:** o cardápio tem mais de 260 preços em cerca de 45 grupos. Repetir o nome do grupo em cada produto permitiria grafias diferentes e dificultaria relatórios por categoria. Como entidade, o grupo é cadastrado uma vez. As variações de tamanho (1 ou 2 pessoas, com ou sem fritas) são produtos distintos, cada um com preço e código próprio, porque são vendidos e estocados separadamente.
 - **Taxa de serviço e bebida alcoólica no modelo:** a taxa de 10% é derivada dos itens e só precisa de um indicador no pedido (`IN_TAXA_SERVICO`), pois o valor se calcula. O indicador `IN_ALCOOLICO` no produto sustenta a regra de conferência de documento e permite relatórios de venda de bebida alcoólica.
@@ -784,7 +1094,7 @@ erDiagram
 
 ---
 
-## 9. 🤖 Uso de Inteligência Artificial
+### 9. 🤖 Uso de Inteligência Artificial
 
 > **As informações do estabelecimento vêm da visita do grupo. O que a IA propôs está marcado como `(proposta)` e deve ser revisado pelo grupo.** A disciplina exige o registro **de cada uso relevante**, com o que foi verificado e o que foi corrigido.
 
@@ -799,7 +1109,7 @@ erDiagram
 | **Justificativa da escolha final** | A escolha final foi baseada na **facilidade** de entender e manter o modelo e em ele ser **completo**: com 12 entidades, cobre os processos relatados na visita (atendimento, reserva, pedido por mesa, pagamento, compras, estoque) e resolve o problema de rastreabilidade com a entidade Atendente. O N:N entre pedido e produto segue a orientação do professor. |
 | **Reflexão crítica** | **Rascunho para o grupo revisar e assumir:** a IA acelerou a organização e a padronização do README, mas propôs atributos, regras e entidades sem ver o estabelecimento nem o DER do grupo, e por isso tudo precisou ser comparado com a visita e com as orientações do professor. A remoção do Item_pedido mostrou o limite do modelo: o mesmo produto não repete no pedido e o status de preparo fica por produto, ponto a confirmar com o professor. Regras como código de barras para pratos, taxa de serviço e validade vieram da visita; as de compra e de fornecedor são propostas. `[PREENCHER: o grupo deve reescrever com suas palavras]` |
 
-### Prompts no ChatGPT (OpenAI)
+#### Prompts no ChatGPT (OpenAI)
 
 Registro dos prompts do grupo (conversa exportada em PDF, 124 páginas, a partir do pedido de explicação do trabalho do semestre). Os textos estão resumidos; o grupo guarda a conversa completa. Datas conforme a exportação; onde não há data, o prompt está entre as datas vizinhas.
 
@@ -832,7 +1142,7 @@ Registro dos prompts do grupo (conversa exportada em PDF, 124 páginas, a partir
 
 Pontos de atenção sobre o ChatGPT: as respostas não vieram da visita ao estabelecimento, então tudo foi conferido com a visita e com o parecer do professor; a indicação de empresas e nomes foi só inspiração; o README gerado nas etapas 10 a 13 ainda usava o modelo antigo (com Item_pedido), corrigido nas etapas 17 a 21 e depois pelo Claude.
 
-### Usos do Claude (Anthropic)
+#### Usos do Claude (Anthropic)
 
 | # | Uso | O que o grupo pediu / forneceu | O que o Claude entregou |
 |---|-----|-------------------------------|-------------------------|
@@ -852,113 +1162,24 @@ Pontos de atenção sobre o ChatGPT: as respostas não vieram da visita ao estab
 | 14 | Fluxogramas | Pedido de fluxogramas clicáveis a partir do README. | Fluxogramas de vendas e de compras em Graphviz (`Fluxograma_Palazio_del_Chef/`). |
 | 15 | Seção de uso de IA | Pedido para acrescentar o que foi feito com o Claude e rascunhos curtos de cada campo. | Tabela "Usos do Claude" e rascunhos marcados para o grupo assumir. |
 | 16 | Prompt da Entrega 1 | Pedido de um prompt completo (engenharia de prompt) para executar a entrega inteira. | Prompt completo e versão resumida. |
-| 17 | Entrega 2: modelo lógico e SQL | Esqueleto da Entrega 2 e o pedido "faça o seguimento para a entrega 2". | Modelo lógico de 14 tabelas, scripts 01 a 08 (criação, restrições, triggers, views, carga, JOIN, UPDATE, DELETE, gerenciais e auditoria), testados em PostgreSQL 16 a partir de banco vazio. |
+| 17 | Entrega 2: modelo lógico e SQL | Esqueleto da Entrega 2 e o pedido "faça o seguimento para a entrega 2". | Modelo lógico de 14 tabelas, scripts 01 a 08 (criação, restrições, triggers, views, carga, JOIN, UPDATE, DELETE, gerenciais e auditoria), escritos primeiro em PostgreSQL e depois convertidos para MySQL 8.0 (SGBD da disciplina), testados a partir de banco vazio. |
 | 18 | Entrega 2: massa de dados | Volumes reais informados pelo estabelecimento (pedidos por dia, mesas, horários). | Programa gerador (`entrega-2/scripts/gen_data.py`, semente fixa) com cerca de 1.650 pedidos fictícios coerentes; nomes, CNPJs e valores são inventados. |
-| 19 | Entrega 2: relatório técnico | Itens do esqueleto (revisão do conceitual, conversão, PKs/FKs, normalização, justificativas, BI/IA). | `entrega-2/RELATORIO_TECNICO.md` e o diagrama do modelo lógico gerado do banco. |
+| 19 | Entrega 2: relatório técnico | Itens do esqueleto (revisão do conceitual, conversão, PKs/FKs, normalização, justificativas, BI/IA). | este README (parte da Entrega 2) e o diagrama do modelo lógico gerado do banco. |
 | 20 | Ajuste do DER | Necessidade surgida na implementação (pratos sem baixa por porção). | Atributo `IN_CONTROLA_ESTOQUE` proposto, no dicionário, no DER e no HTML (a validar com o professor). |
 
-**Como o Claude foi usado na Entrega 2:** o Claude escreveu os scripts SQL, o gerador de dados e o relatório; **todos os dados da carga são sintéticos**. A verificação foi feita executando tudo em PostgreSQL 16 (painel de integridade com 14 verificações em 0 violações e 15 operações inválidas bloqueadas). Falhas encontradas nos próprios scripts durante os testes: exclusão de compra pendente bloqueada por engano, teste de estoque que estourava o tipo `smallint`, reajuste de preço de teste sem efeito e numeração das regras diferente do README; todas corrigidas.
+**Como o Claude foi usado na Entrega 2:** o Claude escreveu os scripts SQL, o gerador de dados e o relatório; **todos os dados da carga são sintéticos**. A verificação foi feita executando tudo em MySQL 8.0 (painel de integridade com 14 verificações em 0 violações e 15 operações inválidas bloqueadas). Falhas encontradas nos próprios scripts durante os testes: exclusão de compra pendente bloqueada por engano, teste de estoque que estourava o tipo `smallint`, reajuste de preço de teste sem efeito e numeração das regras diferente do README; todas corrigidas.
 
 **Verificação pelo grupo:** o grupo conferiu a estrutura do DER indicada pelo professor, analisando juntos os links importantes do Blackboard, e usou a IA para remover o que havia colocado de errado. Além disso, cada resultado do Claude foi comparado com as orientações do professor, com os dados da visita e com o DER anterior do grupo; o que não foi observado no estabelecimento ficou como proposta ou `[VALIDAR]`.
 
 ---
 
-## 🚧 Próximas etapas (Entrega 2)
-
-| Etapa | Status |
-|-------|--------|
-| Modelo relacional (tabelas, PKs, FKs, restrições) | ⏳ Pendente |
-| Normalização (1FN, 2FN e 3FN) | ⏳ Pendente |
-| Implementação em SQL (PostgreSQL), com carga de dados | ⏳ Pendente |
-| Consultas SQL (`INSERT`, `SELECT`, `UPDATE`, `DELETE`, `JOIN`) | ⏳ Pendente |
-| Arquitetura analítica para BI e IA, e apresentação final | ⏳ Pendente |
-
-### Status da Entrega 1
-
-| Item | Status |
-|------|--------|
-| Contextualização e identificação do problema | 🔄 Texto pronto; faltam os dados de campo |
-| Evidências (foto, endereço, contato, horário, entrevista) | ✅ Foto da fachada, endereço, CNPJ, contato, horário, cardápio e resumo da visita. Falta a rede social, se houver |
-| Processos de negócio | ✅ 13 processos descritos, a maioria confirmada na visita |
-| Requisitos e regras de negócio | ✅ (revisar as propostas) |
-| Dicionário de dados | ✅ No modelo da disciplina (conferir com a versão do grupo) |
-| DER | ✅ 12 entidades e 16 relacionamentos, sem FKs e sem Item_pedido |
-| Justificativa técnica | ✅ |
-| Uso de IA | 🔄 Campos do grupo pendentes |
-| Fluxograma em imagem | ✅ Dois fluxos em imagem (vendas e compras), com link para o tamanho original |
-
-### 🛠️ Tecnologias e ferramentas
-
-**SGBD:** PostgreSQL · **Linguagem:** SQL · **Modelagem:** BRModelo · **Versionamento:** Git e GitHub
-
-### 📁 Estrutura do repositório
-
-```text
-modelagem-dados/
-│
-├── README.md
-├── imagem_palazio.jpeg
-│
-├── evidencias/
-│   ├── LEIA-ME.md
-│   ├── roteiro_entrevista.md
-│   ├── prompt_chatgpt.md
-│   ├── cardapio_palazio_diurno.pdf
-│   └── horario_google_maps.jpg
-│
-├── Diagrama_Palazio_del_Chef/
-│   ├── diagrama_palazio_del_chef.png
-│   └── gerar_der.py
-│
-├── Fluxograma_Palazio_del_Chef/
-│   └── LEIA-ME.md             ← colocar aqui a imagem do fluxograma
-│
-├── dicionario_dados_palazio/
-│   ├── index.html
-│   └── diagrama_palazio_del_chef.png
-│
-└── sql/                           ← Entrega 2
-    ├── create_tables.sql
-    ├── insert_data.sql
-    └── consultas.sql
-```
 
 ---
 
-## 🤝 Contribuição da equipe
+### Contribuição da equipe
 
-O trabalho foi desenvolvido **em conjunto por todos os integrantes** (Victor Sousa dos Anjos, Thiago Rodrigues Ribeiro, Ricardo Santos Marcelino e Raphael Luiz Lima de Araujo), com responsabilidades principais por pessoa (tabela abaixo), mas a participação de todos em cada etapa: a visita ao estabelecimento, o levantamento de requisitos e regras, o DER, o dicionário de dados, o modelo lógico, os scripts SQL e a documentação foram discutidos e revisados pelo grupo. O histórico de commits do repositório registra a evolução do trabalho.
+Trabalho em conjunto pelos quatro integrantes (visita, levantamento, DER, dicionário, modelo lógico, SQL e documentação); responsabilidades principais na seção 5.
 
-Principais responsabilidades de cada integrante, conforme informado pelo grupo:
+### Contexto acadêmico
 
-| Integrante | Responsabilidades |
-|---|---|
-| Thiago Rodrigues Ribeiro | Diagrama e entrevista |
-| Ricardo Santos Marcelino | Análise da atividade e entrevista |
-| Victor Sousa dos Anjos | Estrutura do projeto e organização do README |
-| Raphael Luiz Lima de Araujo | Fluxograma e etapa por etapa |
-
----
-
-## 🎓 Contexto Acadêmico
-
-Projeto desenvolvido como atividade acadêmica da disciplina de Modelagem de Banco de Dados do curso de Análise e Desenvolvimento de Sistemas (UNICID), com o objetivo de aplicar os conceitos estudados na construção de um modelo de dados relacional baseado em um estabelecimento real.
-
-A organização escolhida foi o Palazio del Chef, do segmento de alimentação, com características de restaurante e bar. A partir da visita e da entrevista com um gerente, o grupo levantou informações sobre o atendimento presencial, o registro de pedidos, o encaminhamento aos setores de preparo e o gerenciamento de compras e estoque. Com esse levantamento, desenvolveu a análise dos processos, os requisitos funcionais e não funcionais, as regras de negócio, o modelo conceitual (entidades, atributos, relacionamentos, cardinalidades e chaves) e o dicionário de dados. A Entrega 2 traz o modelo lógico, a normalização e a implementação em PostgreSQL, com dados de teste e consultas.
-
-A atividade também exercita interpretar informações de um contexto real, transformar necessidades operacionais em estruturas de dados e justificar as decisões de modelagem. Os arquivos são versionados no Git e no GitHub, e o uso de IA como apoio é descrito na seção 9.
-
----
-
-## Entrega 2 — Modelo lógico e SQL
-
-Tudo da segunda entrega está na pasta [`entrega-2/`](entrega-2/):
-
-- [`RELATORIO_TECNICO.md`](entrega-2/RELATORIO_TECNICO.md): revisão do conceitual, conversão para o lógico, PKs/FKs, normalização (1FN a 3FN), justificativas, arquitetura analítica BI/IA, testes e uso de IA.
-- [`docs/modelo_logico.png`](entrega-2/docs/modelo_logico.png): diagrama do modelo lógico (14 tabelas).
-- [`sql/`](entrega-2/sql/): scripts 01 a 08 e `palazio_del_chef_completo.sql` (PostgreSQL 16, testado a partir de banco vazio).
-- [`scripts/gen_data.py`](entrega-2/scripts/gen_data.py): gerador da massa fictícia (≈ 1.650 pedidos em uma semana).
-
-```bash
-cd entrega-2/sql && psql -U postgres -v ON_ERROR_STOP=1 -f palazio_del_chef_completo.sql
-```
+Atividade da disciplina de Modelagem de Banco de Dados (ADS, UNICID), baseada em um estabelecimento real. A Entrega 1 traz o modelo conceitual; a Entrega 2, o modelo lógico, a normalização e a implementação em MySQL com dados de teste e consultas.
