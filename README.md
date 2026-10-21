@@ -9,10 +9,10 @@
 
 | Integrante | RGM | Usuário no GitHub |
 |---|---|---|
-| Raphael Luiz Lima de Araujo | 46995773 | `[PREENCHER]` |
-| Ricardo Santos Marcelino | 47023708 | `[PREENCHER]` |
-| Thiago Rodrigues Ribeiro | 47188049 | `[PREENCHER]` |
-| Victor Sousa dos Anjos | 47333235 | `[PREENCHER]` (repositório `Victin7/modelagem-dados`) |
+| Raphael Luiz Lima de Araujo | 46995773 | [Raphael186](https://github.com/Raphael186) |
+| Ricardo Santos Marcelino | 47023708 | [Ricardo-Sm1](https://github.com/Ricardo-Sm1) |
+| Thiago Rodrigues Ribeiro | 47188049 | [thiago-rodrigues-S6](https://github.com/thiago-rodrigues-S6) |
+| Victor Sousa dos Anjos | 47333235 | [Victin7](https://github.com/Victin7) (repositório `Victin7/modelagem-dados`) |
 
 **Curso / Disciplina:** Análise e Desenvolvimento de Sistemas — Modelagem de Banco de Dados (UNICID) · Prof. Cid Andrade.
 **SGBD:** MySQL 8.0 (InnoDB, `utf8mb4`) · **Banco:** `palazio_del_chef`.
