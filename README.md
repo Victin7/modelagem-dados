@@ -365,7 +365,7 @@ Roteiro sugerido, na ordem pedida: **(1) problema** (P1 a P6, com a foto da visi
 - **Evidências da organização:**
 
 <p align="center">
-  <img src="./imagem_palazio.jpeg" alt="Imagem visual do estabelecimento do Palazio Del Chef" width="550">
+  <img src="./imagem_palazio.jpeg" alt="Fachada do Palazio del Chef, no Tatuapé" width="400">
 </p>
 
 | Evidência | Registro |
@@ -380,7 +380,7 @@ Roteiro sugerido, na ordem pedida: **(1) problema** (P1 a P6, com a foto da visi
 | Datas das visitas | 04/09/2026 |
 | Entrevista e observação | Resumo abaixo, com as informações da visita de 04/09/2026. Roteiro usado: [`evidencias/roteiro_entrevista.md`](./evidencias/roteiro_entrevista.md) |
 | Cardápio | Cardápio do estabelecimento (o mesmo no almoço e à noite), em [`evidencias/`](./evidencias/cardapio_palazio_diurno.pdf) |
-| Fotos da pesquisa de campo | Fachada com a placa "Palazio del Chef — Bar & Restaurante — Tatuapé" e a placa da Rua Apucarana (foto acima). Registro da equipe com o gerente durante a visita (Figura 2, abaixo). A foto do salão não foi publicada, para não expor clientes. |
+| Fotos da pesquisa de campo | Fachada com a placa "Café e Restaurante — Palazio del Chef — Tatuapé" (foto acima). Registro da equipe com o gerente durante a visita (Figura 2, abaixo). A foto do salão não foi publicada, para não expor clientes. |
 | Nome no Google Maps | "Palazio Del Chefe" (a placa da fachada diz "Palazio del Chef") |
 
 Durante a visita, foi realizada uma entrevista com um gerente do estabelecimento, para compreender o atendimento aos clientes, o registro dos pedidos, o encaminhamento à cozinha ou ao bar e o gerenciamento do estoque. Como evidência, apresenta-se a fotografia registrada pela equipe durante o encontro com o gerente.
