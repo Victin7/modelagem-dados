@@ -29,6 +29,19 @@
 7. [Pitch](#7-pitch-de-8-minutos)
 8. [Limitações e pontos a validar](#8-limitações-e-pontos-a-validar)
 
+**Anexo A — Entrega 1 (modelo conceitual)**
+
+- [1. Caracterização da Organização](#1--caracterização-da-organização)
+- [2. Processos de Negócio](#2--processos-de-negócio)
+- [3. Requisitos do Sistema](#3--requisitos-do-sistema)
+- [4. Regras de Negócio](#4--regras-de-negócio)
+- [5. Dicionário de Dados Conceitual (Preliminar)](#5--dicionário-de-dados-conceitual-preliminar)
+- [6. Modelagem Conceitual (Entidades, Atributos, Relacionamentos)](#6--modelagem-conceitual-entidades-atributos-relacionamentos)
+- [7. Diagrama Entidade-Relacionamento (DER)](#7--diagrama-entidade-relacionamento-der)
+- [8. Justificativa Técnica](#8--justificativa-técnica)
+- [9. Uso de Inteligência Artificial](#9--uso-de-inteligência-artificial)
+
+
 ---
 
 ## 1. Modelo conceitual
