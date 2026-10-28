@@ -110,22 +110,22 @@
 
 Resultado: **14 tabelas** (12 entidades + `pedido_produto` + `compra_produto`) e **18 chaves estrangeiras**.
 
-| Tabela | Origem | Linhas na massa |
-|---|---|---|
-| setor | SETOR | 5 |
-| categoria | CATEGORIA | 11 |
-| atendente | ATENDENTE | 15 |
-| mesa | MESA | 55 (30 mesas + 25 bistrôs) |
-| reserva | RESERVA | 14 |
-| produto | PRODUTO | 62 (54 do cardápio + 8 insumos) |
-| historico_produto | HISTORICO_PRODUTO | 8 |
-| pedido | PEDIDO | 1.649 |
-| pedido_produto | CONTÉM | 5.936 |
-| pagamento | PAGAMENTO | 1.933 |
-| fornecedor | FORNECEDOR | 6 |
-| compra | COMPRA | 11 |
-| compra_produto | POSSUI | 36 |
-| movimentacao_estoque | MOVIMENTACAO_ESTOQUE | 1.720 |
+| Tabela | Origem | Linhas na massa completa | Na base de demonstração (100 pedidos) |
+|---|---|---|---|
+| setor | SETOR | 5 | igual |
+| categoria | CATEGORIA | 11 | igual |
+| atendente | ATENDENTE | 15 | igual |
+| mesa | MESA | 55 (30 mesas + 25 bistrôs) | igual |
+| reserva | RESERVA | 14 | 14 |
+| produto | PRODUTO | 62 (54 do cardápio + 8 insumos) | igual |
+| historico_produto | HISTORICO_PRODUTO | 8 | igual |
+| pedido | PEDIDO | 1.649 | 100 |
+| pedido_produto | CONTÉM | 5.936 | 367 |
+| pagamento | PAGAMENTO | 1.933 | 90 |
+| fornecedor | FORNECEDOR | 6 | igual |
+| compra | COMPRA | 11 | igual |
+| compra_produto | POSSUI | 36 | igual |
+| movimentacao_estoque | MOVIMENTACAO_ESTOQUE | 1.720 | 210 |
 
 ### 1.3 Chaves primárias e estrangeiras
 
@@ -278,6 +278,14 @@ O script único é [`docs/script.sql`](docs/script.sql) (gerado pela concatenaç
 mysql -u root -p --default-character-set=utf8mb4 < docs/script.sql
 ```
 
+**Base de demonstração (100 pedidos).** Para apresentar à turma, o arquivo [`docs/10_base_100_pedidos.sql`](docs/10_base_100_pedidos.sql) reduz a carga completa aos **100 pedidos mais recentes** (73 fechados e 27 abertos, com 367 itens e 90 pagamentos). Rode-o **depois** do `script.sql`:
+
+```bash
+mysql -u root -p --default-character-set=utf8mb4 -e "source docs/10_base_100_pedidos.sql"
+```
+
+O banco bloqueia `DELETE` em pedido, item, pagamento e movimentação (preservação do histórico); por isso este script remove esses quatro triggers de bloqueio, apaga o histórico anterior, **recria os mesmos triggers** e recalcula o estoque como a soma das movimentações restantes. Com a base reduzida, a auditoria A01 a A14 continua com 0 violações. Há também `10_base_200_pedidos.sql` (mesma lógica, 200 pedidos) e `09_gerar_pedidos_teste.sql`, que faz o contrário: gera pedidos novos passando por todas as regras. Os 27 pedidos abertos são mantidos nas duas versões. Para voltar à carga completa, basta reexecutar o `script.sql`.
+
 Reexecutar é seguro: o script recria o banco. Requer MySQL 8.0.16 ou superior. Testado em MySQL 8.0.46 a partir de banco vazio, sem erros (exit 0). Resultado: 14 tabelas, 3 views, 32 triggers, 41 `CHECK`s.
 
 **Testes e evidências.**
@@ -287,7 +295,7 @@ Reexecutar é seguro: o script recria o banco. Requer MySQL 8.0.16 ou superior. 
 
   *Execução do `08_consultas_auditoria.sql` no MySQL 8.0 do notebook de um integrante, sobre a base de demonstração de 100 pedidos (`10_base_100_pedidos.sql`).*
 - **Bloqueios:** 15 operações inválidas rejeitadas com a mensagem da regra (mesa ocupada, perfil sem permissão, estoque insuficiente, pagamento acima do total, exclusão de pedido, alteração de pagamento, código de barras duplicado...), todas "OK".
-- **Fluxo (06, parte 1):** abre pedido, lança itens, preparo, entrega, cancelamento com estorno, remoção da taxa, pagamento dividido, fechamento com liberação da mesa, reajuste com histórico, recebimento de compra e `DELETE`s permitidos; termina com `ROLLBACK` e a carga continua com 1.649 pedidos.
+- **Fluxo (06, parte 1):** abre pedido, lança itens, preparo, entrega, cancelamento com estorno, remoção da taxa, pagamento dividido, fechamento com liberação da mesa, reajuste com histórico, recebimento de compra e `DELETE`s permitidos; termina com `ROLLBACK` e a carga continua como estava (1.649 pedidos na carga completa; 100 na base de demonstração).
 
 ## 4. Massa de dados
 
@@ -317,7 +325,7 @@ modelagem-dados/
 ├── imagem_palazio.jpeg · visita_palazio.jpeg
 ├── levantamento/levantamento.md
 ├── evidencias/                        ← roteiro, cardápio, horário, prompts
-├── docs/                              ← script.sql, 01..08, modelo lógico (.png/.svg/.dot), dicionário lógico (.html)
+├── docs/                              ← script.sql, 01..10, modelo lógico (.png/.svg/.dot), dicionário lógico (.html)
 ├── dicionario_dados_palazio/          ← dicionário conceitual (Entrega 1, HTML)
 ├── Diagrama_Palazio_del_Chef/         ← DER (Entrega 1)
 ├── Fluxograma_Palazio_del_Chef/       ← fluxos de vendas e compras
