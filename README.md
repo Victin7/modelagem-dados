@@ -281,7 +281,11 @@ mysql -u root -p --default-character-set=utf8mb4 < docs/script.sql
 Reexecutar é seguro: o script recria o banco. Requer MySQL 8.0.16 ou superior. Testado em MySQL 8.0.46 a partir de banco vazio, sem erros (exit 0). Resultado: 14 tabelas, 3 views, 32 triggers, 41 `CHECK`s.
 
 **Testes e evidências.**
-- **Painel A01 a A14:** todas com **0 violações** (pagamento = total, nenhum pedido fechado com item pendente, saldo = soma das movimentações, sem estoque negativo, preço do item = preço vigente, mesa coerente, perfil de quem abre pedido, etc.). `[PREENCHER]` print da execução na máquina do grupo.
+- **Painel A01 a A14:** todas com **0 violações** (pagamento = total, nenhum pedido fechado com item pendente, saldo = soma das movimentações, sem estoque negativo, preço do item = preço vigente, mesa coerente, perfil de quem abre pedido, etc.).
+
+  ![Painel de auditoria A01 a A14: 0 violações em todas as consultas](evidencias/painel_auditoria_A01_A14.png)
+
+  *Execução do `08_consultas_auditoria.sql` no MySQL 8.0 do notebook de um integrante, sobre a base de demonstração de 100 pedidos (`10_base_100_pedidos.sql`).*
 - **Bloqueios:** 15 operações inválidas rejeitadas com a mensagem da regra (mesa ocupada, perfil sem permissão, estoque insuficiente, pagamento acima do total, exclusão de pedido, alteração de pagamento, código de barras duplicado...), todas "OK".
 - **Fluxo (06, parte 1):** abre pedido, lança itens, preparo, entrega, cancelamento com estorno, remoção da taxa, pagamento dividido, fechamento com liberação da mesa, reajuste com histórico, recebimento de compra e `DELETE`s permitidos; termina com `ROLLBACK` e a carga continua com 1.649 pedidos.
 
