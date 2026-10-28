@@ -4,7 +4,7 @@
 -- regras de negócio (triggers): abre numa mesa livre (RN02/RN05), lança 1 a 4 itens
 -- (RN07/RN08/RN14), prepara (P->E->R), entrega (N), paga o total exato (RN15) e fecha (RN10).
 -- Pedidos que violarem alguma regra (ex.: estoque insuficiente) são desfeitos e contados.
--- Uso:  CALL sp_gerar_pedidos(100);
+-- Uso:  CALL sp_gerar_pedidos(200);
 -- =====================================================================
 USE palazio_del_chef;
 SET NAMES utf8mb4;
@@ -77,7 +77,7 @@ END$$
 
 DELIMITER ;
 
-CALL sp_gerar_pedidos(100);
+CALL sp_gerar_pedidos(200);
 
 SELECT COUNT(*) AS total_pedidos,
        SUM(tp_status = 'F') AS fechados,
